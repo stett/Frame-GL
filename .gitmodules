@@ -1,0 +1,9 @@
+[submodule "glfw"]
+	path = frame_gl/external/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "glew"]
+	path = frame_gl/external/glew-cmake
+	url = https://github.com/Perlmint/glew-cmake.git
+[submodule "frame"]
+	path = frame_gl/external/frame
+	url = https://github.com/stett/frame.git

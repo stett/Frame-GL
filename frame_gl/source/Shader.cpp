@@ -1,0 +1,216 @@
+#define GLEW_STATIC
+#include <string>
+#include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
+#include "frame/Log.h"
+#include "frame/Resource.h"
+#include "frame_gl/data/Shader.h"
+#include "frame_gl/error.h"
+using namespace frame;
+
+ShaderPart::ShaderPart(Type type, const std::vector<std::string>& sources) : type(type) {
+
+    // Convert shader sources to GL strings... :(
+    std::vector<GLchar*> gl_sources;
+    for (const std::string& source : sources)
+        gl_sources.push_back((GLchar*)source.data());
+
+    // Create and compile the shader
+    _id = glCreateShader(type);
+    glShaderSource(_id, sources.size(), gl_sources.data(), 0);
+    glCompileShader(_id);
+
+    // Print an error message if the compilation failed
+    int status;
+    glGetShaderiv(_id, GL_COMPILE_STATUS, &status);
+    if (status != GL_TRUE) {
+        int length;
+        glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &length);
+        char* buffer = new char[length];
+        glGetShaderInfoLog(_id, length, 0, buffer);
+        Log::error("Shader part failed to compile:\n" + std::string(buffer));
+        delete[] buffer;
+        return;
+    }
+
+    // Success message
+    Log::success("Shader part compiled successfully: " + std::to_string(_id));
+}
+
+ShaderPart::~ShaderPart() { glDeleteShader(_id); }
+
+Shader::Shader() : _name("empty"), _id(0) {}
+Shader::Shader(const std::string& name, const Resource<ShaderPart>& pass1) : Shader(name, std::vector< Resource<ShaderPart> >({ pass1 })) {}
+Shader::Shader(const std::string& name, const Resource<ShaderPart>& pass1, const Resource<ShaderPart>& pass2) : Shader(name, std::vector< Resource<ShaderPart> >({ pass1, pass2 })) {}
+Shader::Shader(const std::string& name, const Resource<ShaderPart>& pass1, const Resource<ShaderPart>& pass2, const Resource<ShaderPart>& pass3) : Shader(name, std::vector< Resource<ShaderPart> >({ pass1, pass2, pass3 })) {}
+Shader::Shader(const std::string& name, const std::vector< Resource<ShaderPart> >& parts) : _name(name) {
+
+    // Create the new program
+    _id = glCreateProgram();
+
+    // Attach all the shader passes to it
+    for (auto part : parts)
+        glAttachShader(_id, part->id());
+
+    // Link the shader program
+    glLinkProgram(_id);
+
+    // Print an error message if there was a problem
+    int status;
+    glGetProgramiv(_id, GL_LINK_STATUS, &status);
+    if (status != GL_TRUE) {
+        int length;
+        glGetProgramiv(_id, GL_INFO_LOG_LENGTH, &length);
+        char* buffer = new char[length];
+        glGetProgramInfoLog(_id, length, 0, buffer);
+        Log::error("Shader program failed to link:\n" + std::string(buffer));
+        delete[] buffer;
+        return;
+    }
+
+    // Print success message
+    Log::success("Shader program linked: " + std::to_string(_id));
+}
+
+Shader::~Shader() {
+    glDeleteProgram(_id);
+}
+
+void Shader::bind() {
+    glUseProgram(_id);
+}
+
+void Shader::unbind() {
+    glUseProgram(0);
+}
+
+void Shader::uniform(const char* uniform_name, int value) {
+    glUniform1i(locate(uniform_name), value);
+}
+
+void Shader::uniform(const char* uniform_name, float value) {
+    glUniform1f(locate(uniform_name), value);
+}
+
+void Shader::uniform(const char* uniform_name, const mat4& value) {
+    glUniformMatrix4fv(locate(uniform_name), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+int Shader::locate(const char* uniform_name) {
+    int location = glGetUniformLocation(_id, uniform_name);
+    if (location == -1)
+        Log::warning("Uniform \"" + std::string(uniform_name) + "\" not found in shader \"" + _name + "\"");
+    return location;
+}
+
+Resource<ShaderPart> Shader::Preset::vert_standard() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Vertex,
+        "#version 330\n                                                 "
+        "layout(location = 0)in vec3 vert_position;                     "
+        "layout(location = 1)in vec3 vert_normal;                       "
+        "layout(location = 2)in vec2 vert_uv;                           "
+        "layout(location = 3)in vec4 vert_color;                        "
+        "uniform mat4 model;                                            "
+        "uniform mat4 view;                                             "
+        "uniform mat4 projection;                                       "
+        "out vec4 frag_position;                                        "
+        "out vec3 frag_normal;                                          "
+        "out vec2 frag_uv;                                              "
+        "out vec4 frag_color;                                           "
+        "void main() {                                                  "
+        "    mat4 transform = projection * view * model;                "
+        "    frag_position  = transform * vec4(vert_position, 1.0);     "
+        "    frag_normal    = vert_normal * inverse(mat3(model));       "
+        "    frag_uv        = vert_uv;                                  "
+        "    frag_color     = vert_color;                               "
+        "    gl_Position    = frag_position;                            "
+        "}                                                              "
+    );
+
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_uvs() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                             "
+        "in vec2 frag_uv;                           "
+        "out vec4 pixel_color;                      "
+        "void main() {                              "
+        "    pixel_color = vec4(frag_uv, .5, 1);    "
+        "}                                          "
+    );
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_colors() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                 "
+        "in vec4 frag_color;            "
+        "out vec4 pixel_color;          "
+        "void main() {                  "
+        "    pixel_color = frag_color;  "
+        "}                              "
+    );
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_normals() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                                     "
+        "in vec3 frag_normal;                               "
+        "out vec4 pixel_color;                              "
+        "void main() {                                      "
+        "    pixel_color = vec4(vec3(0.5) + frag_normal, 1);"
+        "}                                                  "
+    );
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_coords() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                 "
+        "in vec4 frag_color;            "
+        "out vec4 pixel_color;          "
+        "void main() {                  "
+        "    pixel_color = vec4(gl_FragCoord.xyz, 1);"
+        "}                              "
+    );
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_depth() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                 "
+        "in vec4 frag_color;            "
+        "out vec4 pixel_color;          "
+        "void main() {                  "
+        "    pixel_color = vec4(gl_FragCoord.x * gl_FragCoord.w, gl_FragCoord.y * gl_FragCoord.w, gl_FragCoord.z, 1);"
+        "}                              "
+    );
+    return part;
+}
+
+Resource<Shader> Shader::Preset::model_uvs() {
+    static Resource<Shader> shader("Model UVs", vert_standard(), frag_uvs());
+    return shader;
+}
+
+Resource<Shader> Shader::Preset::model_colors() {
+    static Resource<Shader> shader("Model Colors", vert_standard(), frag_colors());
+    return shader;
+}
+
+Resource<Shader> Shader::Preset::model_normals() {
+    static Resource<Shader> shader("Model Normals", vert_standard(), frag_normals());
+    return shader;
+}
+
+Resource<Shader> Shader::Preset::coords() {
+    static Resource<Shader> shader("Frag Screen Coords", vert_standard(), frag_coords());
+    return shader;
+}
+
+Resource<Shader> Shader::Preset::depth() {
+    static Resource<Shader> shader("Depth", vert_standard(), frag_depth());
+    return shader;
+}
