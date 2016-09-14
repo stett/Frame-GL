@@ -55,7 +55,6 @@ void FrameBuffer::bind_target(bool clear) {
     if (_depth) glEnable(GL_DEPTH_TEST);
     else glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
     glDisable(GL_STENCIL_TEST);
 
     // Clear the frame buffer if necessary

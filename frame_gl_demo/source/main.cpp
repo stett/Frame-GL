@@ -31,33 +31,11 @@ float rand_range(float min=-1.0f, float max=1.0f) {
 int main(int argc, char** argv) {
     const ivec2 resolution(600, 600);
 
-    // Set up a diagram
-    Diagram diagram;
-    {
-        DiagramNode* node0 = diagram.add_node();
-        DiagramNode* node1 = diagram.add_node();
-        DiagramNode* node2 = diagram.add_node();
-        DiagramNode* node3 = diagram.add_node();
-        DiagramNode* node4 = diagram.add_node();
-        DiagramNode* node5 = diagram.add_node();
-        DiagramNode* node6 = diagram.add_node();
-        DiagramNode* node7 = diagram.add_node();
-        DiagramNode* node8 = diagram.add_node();
-        DiagramNode* node9 = diagram.add_node();
-        DiagramNode* node10 = diagram.add_node();
-        DiagramNode* node11 = diagram.add_node();
-
-        Diagram::connect(node0->add_output(), node9->add_input());
-        Diagram::connect(node9->add_output(), node2->add_input());
-        Diagram::connect(node2->add_output(), node11->add_input());
-    }
-
     // Set up a frame to visualize it
     Frame root;
     {
         root.systems().add<Window>(resolution, false, Window::FitMode::Fit);
         root.systems().add_many<Input, Render, Manipulate3DOperator>();
-        //root.systems().add<DiagramVisualization>(&diagram);
         root.systems().add<Planes>();
     }
 
@@ -72,17 +50,17 @@ int main(int argc, char** argv) {
         camera->add<Manipulate3D>(Input::MouseButton::Right, 10);
     }
 
-    /*
-    // Add some cubes
+    // Add some shapes
     {
         auto cube = root.entities().add();
-        cube->add<Transform>();
+        cube->add<Transform>()
+            ->set_translation(vec3(0.0f, 1.0f, 0.0f));
         cube->add<MeshRenderer>(
-            Mesh::Factory::cube(),
+            Mesh::Factory::sphere(0.5f, 3),
             Resource<Texture>(ivec2(1)),
-            Shader::Preset::model_normals());
+            Shader::Preset::model_normals(),
+            MeshRenderer::PolyMode::Fill, true);
     }
-    */
 
     // Add coordinate axes arrows at the origin
     make_axes(&root);

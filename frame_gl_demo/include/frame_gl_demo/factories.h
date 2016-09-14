@@ -27,7 +27,7 @@ Entity* make_axes(Frame* frame, float scale=1.0f) {
     auto texture = Resource<Texture>(ivec2(1));
     auto shader = Shader::Preset::model_colors();
     auto obj = frame->entities().add<Transform>();
-    obj->add<MeshRenderer>(mesh, texture, shader, MeshRenderer::PolyMode::Line);
+    obj->add<MeshRenderer>(mesh, texture, shader, MeshRenderer::PolyMode::Line, false);
     return obj;
 }
 
@@ -38,6 +38,6 @@ Entity* make_metabox(Frame* frame, std::size_t slots=1) {
     auto texture = Resource<Texture>(ivec2(1));
     auto shader = Shader::Preset::model_colors();
     auto obj = frame->entities().add<Transform>();
-    obj->add<MeshRenderer>(mesh, texture, shader, MeshRenderer::PolyMode::Line);
+    obj->add<MeshRenderer>(mesh, texture, shader, MeshRenderer::PolyMode::Line, false);
     return obj;
 }

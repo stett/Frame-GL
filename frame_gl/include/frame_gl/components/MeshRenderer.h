@@ -20,8 +20,8 @@ namespace frame
         };
 
     public:
-        MeshRenderer() : _mesh(Mesh::Factory::rectangle()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill) {}
-        MeshRenderer(const Resource<Mesh>& mesh, const Resource<Texture>& texture, const Resource<Shader>& shader, PolyMode poly_mode=Fill) : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode) {}
+        MeshRenderer() : _mesh(Mesh::Factory::rectangle()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(true) {}
+        MeshRenderer(const Resource<Mesh>& mesh, const Resource<Texture>& texture, const Resource<Shader>& shader, PolyMode poly_mode=Fill, bool cull_back=true) : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode), _cull_back(cull_back) {}
 
     public:
         void render(Camera* camera) {
@@ -33,6 +33,8 @@ namespace frame
 
             // Set GL state
             glPolygonMode(GL_FRONT_AND_BACK, _poly_mode);
+            if (_cull_back) glEnable(GL_CULL_FACE);
+            else glDisable(GL_CULL_FACE);
             glLineWidth(3.0f);
 
             // Bind stuff
@@ -61,5 +63,6 @@ namespace frame
         Resource<Texture> _texture;
         Resource<Shader> _shader;
         PolyMode _poly_mode;
+        bool _cull_back;
     };
 }

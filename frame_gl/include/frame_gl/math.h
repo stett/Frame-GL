@@ -2,6 +2,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/norm.hpp"
+#include "glm/gtx/hash.hpp"
 
 namespace frame
 {

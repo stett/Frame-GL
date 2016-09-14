@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
 #include "frame/Resource.h"
 #include "frame_gl/math.h"
 
@@ -64,6 +65,10 @@ namespace frame
             static Resource<Mesh> arrow(const vec3& base, const vec3& tip, const vec4& color=vec4(1.0f), float size=1.0f);
             static Resource<Mesh> quad(const vec2& size=vec2(1.0f), const vec3& normal=vec3(0.0f, 0.0f, 1.0f), const vec4& color=vec4(1.0f));
             static Resource<Mesh> cube(float edge=1.0f, const vec4& color=vec4(1.0f), bool smooth=false);
+            static Resource<Mesh> sphere(float radius=0.5f, int recursion=0, const vec4& color=vec4(1.0f));
+
+        private:
+            static int get_midpoint(std::unordered_map<ivec2, int>& cache, std::vector<vec3>& vertices, ivec2 indices);
         };
     };
 }

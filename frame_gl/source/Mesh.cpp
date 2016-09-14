@@ -1,10 +1,12 @@
 #define GLEW_STATIC
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
+#include <unordered_map>
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <utility>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "frame/Log.h"
@@ -491,4 +493,110 @@ Resource<Mesh> Mesh::Factory::quad(const vec2& size, const vec3& normal, const v
     mesh->add_triangle(2, 1, 0);
     mesh->add_triangle(1, 2, 3);
     return mesh;
+}
+
+Resource<Mesh> Mesh::Factory::sphere(float radius, int recursion, const vec4& color) {
+    Resource<Mesh> mesh;
+    std::unordered_map<ivec2, int> midpoint_cache;
+    std::vector<ivec3>* faces = new std::vector<ivec3>();
+    std::vector<vec3> vertices;
+    int index = 0;
+
+    // Create 12 vertices of icosahedron
+    float t = (1.0f + sqrt(5.0f)) * 0.5f;
+          
+    vertices.push_back(vec3(-1.0f,  t, 0.0f));
+    vertices.push_back(vec3( 1.0f,  t, 0.0f));
+    vertices.push_back(vec3(-1.0f, -t, 0.0f));
+    vertices.push_back(vec3( 1.0f, -t, 0.0f));
+
+    vertices.push_back(vec3(0.0f, -1.0f,  t));
+    vertices.push_back(vec3(0.0f,  1.0f,  t));
+    vertices.push_back(vec3(0.0f, -1.0f, -t));
+    vertices.push_back(vec3(0.0f,  1.0f, -t));
+
+    vertices.push_back(vec3( t, 0.0f, -1.0f));
+    vertices.push_back(vec3( t, 0.0f,  1.0f));
+    vertices.push_back(vec3(-t, 0.0f, -1.0f));
+    vertices.push_back(vec3(-t, 0.0f,  1.0f));
+
+    // 5 faces around point 0
+    faces->push_back(ivec3(0, 11, 5));
+    faces->push_back(ivec3(0, 5, 1));
+    faces->push_back(ivec3(0, 1, 7));
+    faces->push_back(ivec3(0, 7, 10));
+    faces->push_back(ivec3(0, 10, 11));
+
+    // 5 adjacent faces 
+    faces->push_back(ivec3(1, 5, 9));
+    faces->push_back(ivec3(5, 11, 4));
+    faces->push_back(ivec3(11, 10, 2));
+    faces->push_back(ivec3(10, 7, 6));
+    faces->push_back(ivec3(7, 1, 8));
+
+    // 5 faces around point 3
+    faces->push_back(ivec3(3, 9, 4));
+    faces->push_back(ivec3(3, 4, 2));
+    faces->push_back(ivec3(3, 2, 6));
+    faces->push_back(ivec3(3, 6, 8));
+    faces->push_back(ivec3(3, 8, 9));
+
+    // 5 adjacent faces 
+    faces->push_back(ivec3(4, 9, 5));
+    faces->push_back(ivec3(2, 4, 11));
+    faces->push_back(ivec3(6, 2, 10));
+    faces->push_back(ivec3(8, 6, 7));
+    faces->push_back(ivec3(9, 8, 1));
+
+    // refine triangles
+    for (int i = 0; i < recursion; i++)
+    {
+        std::vector<ivec3>* faces2 = new std::vector<ivec3>();
+        for (const ivec3& tri : *faces)
+        {
+            // replace triangle by 4 triangles
+            int a = get_midpoint(midpoint_cache, vertices, ivec2(tri[0], tri[1]));
+            int b = get_midpoint(midpoint_cache, vertices, ivec2(tri[1], tri[2]));
+            int c = get_midpoint(midpoint_cache, vertices, ivec2(tri[2], tri[0]));
+
+            faces2->push_back(ivec3(tri[0], a, c));
+            faces2->push_back(ivec3(tri[1], b, a));
+            faces2->push_back(ivec3(tri[2], c, b));
+            faces2->push_back(ivec3(a, b, c));
+        }
+        delete faces;
+        faces = faces2;
+    }
+
+    // Add triangles to mesh
+    for (const vec3& position : vertices) {
+        mesh->add_position(position * 0.5f * radius);
+        mesh->add_normal(normalize(position));
+    }
+
+    for (const ivec3& face : *faces) {
+        mesh->add_triangle(face);
+    }
+
+    delete faces;
+
+    return mesh;
+}
+
+int Mesh::Factory::get_midpoint(std::unordered_map<ivec2, int>& cache, std::vector<vec3>& vertices, ivec2 indices) {
+
+    if (indices.x < indices.y)
+        std::swap(indices.x, indices.y);
+
+    auto it = cache.find(indices);
+    if (it != cache.end())
+        return it->second;
+
+    // Not in cache, calculate it
+    int index = vertices.size();
+    cache[indices] = index;
+    vec3 vert = (vertices[indices.x] + vertices[indices.y]) * 0.5f;
+    vertices.push_back(normalize(vert) * 2.0f);
+
+    return index;
 }
