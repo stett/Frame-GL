@@ -7,7 +7,7 @@
 #include "frame_gl/components/Manipulate3D.h"
 using namespace frame;
 
-namespace frame_demo
+namespace frame
 {
     FRAME_SYSTEM(Manipulate3DOperator, Node<Transform, Manipulate3D>) {
 

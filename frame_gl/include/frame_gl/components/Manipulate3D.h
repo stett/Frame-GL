@@ -5,7 +5,7 @@
 #include "glm/gtc/quaternion.hpp"
 using namespace frame;
 
-namespace frame_demo
+namespace frame
 {
     FRAME_COMPONENT(Manipulate3D) {
     public:
