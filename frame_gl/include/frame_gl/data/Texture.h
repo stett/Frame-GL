@@ -1,4 +1,5 @@
 #pragma once
+#include "frame/Resource.h"
 #include "frame_gl/math.h"
 
 namespace frame
@@ -6,6 +7,7 @@ namespace frame
     class Texture {
     public:
         Texture(const ivec2& size=ivec2(1), bool multisample=true);
+        Texture(const std::string& filename);
         ~Texture();
         Texture(const Texture& other) = delete;
         Texture& operator=(const Texture& other) = delete;
@@ -21,16 +23,5 @@ namespace frame
         ivec2 _size;
         unsigned int _id;
         bool _multisample;
-
-    public:
-
-        struct Preset {
-        public:
-            //static Resource<Texture> white_pixel() { static Resource<Texture> texture(ivec2(1)); /* TODO: Fill with whiteness */ return texture; }
-
-        private:
-            Preset() {}
-            ~Preset() {}
-        };
     };
 }

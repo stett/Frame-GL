@@ -10,3 +10,9 @@
 [submodule "frame_gl/external/gli"]
 	path = frame_gl/external/gli
 	url = https://github.com/g-truc/gli.git
+[submodule "frame_gl/external/libpng"]
+	path = frame_gl/external/libpng
+	url = https://github.com/glennrp/libpng
+[submodule "frame_gl/external/zlib"]
+	path = frame_gl/external/zlib
+	url = https://github.com/madler/zlib.git

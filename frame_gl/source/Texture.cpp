@@ -1,5 +1,7 @@
 #define GLEW_STATIC
+#include <cstdio>
 #include <GL/glew.h>
+#include <png.h>
 #include "frame/Log.h"
 #include "frame_gl/data/Texture.h"
 #include "frame_gl/error.h"
@@ -21,6 +23,9 @@ Texture::Texture(const ivec2& size, bool multisample) : _size(size), _multisampl
     gl_check();
 
     Log::success("Texture (" + std::to_string(size.x) + "x" + std::to_string(size.y) + ") created with ID " + std::to_string(_id));
+}
+
+Texture::Texture(const std::string& filename) {
 }
 
 Texture::~Texture() { glDeleteTextures(1, &_id); }
