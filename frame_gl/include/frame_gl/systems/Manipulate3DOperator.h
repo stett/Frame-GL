@@ -4,7 +4,7 @@
 #include "frame_gl/components/Camera.h"
 #include "frame_gl/systems/Input.h"
 #include "frame_gl/math.h"
-#include "frame_gl_demo/components/Manipulate3D.h"
+#include "frame_gl/components/Manipulate3D.h"
 using namespace frame;
 
 namespace frame_demo

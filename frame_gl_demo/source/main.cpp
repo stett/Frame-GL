@@ -3,30 +3,26 @@
 #include "frame_gl/systems/Window.h"
 #include "frame_gl/systems/Render.h"
 #include "frame_gl/systems/Input.h"
+#include "frame_gl/systems/DisplayFPS.h"
+#include "frame_gl/systems/Planes.h"
+#include "frame_gl/systems/Manipulate3DOperator.h"
 #include "frame_gl/components/Transform.h"
 #include "frame_gl/components/RenderTarget.h"
 #include "frame_gl/components/Camera.h"
 #include "frame_gl/components/MeshRenderer.h"
 #include "frame_gl/components/ClickableArea.h"
+#include "frame_gl/components/Manipulate3D.h"
 #include "frame_gl/data/Mesh.h"
 #include "frame_gl/math.h"
 #include "glm/gtx/quaternion.hpp"
 #include "frame_gl_demo/components/Rotisserie.h"
-#include "frame_gl_demo/components/Manipulate3D.h"
 #include "frame_gl_demo/components/FollowMouse.h"
 #include "frame_gl_demo/systems/RotisserieOperator.h"
 #include "frame_gl_demo/systems/FireflyOperator.h"
-#include "frame_gl_demo/systems/Manipulate3DOperator.h"
-#include "frame_gl_demo/systems/DisplayFPS.h"
 #include "frame_gl_demo/systems/DiagramVisualization.h"
-#include "frame_gl_demo/systems/Planes.h"
 #include "frame_gl_demo/factories.h"
 using namespace frame;
 using namespace frame_demo;
-
-float rand_range(float min=-1.0f, float max=1.0f) {
-    return min + (max - min) * (float)rand() / (float)RAND_MAX;
-}
 
 int main(int argc, char** argv) {
     const ivec2 resolution(600, 600);
