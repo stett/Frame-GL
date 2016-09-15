@@ -7,16 +7,16 @@
 #include "frame_gl/components/RenderTarget.h"
 #include "frame_gl/components/Camera.h"
 #include "frame_gl/components/MeshRenderer.h"
+#include "frame_gl/components/Manipulate3D.h"
+#include "frame_gl/systems/Manipulate3DOperator.h"
+#include "frame_gl/systems/DisplayFPS.h"
 #include "frame_gl/data/Mesh.h"
 #include "frame_gl/math.h"
 #include "glm/gtx/quaternion.hpp"
 #include "frame_gl_demo/components/Rotisserie.h"
-#include "frame_gl_demo/components/Manipulate3D.h"
 #include "frame_gl_demo/components/Metabox.h"
 #include "frame_gl_demo/systems/RotisserieOperator.h"
 #include "frame_gl_demo/systems/FireflyOperator.h"
-#include "frame_gl_demo/systems/Manipulate3DOperator.h"
-#include "frame_gl_demo/systems/DisplayFPS.h"
 using namespace frame;
 
 Entity* make_axes(Frame* frame, float scale=1.0f) {

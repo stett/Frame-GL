@@ -3,7 +3,7 @@
 #include "frame_gl/data/Shader.h"
 #include "frame_gl/data/Texture.h"
 #include "frame_gl/math.h"
-#include "frame_gl_demo/systems/Planes.h"
+#include "frame_gl/systems/Planes.h"
 using namespace frame;
 
 void Planes::setup() {
