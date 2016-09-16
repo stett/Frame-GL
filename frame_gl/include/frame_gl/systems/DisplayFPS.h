@@ -1,9 +1,8 @@
 #pragma once
 #include "frame/System.h"
 #include "frame/Log.h"
-using namespace frame;
 
-namespace frame_demo
+namespace frame
 {
     FRAME_SYSTEM(DisplayFPS) {
     public:
