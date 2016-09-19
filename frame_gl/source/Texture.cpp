@@ -1,7 +1,7 @@
 #define GLEW_STATIC
 #include <cstdio>
 #include <GL/glew.h>
-#include <png.h>
+//#include <png.h>
 #include "frame/Log.h"
 #include "frame_gl/data/Texture.h"
 #include "frame_gl/error.h"
