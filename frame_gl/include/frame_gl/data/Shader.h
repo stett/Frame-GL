@@ -70,6 +70,7 @@ namespace frame
             static Resource<ShaderPart> frag_normals();
             static Resource<ShaderPart> frag_coords();
             static Resource<ShaderPart> frag_depth();
+            static Resource<ShaderPart> frag_white();
             static Resource<Shader> model_uvs();
             static Resource<Shader> model_colors();
             static Resource<Shader> model_normals();

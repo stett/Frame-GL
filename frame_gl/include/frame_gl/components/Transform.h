@@ -9,11 +9,12 @@ namespace frame
 {
     FRAME_COMPONENT_HIERARCHIC(Transform) {
     private:
-        const int MATRIX        = 1 << 0;
-        const int INVERSE       = 1 << 1;
-        const int WORLD_MATRIX  = 1 << 2;
-        const int WORLD_INVERSE = 1 << 3;
-        const int ALL = MATRIX | INVERSE | WORLD_MATRIX | WORLD_INVERSE;
+        const int MATRIX            = 1 << 0;
+        const int INVERSE           = 1 << 1;
+        const int WORLD_MATRIX      = 1 << 2;
+        const int WORLD_INVERSE     = 1 << 3;
+        const int WORLD_TRANSLATION = 1 << 4;
+        const int ALL = MATRIX | INVERSE | WORLD_MATRIX | WORLD_INVERSE | WORLD_TRANSLATION;
 
     public:
         Transform(const vec3& translation=vec3(0.0f), const quat& rotation=quat(), const vec3& scale=vec3(1.0f))
@@ -107,18 +108,28 @@ namespace frame
         }
         */
 
-        const vec3& world_translation() {
-            return parent() ? parent()->world_matrix() * vec4(translation(), 1.0f) : translation();
+        const vec3& world_translation() const {
+            if (invalid(WORLD_TRANSLATION)) {
+                validate(WORLD_TRANSLATION);
+                _world_translation =  world_matrix() * vec4(translation(), 1.0f);
+            }
+
+            return _world_translation;
         }
 
+        /*
         // TODO: Remember how to concatenate quaternions...
-        const quat& world_rotation() {
-            return parent() ? parent()->world_rotation() * rotation() : rotation();
+        const quat& world_rotation() const {
+            _world_rotation = parent() ? parent()->world_rotation() * rotation() : rotation();
+            return _world_rotation;
         }
 
-        const vec3& world_scale() {
-            return parent() ? parent()->world_matrix() * vec4(scale(), 0.0f) : scale();
+        // TODO: Make sure this actually does what I want...
+        const vec3& world_scale() const {
+            _world_scale = parent() ? parent()->world_matrix() * vec4(scale(), 0.0f) : scale();
+            return _world_scale;
         }
+        */
 
         const mat4& world_matrix() const {
             if (invalid(WORLD_MATRIX)) {
@@ -137,17 +148,15 @@ namespace frame
         }
 
         /// \brief Returns true if all of the given flags are on
-        bool valid(int flags) const { return (_valid & flags) == flags; }
+        inline bool valid(int flags) const { return (_valid & flags) == flags; }
 
         /// \brief Returns true if any of the flags are off
-        bool invalid(int flags) const { return !valid(flags); }
+        inline bool invalid(int flags) const { return !valid(flags); }
 
     private:
-        void validate(int flags) const {
-            _valid |= flags;
-        }
+        inline void validate(int flags) const {_valid |= flags; }
 
-        void invalidate(int flags) {
+        inline void invalidate(int flags) {
             _valid &= ~flags;
             for (Transform* child : children())
                 child->invalidate(WORLD_MATRIX | WORLD_INVERSE);
@@ -157,9 +166,9 @@ namespace frame
         vec3 _translation;
         quat _rotation;
         vec3 _scale;
-        vec3 _world_translation;
-        quat _world_rotation;
-        vec3 _world_scale;
+        mutable vec3 _world_translation;
+        //mutable quat _world_rotation;
+        //mutable vec3 _world_scale;
         mutable mat4 _matrix;
         mutable mat4 _inverse;
         mutable mat4 _world_matrix;

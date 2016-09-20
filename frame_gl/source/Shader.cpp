@@ -190,6 +190,17 @@ Resource<ShaderPart> Shader::Preset::frag_depth() {
     return part;
 }
 
+Resource<ShaderPart> Shader::Preset::frag_white() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                 "
+        "out vec4 pixel_color;          "
+        "void main() {                  "
+        "    pixel_color = vec4(1);"
+        "}                              "
+    );
+    return part;
+}
+
 Resource<Shader> Shader::Preset::model_uvs() {
     static Resource<Shader> shader("Model UVs", vert_standard(), frag_uvs());
     return shader;
