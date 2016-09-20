@@ -9,7 +9,7 @@ namespace frame
 {
     FRAME_COMPONENT(Manipulate3D) {
     public:
-        Manipulate3D(Input::MouseButton button=Input::MouseButton::Left, float distance=0.0f, const vec3& focus=vec3(0.0f), bool invert=false, float responsiveness=0.01f) :
+        Manipulate3D(Input::MouseButton button=Input::MouseButton::Left, float distance=0.0f, const vec3& focus=vec3(0.0f), bool invert=false, float responsiveness=0.1f) :
             _button(button),
             invert(invert),
             distance(distance),

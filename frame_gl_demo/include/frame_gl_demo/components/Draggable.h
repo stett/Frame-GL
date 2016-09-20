@@ -55,8 +55,11 @@ namespace frame_demo
             bool on_plane = camera->get_world_point(world_position, homogeneous_screen_position, plane_point, plane_normal);
 
             // If we're dragging, set our world position to the mouse's position
+            /*
+            TODO: REENABLE!
             if (dragging)
                 get<Transform>()->set_world_translation(world_position);
+            */
         }
 
     private:
