@@ -82,7 +82,8 @@ void Planes::setup() {
         mesh,
         Resource<Texture>(ivec2(1)),
         plane_shader,
-        MeshRenderer::PolyMode::Fill);
+        MeshRenderer::PolyMode::Fill,
+        false);
 }
 
 void Planes::teardown() {

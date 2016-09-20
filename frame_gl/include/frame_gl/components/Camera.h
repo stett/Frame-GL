@@ -34,7 +34,7 @@ namespace frame
             return project_onto_plane(world_point, view_point, plane_point, plane_normal, projection_matrix(), view_matrix());
         }
 
-        const mat4& view_matrix() { return get<Transform>()->matrix(); }
+        const mat4& view_matrix() { return get<Transform>()->world_inverse(); }
         const mat4& projection_matrix() { return _projection_matrix; }
 
     private:

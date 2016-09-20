@@ -9,7 +9,7 @@ namespace frame
 {
     FRAME_COMPONENT(Manipulate3D) {
     public:
-        Manipulate3D(Input::MouseButton button=Input::MouseButton::Left, float distance=0.0f, const vec3& focus=vec3(0.0f), bool invert=false, float responsiveness=0.1f) :
+        Manipulate3D(Input::MouseButton button=Input::MouseButton::Left, float distance=0.0f, const vec3& focus=vec3(0.0f), bool invert=false, float responsiveness=50.0f) :
             _button(button),
             invert(invert),
             distance(distance),
@@ -37,14 +37,13 @@ namespace frame
         }
 
         void update(float dt) {
-            distance += (target_distance - distance) * _responsiveness;
-            pitch += (target_pitch - pitch) * _responsiveness;
-            yaw += (target_yaw - yaw) * _responsiveness;
+            distance += (target_distance - distance) * _responsiveness * dt;
+            pitch += (target_pitch - pitch) * _responsiveness * dt;
+            yaw += (target_yaw - yaw) * _responsiveness * dt;
             if (pitch < -pi * 0.5f) pitch = -pi * 0.5f;
             if (pitch > pi * 0.5f) pitch = pi * 0.5f;
             _position = _focus + distance * vec3(-sin(yaw)*cos(pitch), sin(pitch), cos(yaw)*cos(pitch));
-            _rotation = glm::conjugate(glm::toQuat(glm::lookAt(_position, _focus, vec3(0.0f, 0.0f, 1.0f))));
-            //_rotation = glm::lookAt(_position, _focus, vec3(0.0f, 0.0f, 1.0f));//glm::angleAxis(-yaw, vec3(0.0f, 1.0f, 0.0f)) * glm::angleAxis(-pitch, vec3(1.0f, 0.0f, 0.0f));
+            _rotation = glm::angleAxis(-yaw, vec3(0.0f, 1.0f, 0.0f)) * glm::angleAxis(-pitch, vec3(1.0f, 0.0f, 0.0f));
         }
 
         Input::MouseButton button() const { return _button; }

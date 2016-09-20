@@ -50,13 +50,10 @@ namespace frame
 
         Transform* look(const vec3& target, const vec3& up=vec3(0.0f, 1.0f, 0.0f)) {
             if (_translation == target) return this;
-            //_matrix = glm::lookAt(_translation, target, up);
             //
             // TODO: Fix this... it DEFINITELY doesn't work.
             //
-            //_rotation = quat(_matrix);
-            //invalidate(INVERSE | WORLD_MATRIX | WORLD_INVERSE);
-            _rotation = /*glm::conjugate(*/glm::toQuat(glm::lookAt(world_translation(), target, up));//);
+            _rotation = glm::conjugate(glm::quat_cast(glm::lookAt(world_translation(), target, up)));
             invalidate(ALL);
             return this;
         }
@@ -80,7 +77,8 @@ namespace frame
         const mat4& matrix() const {
             if (invalid(MATRIX)) {
                 validate(MATRIX);
-                _matrix = glm::translate(mat4(1.0f), _translation) * glm::scale(glm::mat4_cast(_rotation), _scale);
+                //_matrix = glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
+                _matrix = glm::translate(mat4(1.0f), _translation) * glm::toMat4(_rotation);//glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
             }
             return _matrix;
         }
@@ -88,7 +86,7 @@ namespace frame
         const mat4& inverse() const {
             if (invalid(INVERSE)) {
                 validate(INVERSE);
-                _inverse = glm::inverse(_matrix);
+                _inverse = glm::inverse(matrix());
             }
             return _inverse;
         }

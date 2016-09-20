@@ -28,8 +28,7 @@ namespace frame
 
                 // Update the transform
                 transform->set_translation(manipulate->position());
-                transform->look(manipulate->focus());
-                //transform->set_rotation(manipulate->rotation());
+                transform->set_rotation(manipulate->rotation());
             }
         }
     };
