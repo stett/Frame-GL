@@ -1,11 +1,18 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <memory>
 #include "frame/Resource.h"
 #include "frame_gl/math.h"
 
 namespace frame
 {
+    struct ShaderUniformLocations {
+        int model;
+        int view;
+        int projection;
+    };
+
     /// \class ShaderPart
     /// \brief One part of a full shader program.
     class ShaderPart {
@@ -48,19 +55,27 @@ namespace frame
     public:
         void bind();
         void unbind();
-        void uniform(const char* name, int value);
-        void uniform(const char* name, float value);
-        void uniform(const char* name, const mat4& value);
+
+        const ShaderUniformLocations& uniforms() { return _uniforms; }
+
+        template <typename T>
+        void uniform(const char* name, const T& value)
+        { uniform(locate(name), value); }
+
+        void uniform(int location, int value);
+        void uniform(int location, float value);
+        void uniform(int location, const mat4& value);
+        int locate(const char* name);
 
     private:
         void compile();
         void link();
         const std::string& name() { return _name; }
-        int locate(const char* name);
 
     private:
         std::string _name;
         unsigned int _id;
+        ShaderUniformLocations _uniforms;
 
     public:
         struct Preset {

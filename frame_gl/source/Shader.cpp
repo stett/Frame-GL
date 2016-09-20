@@ -68,6 +68,11 @@ Shader::Shader(const std::string& name, const std::vector< Resource<ShaderPart> 
         return;
     }
 
+    // Find common uniforms
+    _uniforms.model         = locate("model");
+    _uniforms.view          = locate("view");
+    _uniforms.projection    = locate("projection");
+
     // Print success message
     Log::success("Shader program linked: " + std::to_string(_id));
 }
@@ -84,16 +89,16 @@ void Shader::unbind() {
     glUseProgram(0);
 }
 
-void Shader::uniform(const char* uniform_name, int value) {
-    glUniform1i(locate(uniform_name), value);
+void Shader::uniform(int location, int value) {
+    glUniform1i(location, value);
 }
 
-void Shader::uniform(const char* uniform_name, float value) {
-    glUniform1f(locate(uniform_name), value);
+void Shader::uniform(int location, float value) {
+    glUniform1f(location, value);
 }
 
-void Shader::uniform(const char* uniform_name, const mat4& value) {
-    glUniformMatrix4fv(locate(uniform_name), 1, GL_FALSE, glm::value_ptr(value));
+void Shader::uniform(int location, const mat4& value) {
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 int Shader::locate(const char* uniform_name) {

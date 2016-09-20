@@ -25,6 +25,13 @@ namespace frame
                 if (input->mouse_down(manipulate->button()))
                     manipulate->shift(input->mouse_delta(), -10.0f * input->mouse_scroll().y);
                 manipulate->update(dt);
+            }
+        }
+
+        void step_post(float dt) {
+            for (auto manipulator : node<Transform, Manipulate3D>()) {
+                auto transform = manipulator.get<Transform>();
+                auto manipulate = manipulator.get<Manipulate3D>();
 
                 // Update the transform
                 transform->set_translation(manipulate->position());

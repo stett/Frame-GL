@@ -11,7 +11,7 @@ namespace frame
     public:
         Camera(float vertical_fov=120.0f, float aspect_ratio=1.0f, float clip_near=0.1f, float clip_far=2000.0f) :
             _projection_matrix(glm::perspective(vertical_fov, aspect_ratio, clip_near, clip_far)) {}
-        Camera(const vec2& ortho_size, float clip_near=0.0f/*-1000.0f*/, float clip_far=2000.0f) :
+        Camera(const vec2& ortho_size, float clip_near=0.0f, float clip_far=2000.0f) :
             _projection_matrix(glm::ortho(-ortho_size.x * 0.5f, ortho_size.x * 0.5f, -ortho_size.y * 0.5f, ortho_size.y * 0.5f, clip_near, clip_far)) {}
 
     public:

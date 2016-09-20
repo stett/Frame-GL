@@ -40,10 +40,12 @@ namespace frame
             // Bind stuff
             _texture->bind(0);
             _shader->bind();
-            //_shader->uniform("texture", 0);
-            _shader->uniform("model", model);
-            _shader->uniform("view", view);
-            _shader->uniform("projection", projection);
+            //_shader->uniform("model", model);
+            //_shader->uniform("view", view);
+            //_shader->uniform("projection", projection);
+            _shader->uniform(_shader->uniforms().model, model);
+            _shader->uniform(_shader->uniforms().view, view);
+            _shader->uniform(_shader->uniforms().projection, projection);
 
             // Render
             _mesh->render();
