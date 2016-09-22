@@ -79,7 +79,7 @@ namespace frame
             if (invalid(MATRIX)) {
                 validate(MATRIX);
                 //_matrix = glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
-                _matrix = glm::translate(mat4(1.0f), _translation) * glm::toMat4(_rotation);//glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
+                _matrix = glm::scale(glm::translate(mat4(1.0f), _translation) * glm::toMat4(_rotation), _scale);//glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
             }
             return _matrix;
         }
