@@ -451,28 +451,28 @@ Resource<Mesh> Mesh::Factory::cube(float edge, const vec4& color, bool smooth) {
         mesh->add_vertex(vec3(half, half, half), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), color);
 
         // back
-        mesh->add_triangle((0*3)+2, (1*3)+2, (2*3)+2);
+        mesh->add_triangle((0*3)+2, (2*3)+2, (1*3)+2);
         mesh->add_triangle((1*3)+2, (2*3)+2, (3*3)+2);
 
         // bottom
         mesh->add_triangle((0*3)+1, (1*3)+1, (4*3)+1);
-        mesh->add_triangle((1*3)+1, (4*3)+1, (5*3)+1);
+        mesh->add_triangle((1*3)+1, (5*3)+1, (4*3)+1);
 
         // front
         mesh->add_triangle((4*3)+2, (5*3)+2, (6*3)+2);
-        mesh->add_triangle((5*3)+2, (6*3)+2, (7*3)+2);
+        mesh->add_triangle((5*3)+2, (7*3)+2, (6*3)+2);
 
         // top
         mesh->add_triangle((7*3)+1, (3*3)+1, (6*3)+1);
-        mesh->add_triangle((3*3)+1, (6*3)+1, (2*3)+1);
+        mesh->add_triangle((3*3)+1, (2*3)+1, (6*3)+1);
 
         // left
-        mesh->add_triangle(0*3, 2*3, 4*3);
+        mesh->add_triangle(0*3, 4*3, 2*3);
         mesh->add_triangle(2*3, 4*3, 6*3);
 
         // right
         mesh->add_triangle(1*3, 3*3, 5*3);
-        mesh->add_triangle(3*3, 5*3, 7*3);
+        mesh->add_triangle(3*3, 7*3, 5*3);
     }
 
     return mesh;

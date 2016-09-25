@@ -78,8 +78,7 @@ namespace frame
         const mat4& matrix() const {
             if (invalid(MATRIX)) {
                 validate(MATRIX);
-                //_matrix = glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
-                _matrix = glm::scale(glm::translate(mat4(1.0f), _translation) * glm::toMat4(_rotation), _scale);//glm::translate(mat4(1.0f), _translation) * glm::scale(mat4(1.0f), _scale) * glm::mat4_cast(_rotation);
+                _matrix = glm::scale(glm::translate(mat4(1.0f), _translation) * glm::toMat4(_rotation), _scale);
             }
             return _matrix;
         }
@@ -111,7 +110,7 @@ namespace frame
         const vec3& world_translation() const {
             if (invalid(WORLD_TRANSLATION)) {
                 validate(WORLD_TRANSLATION);
-                _world_translation =  world_matrix() * vec4(translation(), 1.0f);
+                _world_translation =  world_matrix() * vec4(vec3(0.0f), 1.0f);
             }
 
             return _world_translation;

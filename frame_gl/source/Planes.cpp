@@ -44,19 +44,6 @@ void Planes::setup() {
             "in float frag_depth;                       "
             "out vec4 pixel_color;                      "
             "void main() {                              "
-            /*
-            "   int base = 5;"
-            "   int power0 = 1;"
-            "   for (float d = min(frag_depth, 1); d > 0.0f; d -= 0.1f) {"
-            "       power0 += base;"
-            "   }"
-            "   float transition = 0;"
-            "   int power1 = power0 * base;"
-            "   vec2 pos = frag_position_world.xz;"
-            "   float gray0 = (int(pos.x * power0) + int(pos.y * power0)) % 2 == 0 ? 0.4 : 0.6;"
-            "   float gray1 = (int(pos.x * power1) + int(pos.y * power1)) % 2 == 0 ? 0.4 : 0.6;"
-            "   pixel_color = vec4(vec3(gray0 * (1 - transition) + gray1 * transition), 1);"
-            */
             "   vec2 pos = frag_position_world.xz;"
             "   if (pos.x < 0) pos.x = 1-pos.x;"
             "   if (pos.y < 0) pos.y = 1-pos.y;"
@@ -78,12 +65,11 @@ void Planes::setup() {
     plane = frame()->entities().add();
     plane->add<Transform>();
     plane->add<MeshRenderer>(
-        //Mesh::Factory::rectangle(),
         mesh,
         Resource<Texture>(ivec2(1)),
         plane_shader,
         MeshRenderer::PolyMode::Fill,
-        false);
+        true);
 }
 
 void Planes::teardown() {
