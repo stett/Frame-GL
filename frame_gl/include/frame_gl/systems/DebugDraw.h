@@ -80,6 +80,7 @@ namespace frame_gl
             }
 
             // Draw it
+            mesh.finalize();
             mesh.render();
         }
 

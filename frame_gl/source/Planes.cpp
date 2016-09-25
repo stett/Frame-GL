@@ -61,6 +61,7 @@ void Planes::setup() {
     mesh->add_vertex(vec3( 0.5f, 0.0f, -0.5f) * 0.5f, normal, vec2(1.0f, 0.0f));
     mesh->add_triangle(0, 1, 2);
     mesh->add_triangle(0, 2, 3);
+    mesh->finalize();
 
     plane = frame()->entities().add();
     plane->add<Transform>();

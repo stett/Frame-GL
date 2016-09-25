@@ -20,7 +20,7 @@ Mesh::Mesh() : vao(0), vbo_positions(0), vbo_normals(0), vbo_uvs(0), vbo_colors(
     if (glfwGetCurrentContext() == 0)
         Log::error("Can't create a mesh outside of an OpenGL context!");
 
-    build_gl_objects();
+    finalize();
 }
 
 Mesh::~Mesh() { release_gl_objects(); }
@@ -67,12 +67,10 @@ void Mesh::add_vertex(const vec3& position, const vec3& normal, const vec2& uv, 
 
 void Mesh::add_triangle(const ivec3& indices) {
     triangles.push_back(indices);
-    build_gl_objects();
 }
 
 void Mesh::add_line(const ivec2& indices) {
     lines.push_back(indices);
-    build_gl_objects();
 }
 
 void Mesh::load_obj_str(const std::string& obj, bool _normalize, bool _center) {
@@ -178,10 +176,10 @@ void Mesh::load_obj_str(const std::string& obj, bool _normalize, bool _center) {
             pos = (pos + shift) * scale;
     }
 
-    build_gl_objects();
+    finalize();
 }
 
-void Mesh::build_gl_objects() {
+void Mesh::finalize() {
 
     // Release the old GL objects if there are any
     release_gl_objects();
@@ -301,6 +299,7 @@ Resource<Mesh> Mesh::Factory::combine(const std::vector< Resource<Mesh> >& meshe
         for (auto triangle : mesh->triangles)
             combined->add_triangle(triangle + ivec3(offset));
     }
+    combined->finalize();
     return combined;
 }
 
@@ -313,6 +312,7 @@ Resource<Mesh> Mesh::Factory::rectangle(const vec2& size, const vec3& center) {
     mesh->add_vertex(center + vec3( size.x, -size.y, 0.0f) * 0.5f, normal, vec2(1.0f, 0.0f));
     mesh->add_triangle(0, 1, 2);
     mesh->add_triangle(0, 2, 3);
+    mesh->finalize();
     return mesh;
 }
 
@@ -334,6 +334,8 @@ Resource<Mesh> Mesh::Factory::circle(float radius, const vec3& center, float ver
     // Build the indices
     for (std::size_t index = 2; index < count; ++index)
         mesh->add_triangle(0, index - 1, index);
+
+    mesh->finalize();
 
     return mesh;
 }
@@ -362,7 +364,7 @@ Resource<Mesh> Mesh::Factory::arrow(const vec3& base, const vec3& tip, const vec
     mesh->add_triangle(0, 2, 2);
     mesh->add_triangle(1, 3, 4);
     mesh->add_triangle(1, 5, 6);
-
+    mesh->finalize();
     return mesh;
 }
 
@@ -475,6 +477,8 @@ Resource<Mesh> Mesh::Factory::cube(float edge, const vec4& color, bool smooth) {
         mesh->add_triangle(3*3, 7*3, 5*3);
     }
 
+    mesh->finalize();
+
     return mesh;
 }
 
@@ -492,6 +496,7 @@ Resource<Mesh> Mesh::Factory::quad(const vec2& size, const vec3& normal, const v
     mesh->add_vertex(vec3(half.x, -half.y, 0.0f), vec3(0.0f), vec3(0.0f), color);
     mesh->add_triangle(2, 1, 0);
     mesh->add_triangle(1, 2, 3);
+    mesh->finalize();
     return mesh;
 }
 
@@ -580,6 +585,7 @@ Resource<Mesh> Mesh::Factory::sphere(float radius, int recursion, const vec4& co
 
     delete faces;
 
+    mesh->finalize();
     return mesh;
 }
 

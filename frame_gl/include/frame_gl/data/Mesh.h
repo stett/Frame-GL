@@ -29,7 +29,7 @@ namespace frame
         void add_line(int a, int b) { add_line(ivec2(a, b)); }
         std::size_t num_vertices() { return positions.size(); }
         void load_obj_str(const std::string& obj, bool normalize=false, bool center=false);
-        void build_gl_objects();
+        void finalize();
 
     private:
         void release_gl_objects();

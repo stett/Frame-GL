@@ -97,6 +97,7 @@ void Window::setup() {
     mesh->add_position(vec3( 1.0f, -1.0f, 0.0f)); mesh->add_uv(vec2(1.0f, 0.0f));
     mesh->add_triangle(0, 1, 2);
     mesh->add_triangle(0, 2, 3);
+    mesh->finalize();
 
     // Build the final phase shader
     shader = new Shader(
