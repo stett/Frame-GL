@@ -78,7 +78,7 @@ namespace frame
         const mat4& matrix() const {
             if (invalid(MATRIX)) {
                 validate(MATRIX);
-                _matrix = glm::scale(glm::translate(mat4(1.0f), _translation) * glm::toMat4(_rotation), _scale);
+                _matrix = glm::scale(glm::translate(mat4(1.0f), _translation) * _rotation.matrix(), _scale);
             }
             return _matrix;
         }

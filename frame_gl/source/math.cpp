@@ -18,7 +18,7 @@ quat frame::rotation_between(const vec3& u, const vec3& v) {
     if (k_cos_theta / k == -1)
         return quat(0, normalize(orthogonal(u)));
 
-    return normalize(quat(k_cos_theta + k, cross(u, v)));
+    return quat(k_cos_theta + k, cross(u, v)).normalize();
 }
 
 void frame::homogeneous_to_world(vec3 &world, const vec3 &homogeneous, const mat4 &projection, const mat4 &view)

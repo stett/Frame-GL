@@ -3,6 +3,7 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/norm.hpp"
 #include "glm/gtx/hash.hpp"
+#include "frame_gl/quat.h"
 
 namespace frame
 {
@@ -30,7 +31,7 @@ namespace frame
     using glm::sin;
 
     // GTC
-    typedef glm::quat quat;
+    //typedef glm::quat quat;
 
     // GTX
     using glm::length2;
