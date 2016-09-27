@@ -86,6 +86,10 @@ void Shader::bind() {
 }
 
 void Shader::unbind() {
+    unbind_all();
+}
+
+void Shader::unbind_all() {
     glUseProgram(0);
 }
 

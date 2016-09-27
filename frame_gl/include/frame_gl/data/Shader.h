@@ -55,6 +55,7 @@ namespace frame
     public:
         void bind();
         void unbind();
+        static void unbind_all();
 
         const ShaderUniformLocations& uniforms() { return _uniforms; }
 
