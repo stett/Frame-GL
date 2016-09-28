@@ -65,6 +65,8 @@ namespace frame
 
         void uniform(int location, int value);
         void uniform(int location, float value);
+        void uniform(int location, const vec3& value);
+        void uniform(int location, const vec4& value);
         void uniform(int location, const mat4& value);
         int locate(const char* name);
 

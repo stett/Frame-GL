@@ -29,7 +29,45 @@ namespace frame_gl
 
             text_shader = new Shader(
                 "Debug Text Shader",
-                Shader::Preset::vert_standard(),
+
+                Resource<ShaderPart>(ShaderPart::Type::Vertex,
+                    "#version 330\n                                                 "
+                    "layout(location = 0)in vec3 vert_position;                     "
+                    //"layout(location = 1)in vec3 vert_normal;                       "
+                    //"layout(location = 2)in vec2 vert_uv;                           "
+                    //"layout(location = 3)in vec4 vert_color;                        "
+                    "uniform mat4 model;                                            "
+                    "uniform mat4 view;                                             "
+                    "uniform mat4 projection;                                       "
+                    "out vec4 geom_position;                                        "
+                    //"out vec3 frag_normal;                                          "
+                    //"out vec2 frag_uv;                                              "
+                    //"out vec4 frag_color;                                           "
+                    "void main() {                                                  "
+                    "    mat4 transform = projection * view * model;                "
+                    "    geom_position  = transform * vec4(vert_position, 1.0);     "
+                    //"    frag_normal    = vert_normal * inverse(mat3(model));       "
+                    //"    frag_uv        = vert_uv;                                  "
+                    //"    frag_color     = vert_color;                               "
+                    "    gl_Position    = geom_position;                            "
+                    "}                                                              "
+                ),
+
+                Resource<ShaderPart>(ShaderPart::Geometry,
+                    "#version 330\n"
+                    "layout(lines) in;"
+                    "layout(line_strip, max_vertices = 16) out;"
+                    "in vec4 geom_positions[2];"
+                    "void main() {"
+                    "   gl_Position = geom_positions[0];"
+                    "   EmitVertex();"
+                    "   gl_Position = geom_positions[1];"
+                    "   EmitVertex();"
+                    "   EndPrimitive();"
+                    "}"
+                ),
+
+                /*
                 Resource<ShaderPart>(ShaderPart::Geometry,
                     "#version 330\n                                     "
                     "layout(lines) in;                                  "
@@ -37,20 +75,18 @@ namespace frame_gl
                     "uniform mat4 model;                                            "
                     "uniform mat4 view;                                             "
                     "uniform mat4 projection;                                       "
-                    //"uniform float character_number;                                  "
-                    "in vec4 frag_position[];                           "
+                    "uniform int character_number;                                  "
+                    "in vec4 geom_position[2];                           "
                     "void main() {                                      "
-                    "   float size = 0.1f;"
-
+                    "   float size = 0.05f;"
                     "   mat4 transform = projection * view * model;                "
                     "   mat4 trans_inv = inverse(transform);           "
                     "   mat4 view_inv = inverse(view);"
                     "   mat4 proj_inv = inverse(projection);"
-                    "   float scale = frag_position[0].w * size;"
-                    //"   vec4 pos = frag_position[0] + vec4(character_number * scale, 0, 0, 0);"
-                    "   vec4 pos = frag_position[0];"
+                    "   float scale = geom_position[0].w * size;"
+                    "   vec4 pos = vec4(character_number, 0, 0, 0) + geom_position[0];"
 
-                    "   /* A */                                         "
+                    "   // A                                            "
                     "   gl_Position = pos;                 "
                     "   EmitVertex();                                   "
                     "   gl_Position = pos + vec4(.5, 1, 0, 0) * scale;"
@@ -63,53 +99,17 @@ namespace frame_gl
                     "   EmitVertex();                                   "
                     "   EndPrimitive();                                 "
                     "}                                                  "
-                ),
-                Shader::Preset::frag_white());
-
-            /*
-            text_shader = new Shader(
-                "Debug Text Shader",
-
-                Resource<ShaderPart>(ShaderPart::Type::Vertex,
-                    "#version 330\n                                                 "
-                    "layout(location = 0)in vec3 vert_position;                     "
-                    "layout(location = 1)in vec3 vert_normal;                       "
-                    "uniform mat4 model;                                            "
-                    "uniform mat4 view;                                             "
-                    "uniform mat4 projection;                                       "
-                    "out vec3 geom_normal;                                          "
-                    "out vec3 geom_position;                                        "
-                    "void main() {                                                  "
-                    "   geom_position = vert_position;                              "
-                    "   geom_normal = vert_normal;                                  "
-                    "}                                                              "
-                ),
-
-                Resource<ShaderPart>(ShaderPart::Type::Geometry,
-                    "#version 330\n                                             "
-                    "layout(points) in;                                         "
-                    "layout(points, max_vertices = 256) out;                    "
-                    "uniform mat4 model;                                        "
-                    "uniform mat4 view;                                         "
-                    "uniform mat4 projection;                                   "
-                    //"uniform int characters[256];                               "
-                    "in vec4 geom_position;                                     "
-                    "                                                           "
-                    "void main() {                                              "
-                    "   for (int i = 0; i < 256; ++i) {                         "
-                    "       gl_Position = geom_position + vec4(2*i, 0, 0, 0);   "
-                    "       EmitVertex();                                       "
-                    "       gl_Position = geom_position + vec4(2*i+1, 0, 0, 0); "
-                    "       EmitVertex();                                       "
-                    "   }                                                       "
-                    "}                                                          "
-                    "EndPrimitive();                                            "
-                    "                                                           "
                     ),
-                Shader::Preset::frag_white());
-                */
+                    */
 
-            //text_shader_character = text_shader.locate("character");
+                Resource<ShaderPart>(ShaderPart::Type::Fragment,
+                    "#version 330\n                 "
+                    "out vec4 pixel_color;          "
+                    "void main() {                  "
+                    "    pixel_color = vec4(1, 0, 0, 1);"
+                    "}                              "
+                )
+            );
         }
 
         void teardown() {
@@ -119,36 +119,30 @@ namespace frame_gl
 
         void step(float dt) {
 
+            // Bind the render target
             Camera* camera = render->display_camera();
             camera->bind_target();
 
-            // Bind the shape shader
-            shape_shader->bind();
-            shape_shader->uniform(shape_shader->uniforms().view, camera->view_matrix());
-            shape_shader->uniform(shape_shader->uniforms().projection, camera->projection_matrix());
-
-            // Draw lines
-            render_lines();
-
-            // Draw cubes
-            render_cubes();
-
-            // Bind the text shader
-            text_shader->bind();
-            text_shader->uniform(shape_shader->uniforms().view, camera->view_matrix());
-            text_shader->uniform(shape_shader->uniforms().projection, camera->projection_matrix());
-
-            // Draw text
-            render_text();
+            // Draw shit
+            render_lines(camera);
+            render_cubes(camera);
+            render_text(camera);
 
             // Tear down
-            Shader::unbind_all();
             camera->unbind_target();
         }
 
     private:
 
-        void render_lines() {
+        void render_lines(Camera* camera) {
+
+            if (lines.empty())
+                return;
+
+            // Bind the shape shader
+            shape_shader->bind();
+            shape_shader->uniform(shape_shader->uniforms().view, camera->view_matrix());
+            shape_shader->uniform(shape_shader->uniforms().projection, camera->projection_matrix());
 
             // Just need one model matrix
             shape_shader->uniform(shape_shader->uniforms().model, glm::mat4(1.0f));
@@ -174,9 +168,20 @@ namespace frame_gl
             // Draw it
             mesh.finalize();
             mesh.render();
+
+            shape_shader->unbind();
         }
 
-        void render_cubes() {
+        void render_cubes(Camera* camera) {
+
+            if (cubes.empty())
+                return;
+
+            // Bind the shape shader
+            shape_shader->bind();
+            shape_shader->uniform(shape_shader->uniforms().view, camera->view_matrix());
+            shape_shader->uniform(shape_shader->uniforms().projection, camera->projection_matrix());
+
             Resource<Mesh> mesh = Mesh::Factory::cube(1.0f);
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -187,32 +192,58 @@ namespace frame_gl
                 mesh->render();
                 cubes.pop();
             }
+
+            shape_shader->unbind();
         }
 
-        void render_text() {
+        void render_text(Camera* camera) {
+
+            if (strings.empty())
+                return;
+
+            // Bind the text shader
+            text_shader->bind();
+            text_shader->uniform(shape_shader->uniforms().view, camera->view_matrix());
+            text_shader->uniform(shape_shader->uniforms().projection, camera->projection_matrix());
+
+            /*
+            int view_loc = text_shader->locate("view");
+            int model_loc = text_shader->locate("model");
+            int projection_loc = text_shader->locate("projection");
+            */
+
+            //int character_number_location = text_shader->locate("character_number");
+            //text_shader->uniform(character_number_location, 0);
+
             Mesh mesh;
 
             mesh.add_position(vec3(0.0f));
-            mesh.add_position(vec3(0.0f));
-            mesh.add_line(0, 0);
-
+            mesh.add_position(vec3(1.0f));
+            mesh.add_line(0, 1);
             mesh.finalize();
+
+            //int uniform_character_number = text_shader->locate("character_number");
+            //text_shader->uniform(uniform_character_number, 0);
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
             glDisable(GL_CULL_FACE);
             glLineWidth(1.0f);
+
             while (!strings.empty()) {
                 glm::mat4 model = glm::translate(glm::mat4(1.0f), strings.front().first);
                 text_shader->uniform(text_shader->uniforms().model, model);
 
                 int i = 0;
-                //for (char c : strings.front().second) {
-                    //text_shader->uniform<float>("character_number", 0.0f);
+                for (char c : strings.front().second) {
+                    //text_shader->uniform(uniform_character_number, i++);
+                    //text_shader->uniform("character_color", vec3(1, 0, 0));
                     mesh.render();
-                //}
+                }
 
                 strings.pop();
             }
+
+            text_shader->unbind();
         }
 
     public:

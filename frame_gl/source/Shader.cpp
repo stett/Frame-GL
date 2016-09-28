@@ -63,18 +63,23 @@ Shader::Shader(const std::string& name, const std::vector< Resource<ShaderPart> 
         glGetProgramiv(_id, GL_INFO_LOG_LENGTH, &length);
         char* buffer = new char[length];
         glGetProgramInfoLog(_id, length, 0, buffer);
-        Log::error("Shader program failed to link:\n" + std::string(buffer));
+        Log::error("Shader program failed to link: " + name + "\n" + std::string(buffer));
         delete[] buffer;
         return;
     }
+
+    // Use the program
+    glUseProgram(_id);
 
     // Find common uniforms
     _uniforms.model         = locate("model");
     _uniforms.view          = locate("view");
     _uniforms.projection    = locate("projection");
 
+    glUseProgram(0);
+
     // Print success message
-    Log::success("Shader program linked: " + std::to_string(_id));
+    Log::success("Shader program linked: " + name + " (" + std::to_string(_id) + ")");
 }
 
 Shader::~Shader() {
@@ -95,14 +100,27 @@ void Shader::unbind_all() {
 
 void Shader::uniform(int location, int value) {
     glUniform1i(location, value);
+    gl_check();
 }
 
 void Shader::uniform(int location, float value) {
     glUniform1f(location, value);
+    gl_check();
+}
+
+void Shader::uniform(int location, const vec3& value) {
+    glUniform3fv(location, 1, glm::value_ptr(value));
+    gl_check();
+}
+
+void Shader::uniform(int location, const vec4& value) {
+    glUniform4fv(location, 1, glm::value_ptr(value));
+    gl_check();
 }
 
 void Shader::uniform(int location, const mat4& value) {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    gl_check();
 }
 
 int Shader::locate(const char* uniform_name) {
