@@ -53,54 +53,28 @@ namespace frame_gl
                     "}                                                              "
                 ),
 
-                Resource<ShaderPart>(ShaderPart::Geometry,
+                Resource<ShaderPart>(ShaderPart::Type::Geometry,
                     "#version 330\n"
                     "layout(lines) in;"
                     "layout(line_strip, max_vertices = 16) out;"
-                    "in vec4 geom_positions[2];"
+                    "in vec4 geom_position[2];"
                     "void main() {"
-                    "   gl_Position = geom_positions[0];"
+                    "   float size = 0.05f;"
+                    "   float scale = geom_position[0].w * size;"
+                    "   vec4 pos = geom_position[0];"
+                    "   gl_Position = pos;"
                     "   EmitVertex();"
-                    "   gl_Position = geom_positions[1];"
+                    "   gl_Position = pos + vec4(.5, 1, 0, 0) * scale;"
+                    "   EmitVertex();"
+                    "   gl_Position = pos + vec4(1, 0, 0, 0) * scale;"
+                    "   EmitVertex();"
+                    "   gl_Position = pos + vec4(.75, .5, 0, 0) * scale;"
+                    "   EmitVertex();"
+                    "   gl_Position = pos + vec4(.25, .5, 0, 0) * scale;"
                     "   EmitVertex();"
                     "   EndPrimitive();"
                     "}"
                 ),
-
-                /*
-                Resource<ShaderPart>(ShaderPart::Geometry,
-                    "#version 330\n                                     "
-                    "layout(lines) in;                                  "
-                    "layout(line_strip, max_vertices = 16) out;         "
-                    "uniform mat4 model;                                            "
-                    "uniform mat4 view;                                             "
-                    "uniform mat4 projection;                                       "
-                    "uniform int character_number;                                  "
-                    "in vec4 geom_position[2];                           "
-                    "void main() {                                      "
-                    "   float size = 0.05f;"
-                    "   mat4 transform = projection * view * model;                "
-                    "   mat4 trans_inv = inverse(transform);           "
-                    "   mat4 view_inv = inverse(view);"
-                    "   mat4 proj_inv = inverse(projection);"
-                    "   float scale = geom_position[0].w * size;"
-                    "   vec4 pos = vec4(character_number, 0, 0, 0) + geom_position[0];"
-
-                    "   // A                                            "
-                    "   gl_Position = pos;                 "
-                    "   EmitVertex();                                   "
-                    "   gl_Position = pos + vec4(.5, 1, 0, 0) * scale;"
-                    "   EmitVertex();                                   "
-                    "   gl_Position = pos + vec4(1, 0, 0, 0) * scale;"
-                    "   EmitVertex();                                   "
-                    "   gl_Position = pos + vec4(.75, 0.5, 0, 0) * scale;"
-                    "   EmitVertex();                                   "
-                    "   gl_Position = pos + vec4(.25, 0.5, 0, 0) * scale;"
-                    "   EmitVertex();                                   "
-                    "   EndPrimitive();                                 "
-                    "}                                                  "
-                    ),
-                    */
 
                 Resource<ShaderPart>(ShaderPart::Type::Fragment,
                     "#version 330\n                 "
