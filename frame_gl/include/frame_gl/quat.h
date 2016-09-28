@@ -53,6 +53,12 @@ namespace frame
             return *this;
         }
 
+		quat_t& operator*=(float c) {
+			s *= c;
+			v *= c;
+			return *this;
+		}
+
     public:
         void from_euler(const glm::tvec3<T> angles) {
             float c1 = cos(angles.x/2);
@@ -67,16 +73,26 @@ namespace frame
             v.z = c1*c2*s3 - s1*s2*c3;
         }
 
-		quat_t& normalize() {
-			T m_inv = 1.0f / magnitude();
-			s *= m_inv;
-			v *= m_inv;
-			return *this;
-		}
+        quat_t& normalize() {
+            T m_inv = 1.0f / magnitude();
+            s *= m_inv;
+            v *= m_inv;
+            return *this;
+        }
+
+        quat_t& conjugate() {
+            v *= -1.0f;
+            return *this;
+        }
 
         quat_t normalized() const {
-			quat_t q(*this);
-			return q.normalize();
+            quat_t q(*this);
+            return q.normalize();
+        }
+
+        quat_t conjugated() const {
+            quat_t q(*this);
+            return q.conjugate();
         }
 
         T magnitude() const {
@@ -122,12 +138,6 @@ namespace frame
             return m;
         }
 
-        // Convert to GLM quaternion
-        // TODO: Remove this!!
-        //operator glm::quat() {
-        //    return glm::quat(s, v.x, v.y, v.z);
-        //}
-
     public:
         T s;
         vtype v;
@@ -153,6 +163,15 @@ namespace frame
         return a *= b;
     }
 
+	template <typename T>
+	quat_t<T> operator*(quat_t<T> q, T c) {
+		return q *= c;
+	}
+
+    template <typename T>
+    T angle_diff(quat_t<T> a, const quat_t<T>& b) {
+        return (T)2.0 * (T)acos(operator*(a.conjugate(), b).s);
+    }
 
     // Specialized quaternion types
     typedef quat_t<float> quat;
