@@ -6,11 +6,7 @@
 
 namespace frame
 {
-    void _gl_check(char* file, int line, char* error);
-    /*{
-        std::string error_string = std::string(error);
-        Log::error("OpenGL error (in file " + std::string(file) + " at line " + std::to_string(line) + "): " + error_string);
-    }*/
+    void _gl_check(char* file, int line, const std::string& error);
 }
 
 #if FRAME_LOG
@@ -19,7 +15,7 @@ namespace frame
     if (err != GL_NO_ERROR) {                   \
         frame::_gl_check(                       \
             __FILE__, __LINE__,                 \
-            (char*)glewGetErrorString(err));    \
+            std::string((char*)glewGetErrorString(err)));\
     }                                           \
 }
 #else

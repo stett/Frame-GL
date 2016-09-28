@@ -72,9 +72,9 @@ Shader::Shader(const std::string& name, const std::vector< Resource<ShaderPart> 
     glUseProgram(_id);
 
     // Find common uniforms
-    _uniforms.model         = locate("model");
-    _uniforms.view          = locate("view");
-    _uniforms.projection    = locate("projection");
+    _uniforms.model         = glGetUniformLocation(_id, "model");
+    _uniforms.view          = glGetUniformLocation(_id, "view");
+    _uniforms.projection    = glGetUniformLocation(_id, "projection");
 
     glUseProgram(0);
 
@@ -123,10 +123,24 @@ void Shader::uniform(int location, const mat4& value) {
     gl_check();
 }
 
+void Shader::uniform(ShaderUniform location, const mat4& value) {
+    //
+    // TODO: This is horrible. Stupid using both enums
+    //       and nasty, reducible switch statements.
+    //
+    if (location == Model)              uniform(uniforms().model, value);
+    else if (location == View)          uniform(uniforms().view, value);
+    else if (location == Projection)    uniform(uniforms().projection, value);
+}
+
 int Shader::locate(const char* uniform_name) {
+
+	glUseProgram(_id);
+
     int location = glGetUniformLocation(_id, uniform_name);
     if (location == -1)
         Log::warning("Uniform \"" + std::string(uniform_name) + "\" not found in shader \"" + _name + "\"");
+
     return location;
 }
 

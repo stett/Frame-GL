@@ -7,6 +7,12 @@
 
 namespace frame
 {
+	enum ShaderUniform {
+		Model = 0,
+		View,
+		Projection
+	};
+
     struct ShaderUniformLocations {
         int model;
         int view;
@@ -68,7 +74,10 @@ namespace frame
         void uniform(int location, const vec3& value);
         void uniform(int location, const vec4& value);
         void uniform(int location, const mat4& value);
+        void uniform(ShaderUniform location, const mat4& value);
         int locate(const char* name);
+
+        unsigned int id() { return _id; }
 
     private:
         void compile();
