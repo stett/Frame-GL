@@ -53,11 +53,11 @@ namespace frame
             return *this;
         }
 
-		quat_t& operator*=(float c) {
-			s *= c;
-			v *= c;
-			return *this;
-		}
+        quat_t& operator*=(float c) {
+            s *= c;
+            v *= c;
+            return *this;
+        }
 
     public:
         void from_euler(const glm::tvec3<T> angles) {
@@ -163,10 +163,10 @@ namespace frame
         return a *= b;
     }
 
-	template <typename T>
-	quat_t<T> operator*(quat_t<T> q, T c) {
-		return q *= c;
-	}
+    template <typename T>
+    quat_t<T> operator*(quat_t<T> q, T c) {
+        return q *= c;
+    }
 
     template <typename T>
     T angle_diff(quat_t<T> a, const quat_t<T>& b) {

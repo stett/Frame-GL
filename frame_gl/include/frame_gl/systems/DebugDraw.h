@@ -529,7 +529,7 @@ namespace frame_gl
 
         void render_text(Camera* camera) {
 
-            if (strings.empty())
+            if (world_strings.empty() && screen_strings.empty())
                 return;
 
             // Find the uniforms we'll be tweaking
@@ -540,8 +540,6 @@ namespace frame_gl
 
             // Bind the text shader
             text_shader->bind();
-            text_shader->uniform(ShaderUniform::View, camera->view_matrix());
-            text_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
             Mesh mesh;
             mesh.add_position(vec3(0.0f));
@@ -553,21 +551,38 @@ namespace frame_gl
             glDisable(GL_CULL_FACE);
             glLineWidth(1.0f);
 
-            while (!strings.empty()) {
-
-                const TextLine& line = strings.front();
+            // Set up for world-space strings
+            text_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            text_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            while (!world_strings.empty()) {
+                const TextLine& line = world_strings.front();
                 text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position));
                 text_shader->uniform(character_size, line.size);
                 text_shader->uniform(character_color, line.color);
-
                 int i = 0;
                 for (char c : line.text) {
                     text_shader->uniform(character_number, i++);
                     text_shader->uniform(character_code, (int)c);
                     mesh.render();
                 }
+                world_strings.pop();
+            }
 
-                strings.pop();
+            // Set up for screen-space strings
+            text_shader->uniform(ShaderUniform::View, glm::mat4(1.0f));//camera->view_matrix());
+            text_shader->uniform(ShaderUniform::Projection, glm::mat4(1.0f));//camera->projection_matrix());
+            while (!screen_strings.empty()) {
+                const TextLine& line = screen_strings.front();
+                text_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));//glm::translate(glm::mat4(1.0f), line.position));
+                text_shader->uniform(character_size, 100.0f);//line.size);
+                text_shader->uniform(character_color, line.color);
+                int i = 0;
+                for (char c : line.text) {
+                    text_shader->uniform(character_number, i++);
+                    text_shader->uniform(character_code, (int)c);
+                    mesh.render();
+                }
+                screen_strings.pop();
             }
 
             text_shader->unbind();
@@ -588,7 +603,11 @@ namespace frame_gl
         }
 
         void text(const glm::vec3& position, const std::string& text, const glm::vec3& color=glm::vec3(1.0f), float size=0.025f) {
-            strings.push(TextLine(position, text, color, size));
+            world_strings.push(TextLine(position, text, color, size));
+        }
+
+        void text(const glm::vec2& position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size = 0.025f) {
+            screen_strings.push(TextLine(glm::vec3(position, 0.0f), text, color, size));
         }
 
     private:
@@ -598,6 +617,7 @@ namespace frame_gl
         int text_shader_characters;
         std::queue< std::pair< glm::vec3, glm::vec3 > > lines;
         std::queue< glm::mat4 > cubes;
-        std::queue< TextLine > strings;
+        std::queue< TextLine > world_strings;
+        std::queue< TextLine > screen_strings;
     };
 }
