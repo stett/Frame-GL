@@ -22,6 +22,7 @@ namespace frame
         void add_position(const vec3& position);
         void add_uv(const vec2& uv);
         void add_normal(const vec3& normal);
+        void add_color(const vec4& color);
         void add_vertex(const vec3& position, const vec3& normal=vec3(0.0f), const vec2& uv=vec2(0.0f), const vec4& color=vec4(1.0f));
         void add_triangle(const ivec3& indices);
         void add_triangle(int a, int b, int c) { add_triangle(ivec3(a, b, c)); }

@@ -9,11 +9,19 @@
 #include "frame_gl/data/Shader.h"
 #include "frame_gl/math.h"
 #include "glm/gtc/matrix_transform.hpp"
+using namespace frame;
 
 namespace
 {
-    struct TextLine {
-        TextLine(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size)
+    struct Line {
+        Line(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color, float thickness = 1.0f)
+        : a(a), b(b), color(color), thickness(thickness) {}
+        glm::vec3 a, b, color;
+        float thickness;
+    };
+
+    struct String {
+        String(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size)
         : position(position), text(text), color(color), size(size) {}
         glm::vec3 position;
         std::string text;
@@ -38,6 +46,11 @@ namespace frame_gl
                 "Debug Shape Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_normals());
+
+            line_shader = new Shader(
+                "Debug Line Shader",
+                Shader::Preset::vert_standard(),
+                Shader::Preset::frag_colors());
 
             text_shader = new Shader(
                 "Debug Text Shader",
@@ -73,7 +86,7 @@ namespace frame_gl
                     "   }"
 
                     // 0
-                    "   else if (character_code == 48 || character_code == 48+32) {"
+                    "   else if (character_code == 48) {"
                     "       gl_Position = pos + vec4(.25, .1, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .9, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.35, 1, 0, 0) * scale;     EmitVertex();"
@@ -88,7 +101,7 @@ namespace frame_gl
                     "   }"
 
                     // 1
-                    "   else if (character_code == 49 || character_code == 49+32) {"
+                    "   else if (character_code == 49) {"
                     "       gl_Position = pos + vec4(.35, 0, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.65, 0, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.5, 0, 0, 0) * scale;    EmitVertex();"
@@ -97,7 +110,7 @@ namespace frame_gl
                     "   }"
 
                     // 2
-                    "   else if (character_code == 50 || character_code == 50+32) {"
+                    "   else if (character_code == 50) {"
                     "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .25, 0, 0) * scale;    EmitVertex();"
@@ -110,7 +123,7 @@ namespace frame_gl
                     "   }"
 
                     // 3
-                    "   else if (character_code == 51 || character_code == 51+32) {"
+                    "   else if (character_code == 51) {"
                     "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.65, 1, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .9, 0, 0) * scale;    EmitVertex();"
@@ -125,16 +138,64 @@ namespace frame_gl
                     "   }"
 
                     // 4
+                    "   else if (character_code == 52) {"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .5, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
+                    "   }"
 
                     // 5
+                    "   else if (character_code == 53) {"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .75, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, .65, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .55, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.35, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .1, 0, 0) * scale;    EmitVertex();"
+                    "   }"
 
                     // 6
+                    "   else if (character_code == 54) {"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .4, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .4, 0, 0) * scale;    EmitVertex();"
+                    "   }"
 
                     // 7
+                    "   else if (character_code == 55) {"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
+                    "   }"
 
                     // 8
+                    "   else if (character_code == 56) {"
+                    "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .5, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "   }"
 
                     // 9
+                    "   else if (character_code == 57) {"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .6, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .6, 0, 0) * scale;    EmitVertex();"
+                    "   }"
 
                     // A
                     "   else if (character_code == 65 || character_code == 65+32) {"
@@ -471,26 +532,26 @@ namespace frame_gl
                 return;
 
             // Bind the shape shader
-            shape_shader->bind();
-            shape_shader->uniform(ShaderUniform::View, camera->view_matrix());
-            shape_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            line_shader->bind();
+            line_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            line_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
             // Just need one model matrix
-            shape_shader->uniform(shape_shader->uniforms().model, glm::mat4(1.0f));
+            line_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDisable(GL_CULL_FACE);
-            glLineWidth(2.0f);
+            glLineWidth(1.0f);
 
             // Build a mesh with a bunch of lines
             Mesh mesh;
             int mesh_indices = 0;
             while (!lines.empty()) {
                 auto& line = lines.front();
-                mesh.add_position(line.first);
-                mesh.add_position(line.second);
-                mesh.add_normal(glm::vec3(1.0f));
-                mesh.add_normal(glm::vec3(1.0f));
+                mesh.add_position(line.a);
+                mesh.add_position(line.b);
+                mesh.add_color(vec4(line.color, 1.0f));
+                mesh.add_color(vec4(line.color, 1.0f));
                 mesh.add_line(mesh_indices, mesh_indices+1);
                 mesh_indices += 2;
                 lines.pop();
@@ -500,7 +561,7 @@ namespace frame_gl
             mesh.finalize();
             mesh.render();
 
-            shape_shader->unbind();
+            line_shader->unbind();
         }
 
         void render_cubes(Camera* camera) {
@@ -510,8 +571,8 @@ namespace frame_gl
 
             // Bind the shape shader
             shape_shader->bind();
-            shape_shader->uniform(shape_shader->uniforms().view, camera->view_matrix());
-            shape_shader->uniform(shape_shader->uniforms().projection, camera->projection_matrix());
+            shape_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            shape_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
             Resource<Mesh> mesh = Mesh::Factory::cube(1.0f);
 
@@ -519,7 +580,7 @@ namespace frame_gl
             glEnable(GL_CULL_FACE);
 
             while (!cubes.empty()) {
-                shape_shader->uniform(shape_shader->uniforms().model, cubes.front());
+                shape_shader->uniform(ShaderUniform::Model, cubes.front());
                 mesh->render();
                 cubes.pop();
             }
@@ -555,7 +616,7 @@ namespace frame_gl
             text_shader->uniform(ShaderUniform::View, camera->view_matrix());
             text_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
             while (!world_strings.empty()) {
-                const TextLine& line = world_strings.front();
+                const String& line = world_strings.front();
                 text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position));
                 text_shader->uniform(character_size, line.size);
                 text_shader->uniform(character_color, line.color);
@@ -572,7 +633,7 @@ namespace frame_gl
             text_shader->uniform(ShaderUniform::View, glm::mat4(1.0f));//camera->view_matrix());
             text_shader->uniform(ShaderUniform::Projection, glm::mat4(1.0f));//camera->projection_matrix());
             while (!screen_strings.empty()) {
-                const TextLine& line = screen_strings.front();
+                const String& line = screen_strings.front();
                 text_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));//glm::translate(glm::mat4(1.0f), line.position));
                 text_shader->uniform(character_size, 100.0f);//line.size);
                 text_shader->uniform(character_color, line.color);
@@ -590,8 +651,8 @@ namespace frame_gl
 
     public:
 
-        void line(const glm::vec3& p0, const glm::vec3& p1) {
-            lines.push(std::make_pair(p0, p1));
+        void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& color=glm::vec3(1.0f), float thickness=1.0f) {
+            lines.push(Line(p0, p1, color, thickness));
         }
 
         void cube(const glm::vec3& point, float scale=1.0f) {
@@ -603,21 +664,22 @@ namespace frame_gl
         }
 
         void text(const glm::vec3& position, const std::string& text, const glm::vec3& color=glm::vec3(1.0f), float size=0.025f) {
-            world_strings.push(TextLine(position, text, color, size));
+            world_strings.push(String(position, text, color, size));
         }
 
         void text(const glm::vec2& position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size = 0.025f) {
-            screen_strings.push(TextLine(glm::vec3(position, 0.0f), text, color, size));
+            screen_strings.push(String(glm::vec3(position, 0.0f), text, color, size));
         }
 
     private:
         Render* render;
+        Shader* line_shader;
         Shader* shape_shader;
         Shader* text_shader;
         int text_shader_characters;
-        std::queue< std::pair< glm::vec3, glm::vec3 > > lines;
+        std::queue< Line > lines;
         std::queue< glm::mat4 > cubes;
-        std::queue< TextLine > world_strings;
-        std::queue< TextLine > screen_strings;
+        std::queue< String > world_strings;
+        std::queue< String > screen_strings;
     };
 }

@@ -58,11 +58,15 @@ void Mesh::add_normal(const vec3& normal) {
     normals.push_back(normal);
 }
 
+void Mesh::add_color(const vec4& color) {
+    colors.push_back(color);
+}
+
 void Mesh::add_vertex(const vec3& position, const vec3& normal, const vec2& uv, const vec4& color) {
     add_position(position);
     add_normal(normal);
     add_uv(uv);
-    colors.push_back(color);
+    add_color(color);
 }
 
 void Mesh::add_triangle(const ivec3& indices) {
