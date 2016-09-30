@@ -6,7 +6,7 @@
 #include "frame_gl/error.h"
 using namespace frame;
 
-FrameBuffer::FrameBuffer(const ivec2& size, bool depth, const vec4& clear_color) : _size(size), _depth(depth), _clear_color(clear_color) {
+FrameBuffer::FrameBuffer(const ivec2& size, bool depth, const vec4& clear_color, bool multisample) : _size(size), _depth(depth), _clear_color(clear_color) {
 
     // Create the frame buffer object
     glGenFramebuffers(1, &frame_buffer_id);
@@ -21,9 +21,8 @@ FrameBuffer::FrameBuffer(const ivec2& size, bool depth, const vec4& clear_color)
     }
 
     // Create texture and attach FBO's color 0 attachment
-    bool multisample = true;
     texture = new Texture(size, multisample);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->id(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture->target(), texture->id(), 0);
 
     // Check frame buffer status
     int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -60,6 +59,8 @@ void FrameBuffer::bind_target(bool clear) {
     // TODO: Make blend optional
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_MULTISAMPLE);
 
     // Clear the frame buffer if necessary
     if (clear) {

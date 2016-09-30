@@ -9,16 +9,29 @@ using namespace frame;
 
 Texture::Texture(const ivec2& size, bool multisample) : _size(size), _multisample(multisample) {
     glGenTextures(1, &_id);
-    glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA32F_ARB, size.x, size.y, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    /*if (_multisample) {
+        _target = GL_TEXTURE_2D_MULTISAMPLE;
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, _id);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, (int)GL_RGBA32F_ARB, size.x, size.y, GL_TRUE);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAX_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, (int)GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, (int)GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, (int)GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, (int)GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    } else */{
+        _target = GL_TEXTURE_2D;
+        glBindTexture(GL_TEXTURE_2D, _id);
+        glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA32F_ARB, size.x, size.y, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)GL_CLAMP_TO_EDGE);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     gl_check();
 
@@ -32,9 +45,9 @@ Texture::~Texture() { glDeleteTextures(1, &_id); }
 
 void Texture::bind(unsigned int texture_unit) {
     glActiveTexture(GL_TEXTURE0 + texture_unit);
-    glBindTexture(GL_TEXTURE_2D, _id);
+    glBindTexture(_target, _id);
 }
 
 void Texture::unbind() {
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(_target, 0);
 }

@@ -6,7 +6,7 @@
 namespace frame {
     class FrameBuffer {
     public:
-        FrameBuffer(const ivec2& size, bool depth=true, const vec4& clear_color=vec4(0.0f));
+        FrameBuffer(const ivec2& size, bool depth=true, const vec4& clear_color=vec4(0.0f), bool multisample=false);
         ~FrameBuffer();
         FrameBuffer(const FrameBuffer& frame_buffer) = delete;
         FrameBuffer& operator=(const FrameBuffer& frame_buffer) = delete;
