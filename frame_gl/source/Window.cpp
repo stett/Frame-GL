@@ -162,32 +162,46 @@ void Window::step(float dt) {
     glfwMakeContextCurrent(window);
 
     // Set up OpenGL state
+
     //glEnable(GL_DEPTH_TEST);
     glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+
+    //glDisable(GL_BLEND);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glDisable(GL_CULL_FACE);
     glDisable(GL_STENCIL_TEST);
     glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
+
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     gl_check();
 
     // Initialize a list to contain all display buffers
     std::set<RenderTarget*> buffers;
-    Render* render;
-    RenderTarget* buffer;
+    //Render* render;
+    //RenderTarget* buffer;
 
+    /*
     // If we this frame has a display buffer, add it to the list of buffers to draw to screen
     if ((render = frame()->systems().get<Render>()) && (buffer = render->display_target()))
         buffers.insert(buffer);
-        //buffers.push_back(buffer);
+    */
+    // Build a list of all display targets from this frame
+    for (auto buffer : node<RenderTarget>())
+        if (buffer->display_layer() != -1)
+            buffers.insert(buffer);
 
+    /*
     // Add the display buffers from all subframes
     for (Frame *f : node<Frame>())
         if ((render = f->systems().get<Render>()) && (buffer = render->display_target()))
             buffers.insert(buffer);
-            //buffers.push_back(buffer);
+    */
 
     // Only bother setting up stuff if we found some buffers
     if (buffers.size() > 0) {

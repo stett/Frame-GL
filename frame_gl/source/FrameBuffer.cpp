@@ -54,8 +54,12 @@ void FrameBuffer::bind_target(bool clear) {
     // Set up OpenGL state
     if (_depth) glEnable(GL_DEPTH_TEST);
     else glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+    //glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
+
+    // TODO: Make blend optional
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Clear the frame buffer if necessary
     if (clear) {

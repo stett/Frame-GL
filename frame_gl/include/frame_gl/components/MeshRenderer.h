@@ -20,8 +20,9 @@ namespace frame
         };
 
     public:
-        MeshRenderer() : _mesh(Mesh::Factory::rectangle()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(true) {}
-        MeshRenderer(const Resource<Mesh>& mesh, const Resource<Texture>& texture, const Resource<Shader>& shader, PolyMode poly_mode=Fill, bool cull_back=true) : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode), _cull_back(cull_back) {}
+        MeshRenderer() : _mesh(Mesh::Factory::rectangle()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(true), _layer(0) {}
+        MeshRenderer(const Resource<Mesh>& mesh, const Resource<Texture>& texture, const Resource<Shader>& shader, PolyMode poly_mode=Fill, bool cull_back=true, unsigned int layer=0)
+        : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode), _cull_back(cull_back), _layer(layer) {}
 
     public:
         void render(Camera* camera) {
@@ -40,12 +41,9 @@ namespace frame
             // Bind stuff
             _texture->bind(0);
             _shader->bind();
-            //_shader->uniform("model", model);
-            //_shader->uniform("view", view);
-            //_shader->uniform("projection", projection);
-            _shader->uniform(_shader->uniforms().model, model);
-            _shader->uniform(_shader->uniforms().view, view);
-            _shader->uniform(_shader->uniforms().projection, projection);
+            _shader->uniform(ShaderUniform::Model, model);
+            _shader->uniform(ShaderUniform::View, view);
+            _shader->uniform(ShaderUniform::Projection, projection);
 
             // Render
             _mesh->render();
@@ -56,9 +54,13 @@ namespace frame
         }
 
     public:
+        MeshRenderer* set_layer(unsigned int layer) { _layer = layer; }
+
+    public:
         Resource<Mesh> mesh() { return _mesh; }
         Resource<Texture> texture() { return _texture; }
         Resource<Shader> shader() { return _shader; }
+        unsigned int layer() { return _layer; }
 
     private:
         Resource<Mesh> _mesh;
@@ -66,5 +68,6 @@ namespace frame
         Resource<Shader> _shader;
         PolyMode _poly_mode;
         bool _cull_back;
+        unsigned int _layer;
     };
 }

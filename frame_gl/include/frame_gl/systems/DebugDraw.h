@@ -34,7 +34,8 @@ namespace frame_gl
 {
     FRAME_SYSTEM(DebugDraw) {
     public:
-        DebugDraw() {}
+        DebugDraw(int main_layer=0, int gui_layer=1)
+        : main_layer(main_layer), gui_layer(gui_layer) {}
         ~DebugDraw() {}
 
     protected:
@@ -510,18 +511,35 @@ namespace frame_gl
         }
 
         void step(float dt) {
+            Camera* camera;
 
-            // Bind the render target
-            Camera* camera = render->display_camera();
-            camera->bind_target();
+            // Get the main display camera
+            if (camera = render->display_camera(main_layer)) {
 
-            // Draw shit
-            render_lines(camera);
-            render_cubes(camera);
-            render_text(camera);
+                // Bind the render target
+                camera->bind_target();
 
-            // Tear down
-            camera->unbind_target();
+                // Draw shit
+                render_lines(camera);
+                render_cubes(camera);
+                render_text(camera, world_strings);
+
+                // Tear down
+                camera->unbind_target();
+            }
+
+            // Get the GUI display camera
+            if (camera = render->display_camera(gui_layer)) {
+
+                // Bind the render target
+                camera->bind_target();
+
+                // Draw shit
+                render_text(camera, screen_strings);
+
+                // Tear down
+                camera->unbind_target();
+            }
         }
 
     private:
@@ -588,9 +606,9 @@ namespace frame_gl
             shape_shader->unbind();
         }
 
-        void render_text(Camera* camera) {
+        void render_text(Camera* camera, std::queue< String >& strings) {
 
-            if (world_strings.empty() && screen_strings.empty())
+            if (strings.empty() && strings.empty())
                 return;
 
             // Find the uniforms we'll be tweaking
@@ -610,13 +628,14 @@ namespace frame_gl
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
             glDisable(GL_CULL_FACE);
+            glDisable(GL_DEPTH_TEST);
             glLineWidth(1.0f);
 
-            // Set up for world-space strings
+            // Draw each string
             text_shader->uniform(ShaderUniform::View, camera->view_matrix());
             text_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
-            while (!world_strings.empty()) {
-                const String& line = world_strings.front();
+            while (!strings.empty()) {
+                const String& line = strings.front();
                 text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position));
                 text_shader->uniform(character_size, line.size);
                 text_shader->uniform(character_color, line.color);
@@ -626,24 +645,7 @@ namespace frame_gl
                     text_shader->uniform(character_code, (int)c);
                     mesh.render();
                 }
-                world_strings.pop();
-            }
-
-            // Set up for screen-space strings
-            text_shader->uniform(ShaderUniform::View, glm::mat4(1.0f));//camera->view_matrix());
-            text_shader->uniform(ShaderUniform::Projection, glm::mat4(1.0f));//camera->projection_matrix());
-            while (!screen_strings.empty()) {
-                const String& line = screen_strings.front();
-                text_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));//glm::translate(glm::mat4(1.0f), line.position));
-                text_shader->uniform(character_size, 100.0f);//line.size);
-                text_shader->uniform(character_color, line.color);
-                int i = 0;
-                for (char c : line.text) {
-                    text_shader->uniform(character_number, i++);
-                    text_shader->uniform(character_code, (int)c);
-                    mesh.render();
-                }
-                screen_strings.pop();
+                strings.pop();
             }
 
             text_shader->unbind();
@@ -668,7 +670,7 @@ namespace frame_gl
         }
 
         void text(const glm::vec2& position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size = 0.025f) {
-            screen_strings.push(String(glm::vec3(position, 0.0f), text, color, size));
+            screen_strings.push(String(glm::vec3(position.x, 0.0f, position.y), text, color, size));
         }
 
     private:
@@ -681,5 +683,7 @@ namespace frame_gl
         std::queue< glm::mat4 > cubes;
         std::queue< String > world_strings;
         std::queue< String > screen_strings;
+        int main_layer;
+        int gui_layer;
     };
 }

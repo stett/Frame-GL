@@ -9,20 +9,17 @@ namespace frame
 {
     FRAME_COMPONENT(Camera, Transform, RenderTarget) {
     public:
-        Camera(float vertical_fov=120.0f, float aspect_ratio=1.0f, float clip_near=0.1f, float clip_far=2000.0f) :
-            _projection_matrix(glm::perspective(vertical_fov, aspect_ratio, clip_near, clip_far)) {}
-        Camera(const vec2& ortho_size, float clip_near=0.0f, float clip_far=2000.0f) :
-            _projection_matrix(glm::ortho(-ortho_size.x * 0.5f, ortho_size.x * 0.5f, -ortho_size.y * 0.5f, ortho_size.y * 0.5f, clip_near, clip_far)) {}
+        Camera(unsigned int layer=0, float vertical_fov=120.0f, float aspect_ratio=1.0f, float clip_near=0.1f, float clip_far=2000.0f)
+        : _layer_mask(1 << layer), _projection_matrix(glm::perspective(vertical_fov, aspect_ratio, clip_near, clip_far)) {}
+        Camera(unsigned int layer, const vec2& ortho_size, float clip_near=0.0f, float clip_far=2000.0f)
+        : _layer_mask(1 << layer), _projection_matrix(glm::ortho(-ortho_size.x * 0.5f, ortho_size.x * 0.5f, -ortho_size.y * 0.5f, ortho_size.y * 0.5f, clip_near, clip_far)) {}
 
     public:
-        void bind_target(bool clear=false) {
-            auto target = get<RenderTarget>();
-            get<RenderTarget>()->bind_target(clear);
-        }
+        void bind_target(bool clear=false) { get<RenderTarget>()->bind_target(clear); }
 
-        void unbind_target() {
-            get<RenderTarget>()->unbind_target();
-        }
+        void unbind_target() { get<RenderTarget>()->unbind_target(); }
+
+        const RenderTarget* target() const { return get<RenderTarget>(); }
 
         /// \brief Project a point from the viewing plane onto a plane in world space.
         /// \param world_point the output value.
@@ -36,8 +33,28 @@ namespace frame
 
         const mat4& view_matrix() { return get<Transform>()->world_inverse(); }
         const mat4& projection_matrix() { return _projection_matrix; }
+        unsigned int layer_mask() { return _layer_mask; }
+        bool has_layer(unsigned int layer) { return (_layer_mask & (1 << layer)) != 0; }
+
+        template<typename... Layers>
+        Camera* set_layers(Layers... layers) {
+            _layer_mask = 0;
+            add_layer(layers)...;
+            return this;
+        }
+
+        Camera* add_layer(unsigned int layer) {
+            _layer_mask |= (1 << layer);
+            return this;
+        }
+
+        Camera* remove_layer(unsigned int layer) {
+            _layer_mask &= ~(1 << layer);
+            return this;
+        }
 
     private:
+        unsigned int _layer_mask;
         mat4 _projection_matrix;
     };
 }

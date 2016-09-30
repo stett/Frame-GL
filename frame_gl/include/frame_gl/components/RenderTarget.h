@@ -9,13 +9,11 @@ namespace frame
 {
     FRAME_COMPONENT(RenderTarget) {
     public:
-        RenderTarget(const ivec2& size=ivec2(300), bool display=false, bool depth=true, const vec4& clear_color=vec4(0.0f)) :
-            _display(display),
-            buffer(Resource<FrameBuffer>(size, depth, clear_color)) {}
+        RenderTarget(const ivec2& size=ivec2(300), int display_layer=-1, bool depth=true, const vec4& clear_color=vec4(0.0f)) :
+            _display_layer(display_layer), buffer(Resource<FrameBuffer>(size, depth, clear_color)) {}
 
-        RenderTarget(const Resource<FrameBuffer>& buffer, bool display=false) :
-            _display(display),
-            buffer(buffer) {}
+        RenderTarget(const Resource<FrameBuffer>& buffer, int display_layer=-1) :
+            _display_layer(display_layer), buffer(buffer) {}
 
         ~RenderTarget() {}
 
@@ -26,26 +24,28 @@ namespace frame
         void unbind_texture() { buffer->unbind_texture(); }
         void unbind_target() { buffer->unbind_target(); }
 
-        void set_display(bool display) {
+        /*
+        void set_display_layer(int display_layer) {
             //
-            // TODO: If this is being set as the display target (ie, display=true),
-            //       then unset "display" for all other RenderTarget components somehow.
+            // TODO: If this is being set as the display target for a layer (ie, display!=-1),
+            //       then unset "display" for all other RenderTarget components on this layer somehow.
             //
-            display = display;
+            _display_layer = display_layer;
         }
+        */
 
         RenderTarget* set_clear_color(const vec4& clear_color) {
             buffer->set_clear_color(clear_color);
             return this;
         }
 
-        bool display() const { return _display; }
+        int display_layer() const { return _display_layer; }
         const ivec2& size() const { return buffer->size(); }
         const vec4& clear_color() const { return buffer->clear_color(); }
         bool depth() const { return buffer->depth(); }
 
     private:
-        bool _display;
+        int _display_layer;
         Resource<FrameBuffer> buffer;
     };
 }

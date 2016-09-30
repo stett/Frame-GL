@@ -48,7 +48,7 @@ void Planes::setup() {
             "   if (pos.x < 0) pos.x = 1-pos.x;"
             "   if (pos.y < 0) pos.y = 1-pos.y;"
             "   float gray = (int(pos.x) + int(pos.y)) % 2 == 0 ? 0.48 : 0.52;"
-            "   pixel_color = vec4(vec3(gray), 1);"
+            "   pixel_color = vec4(vec3(gray), pow(1-frag_depth, 2));"
             "}                                          "
         )
     );
