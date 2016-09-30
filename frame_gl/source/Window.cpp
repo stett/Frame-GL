@@ -12,7 +12,8 @@
 #include "frame_gl/math.h"
 using namespace frame;
 
-Window::Window(ivec2 size, bool resizeable, FitMode fit_mode, bool vsync) : _size(size), fit_mode(fit_mode), clear_color(vec3(0.5f)), vsync(vsync) {
+Window::Window(ivec2 size, bool resizeable, FitMode fit_mode, bool vsync, const glm::vec3& clear_color)
+: _size(size), fit_mode(fit_mode), vsync(vsync), clear_color(clear_color) {
 
     // Initialize GLFW, if this is the first window
     if (count() == 0) {

@@ -108,6 +108,11 @@ void Shader::uniform(int location, float value) {
     gl_check();
 }
 
+void Shader::uniform(int location, const vec2& value) {
+    glUniform2fv(location, 1, glm::value_ptr(value));
+    gl_check();
+}
+
 void Shader::uniform(int location, const vec3& value) {
     glUniform3fv(location, 1, glm::value_ptr(value));
     gl_check();

@@ -606,7 +606,7 @@ namespace frame_gl
             shape_shader->unbind();
         }
 
-        void render_text(Camera* camera, std::queue< String >& strings) {
+        void render_text(Camera* camera, std::queue< String >& strings, glm::vec2 offset=glm::vec2(0.0f)) {
 
             if (strings.empty() && strings.empty())
                 return;
@@ -616,6 +616,7 @@ namespace frame_gl
             int character_number = text_shader->locate("character_number");
             int character_code = text_shader->locate("character_code");
             int character_size = text_shader->locate("character_size");
+            //int character_offset = text_shader->locate("character_offset");
 
             // Bind the text shader
             text_shader->bind();
@@ -634,9 +635,11 @@ namespace frame_gl
             // Draw each string
             text_shader->uniform(ShaderUniform::View, camera->view_matrix());
             text_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            //text_shader->uniform(character_offset, offset);
+
             while (!strings.empty()) {
                 const String& line = strings.front();
-                text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position));
+                text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position + vec3(offset, 0.0f)));
                 text_shader->uniform(character_size, line.size);
                 text_shader->uniform(character_color, line.color);
                 int i = 0;

@@ -20,7 +20,7 @@ namespace frame
         enum FitMode { Stretch, Fit, Fill, Center };
 
     public:
-        Window(ivec2 size=ivec2(0), bool resizeable=true, FitMode fit_mode=Fit, bool vsync=false);
+        Window(ivec2 size=ivec2(0), bool resizeable=true, FitMode fit_mode=Fit, bool vsync=false, const vec3& clear_color=vec3(0.5f));
         ~Window();
 
     public:
