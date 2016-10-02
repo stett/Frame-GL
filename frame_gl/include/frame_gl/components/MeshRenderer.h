@@ -36,7 +36,7 @@ namespace frame
             glPolygonMode(GL_FRONT_AND_BACK, _poly_mode);
             if (_cull_back) glEnable(GL_CULL_FACE);
             else glDisable(GL_CULL_FACE);
-            glLineWidth(3.0f);
+            //glLineWidth(3.0f);
 
             // Bind stuff
             _texture->bind(0);
