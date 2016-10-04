@@ -21,11 +21,11 @@ namespace
     };
 
     struct String {
-        String(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size)
+        String(const glm::vec3& position, const std::string& text, const glm::vec4& color, float size)
         : position(position), text(text), color(color), size(size) {}
         glm::vec3 position;
         std::string text;
-        glm::vec3 color;
+        glm::vec4 color;
         float size;
     };
 }
@@ -44,7 +44,7 @@ namespace frame_gl
     protected:
         void setup() {
 
-            render = frame()->systems().get<Render>();
+            render = system<Render>();
 
             shape_shader = new Shader(
                 "Debug Shape Shader",
@@ -507,10 +507,10 @@ namespace frame_gl
 
                 Resource<ShaderPart>(ShaderPart::Type::Fragment,
                     "#version 330\n"
-                    "uniform vec3 character_color;"
+                    "uniform vec4 character_color;"
                     "out vec4 pixel_color;"
                     "void main() {"
-                    "    pixel_color = vec4(character_color, 1);"
+                    "    pixel_color = character_color;"//vec4(character_color, 1);
                     "}"
                 )
             );
@@ -573,7 +573,8 @@ namespace frame_gl
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDisable(GL_CULL_FACE);
-            glLineWidth(1.0f);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             // Build a mesh with a bunch of lines
             Mesh mesh;
@@ -682,15 +683,23 @@ namespace frame_gl
             cubes.push(transform);
         }
 
-        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color=glm::vec3(1.0f), float size=12.0f) {//0.025f) {
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size = 12.0f) {
+            world_text(position, text, vec4(color, 1.0f), size);
+        }
+
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
             world_strings.push(String(position, text, color, size));
         }
 
-        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size=12.0f) {
+        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
             screen_text(TopLeft, position, text, color, size);
         }
 
-        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size=12.0f) {
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color, float size=12.0f) {
+            screen_text(alignment, position, text, color, size);
+        }
+
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
 
             // If we haven't got a gui camera, then this won't get rendered anyway
             if (gui_camera == nullptr) return;

@@ -22,7 +22,7 @@ namespace frame
             steps += 1.0f;
 
             if (debug_draw)
-                debug_draw->screen_text(DebugDraw::Alignment::TopLeft, glm::vec2(0.0f, 0.0f), std::to_string(fps()));
+                debug_draw->screen_text(DebugDraw::Alignment::TopLeft, glm::vec2(5.0f, 0.0f), "FPS: " + std::to_string(fps()));
 
             if (total > interval) {
                 average = total / steps;

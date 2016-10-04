@@ -7,11 +7,11 @@
 
 namespace frame
 {
-	enum ShaderUniform {
-		Model = 0,
-		View,
-		Projection
-	};
+    enum ShaderUniform {
+        Model = 0,
+        View,
+        Projection
+    };
 
     struct ShaderUniformLocations {
         int model;

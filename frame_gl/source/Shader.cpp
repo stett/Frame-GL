@@ -151,26 +151,26 @@ int Shader::locate(const char* uniform_name) {
 
 Resource<ShaderPart> Shader::Preset::vert_standard() {
     static Resource<ShaderPart> part(ShaderPart::Type::Vertex,
-        "#version 330\n                                                 "
-        "layout(location = 0)in vec3 vert_position;                     "
-        "layout(location = 1)in vec3 vert_normal;                       "
-        "layout(location = 2)in vec2 vert_uv;                           "
-        "layout(location = 3)in vec4 vert_color;                        "
-        "uniform mat4 model;                                            "
-        "uniform mat4 view;                                             "
-        "uniform mat4 projection;                                       "
-        "out vec4 frag_position;                                        "
-        "out vec3 frag_normal;                                          "
-        "out vec2 frag_uv;                                              "
-        "out vec4 frag_color;                                           "
-        "void main() {                                                  "
-        "    mat4 transform = projection * view * model;                "
-        "    frag_position  = transform * vec4(vert_position, 1.0);     "
-        "    frag_normal    = vert_normal * inverse(mat3(model));       "
-        "    frag_uv        = vert_uv;                                  "
-        "    frag_color     = vert_color;                               "
-        "    gl_Position    = frag_position;                            "
-        "}                                                              "
+        "#version 330\n                                                         "
+        "layout(location = 0)in vec3 vert_position;                             "
+        "layout(location = 1)in vec3 vert_normal;                               "
+        "layout(location = 2)in vec2 vert_uv;                                   "
+        "layout(location = 3)in vec4 vert_color;                                "
+        "uniform mat4 model;                                                    "
+        "uniform mat4 view;                                                     "
+        "uniform mat4 projection;                                               "
+        "out vec4 frag_position;                                                "
+        "out vec3 frag_normal;                                                  "
+        "out vec2 frag_uv;                                                      "
+        "out vec4 frag_color;                                                   "
+        "void main() {                                                          "
+        "    mat4 transform = projection * view * model;                        "
+        "    frag_position  = transform * vec4(vert_position, 1.0);             "
+        "    frag_normal    = normalize(vert_normal * inverse(mat3(model)));    "
+        "    frag_uv        = vert_uv;                                          "
+        "    frag_color     = vert_color;                                       "
+        "    gl_Position    = frag_position;                                    "
+        "}                                                                      "
     );
 
     return part;
@@ -202,24 +202,24 @@ Resource<ShaderPart> Shader::Preset::frag_colors() {
 
 Resource<ShaderPart> Shader::Preset::frag_normals() {
     static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
-        "#version 330\n                                     "
-        "in vec3 frag_normal;                               "
-        "out vec4 pixel_color;                              "
-        "void main() {                                      "
-        "    pixel_color = vec4(vec3(0.5) + frag_normal, 1);"
-        "}                                                  "
+        "#version 330\n                                             "
+        "in vec3 frag_normal;                                       "
+        "out vec4 pixel_color;                                      "
+        "void main() {                                              "
+        "    pixel_color = vec4((vec3(1) + frag_normal) * 0.5, 1);  "
+        "}                                                          "
     );
     return part;
 }
 
 Resource<ShaderPart> Shader::Preset::frag_coords() {
     static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
-        "#version 330\n                 "
-        "in vec4 frag_color;            "
-        "out vec4 pixel_color;          "
-        "void main() {                  "
-        "    pixel_color = vec4(gl_FragCoord.xyz, 1);"
-        "}                              "
+        "#version 330\n                                 "
+        "in vec4 frag_color;                            "
+        "out vec4 pixel_color;                          "
+        "void main() {                                  "
+        "    pixel_color = vec4(gl_FragCoord.xyz, 1);   "
+        "}                                              "
     );
     return part;
 }
