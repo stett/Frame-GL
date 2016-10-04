@@ -57,11 +57,11 @@ namespace frame
                     debug_draw->line(vec3(0.0f, pos.y, pos.z), pos, frame_gl::axis_color_x);
 
                     if (abs(pos.z) > 0.00001f)
-                        debug_draw->text(vec3(pos.x, pos.y, 0.0f), std::to_string(pos.z), frame_gl::axis_color_z);
+                        debug_draw->world_text(vec3(pos.x, pos.y, 0.0f), std::to_string(pos.z), frame_gl::axis_color_z);
                     if (abs(pos.y) > 0.00001f)
-                        debug_draw->text(vec3(pos.x, 0.0f, pos.z), std::to_string(pos.y), frame_gl::axis_color_y);
+                        debug_draw->world_text(vec3(pos.x, 0.0f, pos.z), std::to_string(pos.y), frame_gl::axis_color_y);
                     if (abs(pos.x) > 0.00001f)
-                        debug_draw->text(vec3(0.0f, pos.y, pos.z), std::to_string(pos.x), frame_gl::axis_color_x);
+                        debug_draw->world_text(vec3(0.0f, pos.y, pos.z), std::to_string(pos.x), frame_gl::axis_color_x);
                 }
             }
         }

@@ -34,8 +34,11 @@ namespace frame_gl
 {
     FRAME_SYSTEM(DebugDraw) {
     public:
+        enum Alignment { TopLeft, TopRight, BottomLeft, BottomRight };
+
+    public:
         DebugDraw(int main_layer=0, int gui_layer=1)
-        : main_layer(main_layer), gui_layer(gui_layer) {}
+        : main_layer(main_layer), gui_layer(gui_layer), render(nullptr), main_camera(nullptr), gui_camera(nullptr) {}
         ~DebugDraw() {}
 
     protected:
@@ -77,10 +80,11 @@ namespace frame_gl
                     "uniform float character_size;"
                     "uniform int character_number;"
                     "uniform int character_code;"
+                    "uniform vec2 screen_size;"
                     "in vec4 geom_position[2];"
                     "void main() {"
-                    "   float scale = geom_position[0].w * character_size;"
-                    "   vec4 pos = vec4((character_number) * scale, 0, 0, 0) + geom_position[0];"
+                    "   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w * character_size);"
+                    "   vec4 pos = vec4((character_number) * scale.x, 0, 0, 0) + geom_position[0];"
 
                     // SPACE
                     "   if (character_code == 32) {" 
@@ -518,34 +522,37 @@ namespace frame_gl
         }
 
         void step(float dt) {
-            Camera* camera;
+
+            // Get cameras
+            main_camera = render->display_camera(main_layer);
+            gui_camera = render->display_camera(gui_layer);
 
             // Get the main display camera
-            if (camera = render->display_camera(main_layer)) {
+            if (main_camera) {
 
                 // Bind the render target
-                camera->bind_target();
+                main_camera->bind_target();
 
                 // Draw shit
-                render_lines(camera);
-                render_cubes(camera);
-                render_text(camera, world_strings);
+                render_lines(main_camera);
+                render_cubes(main_camera);
+                render_text(main_camera, world_strings);
 
                 // Tear down
-                camera->unbind_target();
+                main_camera->unbind_target();
             }
 
             // Get the GUI display camera
-            if (camera = render->display_camera(gui_layer)) {
+            if (gui_camera) {
 
                 // Bind the render target
-                camera->bind_target();
+                gui_camera->bind_target();
 
                 // Draw shit
-                render_text(camera, screen_strings);
+                render_text(gui_camera, screen_strings);
 
                 // Tear down
-                camera->unbind_target();
+                gui_camera->unbind_target();
             }
         }
 
@@ -613,7 +620,7 @@ namespace frame_gl
             shape_shader->unbind();
         }
 
-        void render_text(Camera* camera, std::queue< String >& strings, glm::vec2 offset=glm::vec2(0.0f)) {
+        void render_text(Camera* camera, std::queue< String >& strings) {
 
             if (strings.empty() && strings.empty())
                 return;
@@ -623,7 +630,8 @@ namespace frame_gl
             int character_number = text_shader->locate("character_number");
             int character_code = text_shader->locate("character_code");
             int character_size = text_shader->locate("character_size");
-            //int character_offset = text_shader->locate("character_offset");
+
+            text_shader->uniform("screen_size", camera->target()->size());
 
             // Bind the text shader
             text_shader->bind();
@@ -642,11 +650,10 @@ namespace frame_gl
             // Draw each string
             text_shader->uniform(ShaderUniform::View, camera->view_matrix());
             text_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
-            //text_shader->uniform(character_offset, offset);
 
             while (!strings.empty()) {
                 const String& line = strings.front();
-                text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position + vec3(offset, 0.0f)));
+                text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position));
                 text_shader->uniform(character_size, line.size);
                 text_shader->uniform(character_color, line.color);
                 int i = 0;
@@ -675,16 +682,40 @@ namespace frame_gl
             cubes.push(transform);
         }
 
-        void text(const glm::vec3& position, const std::string& text, const glm::vec3& color=glm::vec3(1.0f), float size=0.025f) {
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color=glm::vec3(1.0f), float size=12.0f) {//0.025f) {
             world_strings.push(String(position, text, color, size));
         }
 
-        void text(const glm::vec2& position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size = 0.025f) {
-            screen_strings.push(String(glm::vec3(position.x, 0.0f, position.y), text, color, size));
+        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size=12.0f) {
+            screen_text(TopLeft, position, text, color, size);
+        }
+
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color = glm::vec3(1.0f), float size=12.0f) {
+
+            // If we haven't got a gui camera, then this won't get rendered anyway
+            if (gui_camera == nullptr) return;
+
+            // Get the camera's target's resolution
+            ivec2 screen_size = gui_camera->target()->size();
+
+            // Get the actual size of a character in pixels (they are square)
+            //float pixel_size = screen_size
+
+            // Adjust the position for alignment
+            if (alignment == TopRight || alignment == BottomRight)
+                position.x += screen_size.x - float(text.size() * size);
+            if (alignment == BottomLeft || alignment == BottomRight)
+                position.y += screen_size.y;
+            else
+                position.y += size;
+
+            screen_strings.push(String(glm::vec3(position.x, position.y, 0.0f), text, color, size));
         }
 
     private:
         Render* render;
+        Camera* main_camera;
+        Camera* gui_camera;
         Shader* line_shader;
         Shader* shape_shader;
         Shader* text_shader;

@@ -3,6 +3,7 @@
 #include "frame/Log.h"
 #include "frame_gl/systems/DebugDraw.h"
 #include "frame_gl/math.h"
+using namespace frame_gl;
 
 namespace frame
 {
@@ -21,7 +22,7 @@ namespace frame
             steps += 1.0f;
 
             if (debug_draw)
-                debug_draw->text(glm::vec2(0.0f), std::to_string(fps()));
+                debug_draw->screen_text(DebugDraw::Alignment::TopLeft, glm::vec2(0.0f, 0.0f), std::to_string(fps()));
 
             if (total > interval) {
                 average = total / steps;

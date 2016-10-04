@@ -14,7 +14,7 @@ namespace frame
         Camera(unsigned int layer, const vec2& ortho_size, float clip_near=0.0f, float clip_far=2000.0f)
         : _layer_mask(1 << layer), _projection_matrix(glm::ortho(-ortho_size.x * 0.5f, ortho_size.x * 0.5f, -ortho_size.y * 0.5f, ortho_size.y * 0.5f, clip_near, clip_far)) {}
         Camera(unsigned int layer, const vec2& ortho_topleft, const vec2& ortho_bottomright, float clip_near=0.0f, float clip_far=2000.0f)
-        : _layer_mask(1 << layer), _projection_matrix(glm::ortho(ortho_topleft.x, ortho_bottomright.x, ortho_topleft.y, ortho_bottomright.y, clip_near, clip_far)) {}
+        : _layer_mask(1 << layer), _projection_matrix(glm::ortho(ortho_topleft.x, ortho_bottomright.x, ortho_bottomright.y, ortho_topleft.y, clip_near, clip_far)) {}
 
     public:
         void bind_target(bool clear=false) { get<RenderTarget>()->bind_target(clear); }
