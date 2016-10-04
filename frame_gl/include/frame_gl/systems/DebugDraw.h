@@ -86,6 +86,14 @@ namespace frame_gl
                     "   if (character_code == 32) {" 
                     "   }"
 
+                    // .
+                    "   if (character_code == 46) {"
+                    "       gl_Position = pos + vec4(.45, .1, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.55, .1, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.55, 0, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.45, 0, 0, 0) * scale; EmitVertex();"
+                    "   }"
+
                     // 0
                     "   else if (character_code == 48) {"
                     "       gl_Position = pos + vec4(.25, .1, 0, 0) * scale;    EmitVertex();"
@@ -114,9 +122,8 @@ namespace frame_gl
                     "   else if (character_code == 50) {"
                     "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, .25, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, .25, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, .35, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, .35, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .45, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .9, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.65, 1, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.35, 1, 0, 0) * scale;    EmitVertex();"
