@@ -71,6 +71,9 @@ namespace frame
             v.x = s1*c2*c3 - c1*s2*s3;
             v.y = c1*s2*c3 + s1*c2*s3;
             v.z = c1*c2*s3 - s1*s2*c3;
+
+			// Just to be safe...
+			normalize();
         }
 
         quat_t& normalize() {
@@ -96,7 +99,7 @@ namespace frame
         }
 
         T magnitude() const {
-            return sqrt(s*s + glm::dot(v, v));
+            return sqrt(dot(*this, *this));
         }
 
         /*
@@ -144,8 +147,8 @@ namespace frame
     };
 
     template <typename T>
-    quat_t<T> dot(const quat_t<T>& a, const quat_t<T>& b) {
-        return (a.s + b.s) + glm::dot(a.v, b.v);
+    T dot(const quat_t<T>& a, const quat_t<T>& b) {
+        return (a.s * b.s) + glm::dot(a.v, b.v);
     }
 
     template <typename T>
@@ -169,8 +172,14 @@ namespace frame
     }
 
     template <typename T>
-    T angle_diff(quat_t<T> a, const quat_t<T>& b) {
-        return (T)2.0 * (T)acos(operator*(a.conjugate(), b).s);
+    //T angle_diff(const quat_t<T>& a, const quat_t<T>& b) {
+	T angle_diff(quat_t<T> a, quat_t<T> b) {
+		//T d = operator*(a.conjugate(), b).s;
+        //return (T)2.0 * (T)acos(operator*(a.conjugate(), b).s);
+		a = a.normalized();
+		b = b.normalized();
+		T d = dot(a, b);
+        return (T)acos(dot(a, b));
     }
 
     // Specialized quaternion types

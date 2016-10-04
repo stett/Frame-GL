@@ -74,6 +74,11 @@ void Mesh::add_triangle(const ivec3& indices) {
     triangles.push_back(indices);
 }
 
+void Mesh::add_quad(const ivec4& indices) {
+    add_triangle(indices.x, indices.y, indices.z);
+    add_triangle(indices.z, indices.w, indices.x);
+}
+
 void Mesh::add_line(const ivec2& indices) {
     lines.push_back(indices);
 }

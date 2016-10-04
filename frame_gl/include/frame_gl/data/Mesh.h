@@ -26,6 +26,8 @@ namespace frame
         void add_vertex(const vec3& position, const vec3& normal=vec3(0.0f), const vec2& uv=vec2(0.0f), const vec4& color=vec4(1.0f));
         void add_triangle(const ivec3& indices);
         void add_triangle(int a, int b, int c) { add_triangle(ivec3(a, b, c)); }
+        void add_quad(const ivec4& indices);
+        void add_quad(int a, int b, int c, int d) { add_quad(ivec4(a, b, c, d)); }
         void add_line(const ivec2& indices);
         void add_line(int a, int b) { add_line(ivec2(a, b)); }
         std::size_t num_vertices() { return positions.size(); }
