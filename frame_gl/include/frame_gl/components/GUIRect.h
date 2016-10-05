@@ -7,10 +7,11 @@ namespace frame_gl
     FRAME_COMPONENT_HIERARCHIC(GUIRect) {
     public:
         enum Layout { Horizontal, Vertical };
+        enum Alignment { Min, Mid, Max };
 
     public:
-        GUIRect(const vec2& min_size=vec2(1.0f), const vec2& margin=vec2(1.0f), Layout layout=Horizontal)
-        : _min_size(min_size), _margin(margin), _layout(layout) {}
+        GUIRect(const vec2& min_size=vec2(0.0f), const vec2& max_size=vec2(0.0f), const vec2& margin=vec2(0.0f), Layout layout=Horizontal, Alignment alignment=Min)
+        : _min_size(min_size), _max_size(max_size), _margin(margin), _layout(layout), _alignment(alignment) {}
         ~GUIRect() {}
 
     public:
@@ -90,5 +91,6 @@ namespace frame_gl
         vec2 _top_left;
         vec2 _bottom_right;
         Layout _layout;
+        Alignment _alignment;
     };
 }
