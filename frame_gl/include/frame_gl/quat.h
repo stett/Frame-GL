@@ -59,6 +59,10 @@ namespace frame
             return *this;
         }
 
+        bool operator==(const quat_t& other) const { return (s == other.s) && (v == other.v); }
+
+        bool operator!=(const quat_t& other) const { return !operator==(other); }
+
     public:
         void from_euler(const glm::tvec3<T> angles) {
             float c1 = cos(angles.x/2);
@@ -72,8 +76,8 @@ namespace frame
             v.y = c1*s2*c3 + s1*c2*s3;
             v.z = c1*c2*s3 - s1*s2*c3;
 
-			// Just to be safe...
-			normalize();
+            // Just to be safe...
+            normalize();
         }
 
         quat_t& normalize() {
@@ -148,7 +152,7 @@ namespace frame
 
     template <typename T>
     T dot(const quat_t<T>& a, const quat_t<T>& b) {
-        return (a.s * b.s) + glm::dot(a.v, b.v);
+		return (a.s * b.s) + (a.v.x * b.v.x) + (a.v.y * b.v.y) + (a.v.z * b.v.z);
     }
 
     template <typename T>
@@ -169,17 +173,6 @@ namespace frame
     template <typename T>
     quat_t<T> operator*(quat_t<T> q, T c) {
         return q *= c;
-    }
-
-    template <typename T>
-    //T angle_diff(const quat_t<T>& a, const quat_t<T>& b) {
-	T angle_diff(quat_t<T> a, quat_t<T> b) {
-		//T d = operator*(a.conjugate(), b).s;
-        //return (T)2.0 * (T)acos(operator*(a.conjugate(), b).s);
-		a = a.normalized();
-		b = b.normalized();
-		T d = dot(a, b);
-        return (T)acos(dot(a, b));
     }
 
     // Specialized quaternion types
