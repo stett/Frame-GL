@@ -45,6 +45,14 @@ namespace frame_gl
             }
         }
 
+        bool inside(const vec2& screen_position) {
+            return (
+                screen_position.x > top_left().x &&
+                screen_position.y > top_left().y &&
+                screen_position.x < bottom_right().x &&
+                screen_position.y < bottom_right().y);
+        }
+
     private:
         vec2 _min_size;
         vec2 _max_size;

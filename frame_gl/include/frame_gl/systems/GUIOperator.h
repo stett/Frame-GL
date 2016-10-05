@@ -1,37 +1,58 @@
 #pragma once
 #include "frame/System.h"
 #include "frame_gl/systems/Render.h"
+#include "frame_gl/systems/Window.h"
 #include "frame_gl/components/GUIRect.h"
+#include "frame_gl/components/GUIClickable.h"
 #include "frame_gl/components/Camera.h"
 #include "frame_gl/data/Shader.h"
 
 namespace frame_gl
 {
-    FRAME_SYSTEM(GUIOperator, Node<GUIRect>) {
+    FRAME_SYSTEM(GUIOperator, Node<GUIRect>, Node<GUIRect, GUIClickable>) {
     public:
         GUIOperator(int gui_layer=1) : render(nullptr), gui_layer(gui_layer) {}
         ~GUIOperator() {}
 
     protected:
         void setup() {
-            render = system<Render>();
 
+            // Grab some related system references
+            render = system<Render>();
+            window = system<Window>();
+
+            // Make a shader for rendering outlines
             line_shader = new Shader(
-                "Debug Line Shader",
+                "GUI Line Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_colors());
+
+            // Trigger callback whenever mouse moves
+            window->mouse_position.listen(this, &GUIOperator::mouse_position_callback);
         }
 
         void teardown() {
             delete line_shader;
+            window->mouse_position.ignore(this);
         }
 
         void step(float dt) {
+            update_gui(dt);
+            render_gui();
+        }
 
-            // Get the camera for the gui layer
-            Camera* camera = render->display_camera(gui_layer);
+    public:
+
+        void mouse_position_callback(const vec2& screen_position) {
+            mouse_position = screen_position;
+        }
+
+    private:
+
+        void update_gui(float dt) {
 
             // Get the screen size
+            Camera* camera = render->display_camera(gui_layer);
             vec2 screen_size = camera->target()->size();
 
             // Resize each root GUI rect
@@ -40,6 +61,28 @@ namespace frame_gl
                     rect->fit(vec2(0.0f), screen_size);
                 }
             }
+
+            // Mark each clickable rectangle as mouse in or mouse out,
+            // and also find the focused clickable.
+            focus = nullptr;
+            for (auto e : node<GUIRect, GUIClickable>()) {
+
+                // Get the components from this node element
+                GUIRect* rect = e.get<GUIRect>();
+                GUIClickable* clickable = e.get<GUIClickable>();
+
+                // Set the clickable state, trigger callbacks, etc.
+                clickable->set_mouse_in(rect->inside(mouse_position));
+
+                // If this one has been marked as mouse-in, then it's focused
+                if (clickable->mouse_in()) focus = e.entity();
+            }
+        }
+
+        void render_gui() {
+
+            // Get the camera for the gui layer
+            Camera* camera = render->display_camera(gui_layer);
 
             // Get ready to render stuff
             camera->bind_target();
@@ -61,10 +104,11 @@ namespace frame_gl
                 mesh.add_position(vec3(rect->bottom_right(), 0.0f));
                 mesh.add_position(vec3(rect->bottom_left(), 0.0f));
 
-                mesh.add_color(vec4(1.0f));
-                mesh.add_color(vec4(1.0f));
-                mesh.add_color(vec4(1.0f));
-                mesh.add_color(vec4(1.0f));
+                vec4 color(vec3(rect.entity() == focus ? 1.0f : 0.4f), 1.0f);
+                mesh.add_color(color);
+                mesh.add_color(color);
+                mesh.add_color(color);
+                mesh.add_color(color);
 
                 mesh.add_line(index, index+1);
                 mesh.add_line(index+1, index+2);
@@ -82,7 +126,10 @@ namespace frame_gl
 
     private:
         Render* render;
+        Window* window;
         Shader* line_shader;
+        Entity* focus;
+        vec2 mouse_position;
         int gui_layer;
     };
 }
