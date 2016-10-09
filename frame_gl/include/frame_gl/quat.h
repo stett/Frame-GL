@@ -152,7 +152,12 @@ namespace frame
 
     template <typename T>
     T dot(const quat_t<T>& a, const quat_t<T>& b) {
-		return (a.s * b.s) + (a.v.x * b.v.x) + (a.v.y * b.v.y) + (a.v.z * b.v.z);
+        return (a.s * b.s) + (a.v.x * b.v.x) + (a.v.y * b.v.y) + (a.v.z * b.v.z);
+    }
+
+    template <typename T>
+    quat_t<T> normalize(quat_t<T> q) {
+        return q.normalized();
     }
 
     template <typename T>
@@ -172,6 +177,11 @@ namespace frame
 
     template <typename T>
     quat_t<T> operator*(quat_t<T> q, T c) {
+        return q *= c;
+    }
+
+    template <typename T>
+    quat_t<T> operator*(T c, quat_t<T> q) {
         return q *= c;
     }
 
