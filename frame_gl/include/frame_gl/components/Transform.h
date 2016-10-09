@@ -20,6 +20,11 @@ namespace frame
         Transform(const vec3& translation=vec3(0.0f), const quat& rotation=quat(), const vec3& scale=vec3(1.0f))
         : _translation(translation), _rotation(rotation), _scale(scale), _valid(0) {}
 
+        /*
+        Transform(const vqs& transform)
+        : _translation(transform.v), _rotation(transform.q), _scale(vec3(transform.s)), _valid(0) {}
+        */
+
     public:
 
         Transform* set_translation(const vec3& translation) {
