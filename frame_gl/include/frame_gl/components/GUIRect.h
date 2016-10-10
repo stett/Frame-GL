@@ -48,7 +48,7 @@ namespace frame_gl
 
                 if (_layout == Horizontal) {
                     float left_position = _top_left.x;
-                    for (int i = 0; i < children().size(); ++i) {
+                    for (int i = 0; i < (int)children().size(); ++i) {
 
                         // Compute max width of the next child
                         float remaining_width = _bottom_right.x - left_position;
@@ -66,7 +66,7 @@ namespace frame_gl
                 } else if (_layout == Vertical) {
                     float total_height = _bottom_right.y - _top_left.y;
                     float child_height = total_height / float(children().size());
-                    for (int i = 0; i < children().size(); ++i) {
+                    for (int i = 0; i < (int)children().size(); ++i) {
                         GUIRect* child = children()[i];
                         child->fit(
                             vec2(_top_left.x, _top_left.y + float(i) * child_height),
