@@ -23,7 +23,6 @@ namespace frame
         }
         ~quat_t() {}
 
-    public:
         quat_t& operator=(const quat_t& other) {
             s = other.s;
             v = other.v;
@@ -42,14 +41,14 @@ namespace frame
             return *this;
         }
 
-        quat_t operator*(const quat_t& other) {
-            return quat_t(s * other.s, glm::dot(v, other.v));
-        }
+        /*quat_t operator*(const quat_t& other) {
+            return (quat_t(*this) *= other);
+        }*/
 
         quat_t& operator*=(const quat_t& other) {
-            T s_new = (s * other.s) + glm::dot(v, other.v);
-            // NOTE: I think one of these scalar/vector products will need to be re-ordered...
-            vtype v_new = (s * other.v) + (v * other.s) + glm::cross(v, other.v);
+            T s_old = s;
+            s = (s * other.s) + glm::dot(v, other.v);
+            v = (s_old * other.v) + (v * other.s) + glm::cross(v, other.v);
             return *this;
         }
 
@@ -59,11 +58,16 @@ namespace frame
             return *this;
         }
 
+        /*
+        glm::tvec3<T> operator*(glm::tvec3<T> vec) const {
+            return (operator*(quat_t(0.0f, vec)) * conjugated()).v;
+        }
+        */
+
         bool operator==(const quat_t& other) const { return (s == other.s) && (v == other.v); }
 
         bool operator!=(const quat_t& other) const { return !operator==(other); }
 
-    public:
         void from_euler(const glm::tvec3<T> angles) {
             float c1 = cos(angles.x/2);
             float s1 = sin(angles.x/2);
@@ -107,11 +111,12 @@ namespace frame
         }
 
         /*
-        glm::tvec3<T> euler() const {
-            return glm::tvec3<T>(
-                atan2(2.0f*(s*v.x + v.y*v.z), 1.0f - 2.0f*(v.x*v.x + v.y*v.y)),
-                asin(2.0f*(s*v.y - v.x*v.z)),
-                atan2(2.0f*(s*v.z + v.x*v.y), 1.0f - 2.0f*(v.y*v.y + v.z*v.z)));
+        quat_t& append(const quat_t& other) {
+
+        }
+
+        quat_t appended(const quat_t& other) {
+            return quat_t(*this).append(other);
         }
         */
 
@@ -183,6 +188,11 @@ namespace frame
     template <typename T>
     quat_t<T> operator*(T c, quat_t<T> q) {
         return q *= c;
+    }
+
+    template <typename T>
+    glm::tvec3<T> operator*(const quat_t<T>& q, const glm::tvec3<T>& v) {
+        return ((q * quat_t<T>(0.0f, v)) * q.conjugated()).v;
     }
 
     // Specialized quaternion types
