@@ -47,7 +47,7 @@ namespace frame
 
         quat_t& operator*=(const quat_t& other) {
             T s_old = s;
-            s = (s * other.s) + glm::dot(v, other.v);
+            s = (s * other.s) - glm::dot(v, other.v);
             v = (s_old * other.v) + (v * other.s) + glm::cross(v, other.v);
             return *this;
         }
@@ -109,16 +109,6 @@ namespace frame
         T magnitude() const {
             return sqrt(dot(*this, *this));
         }
-
-        /*
-        quat_t& append(const quat_t& other) {
-
-        }
-
-        quat_t appended(const quat_t& other) {
-            return quat_t(*this).append(other);
-        }
-        */
 
         glm::tmat4x4<T> matrix() const {
             glm::tmat4x4<T> m;
