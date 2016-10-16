@@ -188,7 +188,7 @@ Resource<ShaderPart> Shader::Preset::vert_skinned() {
         "layout(location = 1)in vec3 vert_normal;                                   "
         "layout(location = 2)in vec2 vert_uv;                                       "
         "layout(location = 3)in vec4 vert_color;                                    "
-        "layout(location = 4)in mat4 vert_weight_offsets;                           "
+        "layout(location = 4)in vec4 vert_weight_offsets[4];                        "
         "layout(location = 8)in ivec4 vert_weight_indices;                          "
         "uniform mat4 model;                                                        "
         "uniform mat4 view;                                                         "
@@ -205,6 +205,8 @@ Resource<ShaderPart> Shader::Preset::vert_skinned() {
         "       bone_transforms[vert_weight_indices[1]] * vert_weight_offsets[1] +  "
         "       bone_transforms[vert_weight_indices[2]] * vert_weight_offsets[2] +  "
         "       bone_transforms[vert_weight_indices[3]] * vert_weight_offsets[3];   "
+
+        //"   vec4 vert_position = bone_transforms[vert_weight_indices[0]] * vert_weight_offsets[0];"
 
         "   mat4 transform  = projection * view * model;                            "
         "   frag_position   = transform * vert_position;                            "

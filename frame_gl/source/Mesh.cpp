@@ -17,7 +17,11 @@
 #include "frame_gl/error.h"
 using namespace frame;
 
-Mesh::Mesh() : vao(0), vbo_positions(0), vbo_normals(0), vbo_uvs(0), vbo_colors(0), vbo_weight_offsets(0), vbo_weight_indices(0), vbo_indices(0) {
+Mesh::Mesh() : vao(0), vbo_positions(0), vbo_normals(0), vbo_uvs(0), vbo_colors(0), vbo_weight_indices(0), vbo_indices(0) {
+
+    for (int i = 0; i < 4; ++i)
+        vbo_weight_offsets[i] = 0;
+
     if (glfwGetCurrentContext() == 0)
         Log::error("Can't create a mesh outside of an OpenGL context!");
 
@@ -66,7 +70,8 @@ void Mesh::add_color(const vec4& color) {
 
 void Mesh::add_weight(const ivec4& indices, const vec4(&offsets)[4]) {
     weight_indices.push_back(indices);
-    weight_offsets.push_back(mat4(offsets[0], offsets[1], offsets[2], offsets[3]));
+    for (int i = 0; i < 4; ++i)
+        weight_offsets[i].push_back(offsets[i]);
 }
 
 void Mesh::add_vertex(const vec3& position, const vec3& normal, const vec2& uv, const vec4& color) {
@@ -242,18 +247,14 @@ void Mesh::finalize() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    if (weight_offsets.size() > 0) {
-        glGenBuffers(1, &vbo_weight_offsets);
-        glEnableVertexAttribArray(4);
-        glEnableVertexAttribArray(5);
-        glEnableVertexAttribArray(6);
-        glEnableVertexAttribArray(7);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_weight_offsets);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(mat4) * weight_offsets.size(), weight_offsets.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(0*sizeof(vec4)));
-        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(1*sizeof(vec4)));
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(2*sizeof(vec4)));
-        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(3*sizeof(vec4)));
+    if (weight_offsets[0].size() > 0) {
+        for (int i = 0; i < 4; ++i) {
+            glGenBuffers(1, &vbo_weight_offsets[i]);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo_weight_offsets[i]);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * weight_offsets[i].size(), weight_offsets[i].data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(4+i);
+            glVertexAttribPointer(4+i, 4, GL_FLOAT, GL_FALSE, 0, 0);
+        }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
@@ -295,17 +296,22 @@ void Mesh::release_gl_objects() {
     if (vbo_normals)    glDeleteBuffers(1, &vbo_normals);
     if (vbo_uvs)        glDeleteBuffers(1, &vbo_uvs);
     if (vbo_colors)     glDeleteBuffers(1, &vbo_colors);
-    if (vbo_weight_offsets) glDeleteBuffers(1, &vbo_weight_offsets);
     if (vbo_weight_indices) glDeleteBuffers(1, &vbo_weight_indices);
     if (vbo_indices)    glDeleteBuffers(1, &vbo_indices);
     if (vao)            glDeleteVertexArrays(1, &vao);
+
+    // Delete skin weight VBOs
+    for (int i = 0; i < 4; ++i)
+    if (vbo_weight_offsets[i]) {
+        glDeleteBuffers(1, &vbo_weight_offsets[i]);
+        vbo_weight_offsets[i] = 0;
+    }
 
     // Reset handles so they don't get deleted twice
     vbo_positions =
     vbo_normals =
     vbo_uvs =
     vbo_colors =
-    vbo_weight_offsets =
     vbo_weight_indices =
     vbo_indices =
     vao = 0;

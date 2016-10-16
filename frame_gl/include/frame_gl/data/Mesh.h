@@ -59,9 +59,9 @@ namespace frame
         // These are vectors which bake the product of the weight level,
         // the inverse bind pose bone matrix for each bone, and the
         // model-space vertex position.
-        std::vector<mat4> weight_offsets;
+        std::vector<vec4> weight_offsets[4];
         std::vector<ivec4> weight_indices;
-        unsigned int vbo_weight_offsets;
+        unsigned int vbo_weight_offsets[4];
         unsigned int vbo_weight_indices;
 
     public:
