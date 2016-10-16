@@ -188,8 +188,8 @@ Resource<ShaderPart> Shader::Preset::vert_skinned() {
         "layout(location = 1)in vec3 vert_normal;                                   "
         "layout(location = 2)in vec2 vert_uv;                                       "
         "layout(location = 3)in vec4 vert_color;                                    "
-        "layout(location = 4)in vec4 vert_weight_offsets[4];                        "
-        "layout(location = 8)in ivec4 vert_weight_indices;                          "
+        "layout(location = 4)in vec4 vert_weight_indices;                          "
+        "layout(location = 5)in vec4 vert_weight_offsets[4];                        "
         "uniform mat4 model;                                                        "
         "uniform mat4 view;                                                         "
         "uniform mat4 projection;                                                   "
@@ -198,21 +198,40 @@ Resource<ShaderPart> Shader::Preset::vert_skinned() {
         "out vec3 frag_normal;                                                      "
         "out vec2 frag_uv;                                                          "
         "out vec4 frag_color;                                                       "
+
+        "highp float rand(vec2 co)"
+        "{"
+        "   highp float a = 12.9898;"
+        "   highp float b = 78.233;"
+        "   highp float c = 43758.5453;"
+        "   highp float dt= dot(co.xy ,vec2(a,b));"
+        "   highp float sn= mod(dt,3.14);"
+        "   return fract(sin(sn) * c);"
+        "}"
+
+        "vec3 rand_color(float index) {"
+        "    return vec3(rand(vec2(index, 0)), rand(vec2(0, index+1)), rand(vec2(index+1, 0)));"
+        "}"
+
         "void main() {                                                              "
 
         "   vec4 vert_position =                                                    "
-        "       bone_transforms[vert_weight_indices[0]] * vert_weight_offsets[0] +  "
-        "       bone_transforms[vert_weight_indices[1]] * vert_weight_offsets[1] +  "
-        "       bone_transforms[vert_weight_indices[2]] * vert_weight_offsets[2] +  "
-        "       bone_transforms[vert_weight_indices[3]] * vert_weight_offsets[3];   "
-
-        //"   vec4 vert_position = bone_transforms[vert_weight_indices[0]] * vert_weight_offsets[0];"
+        "       bone_transforms[int(vert_weight_indices[0])] * vert_weight_offsets[0] +  "
+        "       bone_transforms[int(vert_weight_indices[1])] * vert_weight_offsets[1] +  "
+        "       bone_transforms[int(vert_weight_indices[2])] * vert_weight_offsets[2] +  "
+        "       bone_transforms[int(vert_weight_indices[3])] * vert_weight_offsets[3];   "
 
         "   mat4 transform  = projection * view * model;                            "
         "   frag_position   = transform * vert_position;                            "
         "   frag_normal     = normalize(vert_normal * inverse(mat3(model)));        "
         "   frag_uv         = vert_uv;                                              "
-        "   frag_color      = vert_color;                                           "
+
+        "   frag_color = vec4("
+        "       .25 * rand_color(vert_weight_indices[0]) +"
+        "       .25 * rand_color(vert_weight_indices[1]) +"
+        "       .25 * rand_color(vert_weight_indices[2]) +"
+        "       .25 * rand_color(vert_weight_indices[3]), 1);"
+
         "   gl_Position     = frag_position;                                        "
         "}                                                                          "
     );

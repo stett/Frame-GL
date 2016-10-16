@@ -49,6 +49,9 @@ void Mesh::clear() {
     uvs.clear();
     colors.clear();
     triangles.clear();
+    weight_indices.clear();
+    for (int i = 0; i < 4; ++i)
+        weight_offsets[i].clear();
     release_gl_objects();
 }
 
@@ -247,23 +250,23 @@ void Mesh::finalize() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
+    if (weight_indices.size() > 0) {
+        glGenBuffers(1, &vbo_weight_indices);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_weight_indices);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * weight_indices.size(), weight_indices.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
     if (weight_offsets[0].size() > 0) {
         for (int i = 0; i < 4; ++i) {
             glGenBuffers(1, &vbo_weight_offsets[i]);
             glBindBuffer(GL_ARRAY_BUFFER, vbo_weight_offsets[i]);
             glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * weight_offsets[i].size(), weight_offsets[i].data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(4+i);
-            glVertexAttribPointer(4+i, 4, GL_FLOAT, GL_FALSE, 0, 0);
+            glEnableVertexAttribArray(5+i);
+            glVertexAttribPointer(5+i, 4, GL_FLOAT, GL_FALSE, 0, 0);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    if (weight_indices.size() > 0) {
-        glGenBuffers(1, &vbo_weight_indices);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_weight_indices);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(ivec4) * weight_indices.size(), weight_indices.data(), GL_STATIC_DRAW);
-        glEnableVertexAttribArray(8);
-        glVertexAttribPointer(8, 4, GL_INT, GL_FALSE, 0, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 

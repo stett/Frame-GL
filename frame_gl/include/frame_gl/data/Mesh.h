@@ -60,7 +60,7 @@ namespace frame
         // the inverse bind pose bone matrix for each bone, and the
         // model-space vertex position.
         std::vector<vec4> weight_offsets[4];
-        std::vector<ivec4> weight_indices;
+        std::vector<vec4> weight_indices;
         unsigned int vbo_weight_offsets[4];
         unsigned int vbo_weight_indices;
 
