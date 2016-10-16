@@ -76,6 +76,7 @@ namespace frame
         void uniform(int location, const vec4& value);
         void uniform(int location, const mat4& value);
         void uniform(ShaderUniform location, const mat4& value);
+        void uniform_array(int array_location, const mat4* values, int count, int count_location=-1);
         int locate(const char* name);
 
         unsigned int id() { return _id; }
@@ -93,6 +94,7 @@ namespace frame
     public:
         struct Preset {
             static Resource<ShaderPart> vert_standard();
+            static Resource<ShaderPart> vert_skinned();
             static Resource<ShaderPart> frag_uvs();
             static Resource<ShaderPart> frag_colors();
             static Resource<ShaderPart> frag_normals();

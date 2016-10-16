@@ -138,9 +138,15 @@ void Shader::uniform(ShaderUniform location, const mat4& value) {
     else if (location == Projection)    uniform(uniforms().projection, value);
 }
 
+void Shader::uniform_array(int array_location, const mat4* values, int count, int count_location) {
+    glUniformMatrix4fv(array_location, count, GL_FALSE, glm::value_ptr(values[0]));
+    if (count_location != -1) glUniform1i(count_location, count);
+    gl_check();
+}
+
 int Shader::locate(const char* uniform_name) {
 
-	glUseProgram(_id);
+    glUseProgram(_id);
 
     int location = glGetUniformLocation(_id, uniform_name);
     if (location == -1)
@@ -171,6 +177,40 @@ Resource<ShaderPart> Shader::Preset::vert_standard() {
         "    frag_color     = vert_color;                                       "
         "    gl_Position    = frag_position;                                    "
         "}                                                                      "
+    );
+
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::vert_skinned() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Vertex,
+        "#version 330\n                                                             "
+        "layout(location = 1)in vec3 vert_normal;                                   "
+        "layout(location = 2)in vec2 vert_uv;                                       "
+        "layout(location = 3)in vec4 vert_color;                                    "
+        "layout(location = 4)in mat4 vert_weight_offsets;                           "
+        "layout(location = 8)in ivec4 vert_weight_indices;                          "
+        "uniform mat4 model;                                                        "
+        "uniform mat4 view;                                                         "
+        "uniform mat4 projection;                                                   "
+        "uniform mat4 bone_transforms[64];                                          "
+        "out vec4 frag_position;                                                    "
+        "out vec3 frag_normal;                                                      "
+        "out vec2 frag_uv;                                                          "
+        "out vec4 frag_color;                                                       "
+        "void main() {                                                              "
+        "    vec4 vert_position =                                                   "
+        "       bone_transforms[vert_weight_indices[0]] * vert_weight_offsets[0] +  "
+        "       bone_transforms[vert_weight_indices[1]] * vert_weight_offsets[1] +  "
+        "       bone_transforms[vert_weight_indices[2]] * vert_weight_offsets[2] +  "
+        "       bone_transforms[vert_weight_indices[3]] * vert_weight_offsets[3];   "
+        "    mat4 transform = projection * view * model;                            "
+        "    frag_position  = transform * vert_position;                            "
+        "    frag_normal    = normalize(vert_normal * inverse(mat3(model)));        "
+        "    frag_uv        = vert_uv;                                              "
+        "    frag_color     = vert_color;                                           "
+        "    gl_Position    = frag_position;                                        "
+        "}                                                                          "
     );
 
     return part;

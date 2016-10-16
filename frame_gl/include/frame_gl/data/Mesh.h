@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <memory>
 #include "frame/Resource.h"
 #include "frame_gl/math.h"
 
@@ -23,6 +24,7 @@ namespace frame
         void add_uv(const vec2& uv);
         void add_normal(const vec3& normal);
         void add_color(const vec4& color);
+        void add_weight(const ivec4& indices, const vec4(&offsets)[4]);
         void add_vertex(const vec3& position, const vec3& normal=vec3(0.0f), const vec2& uv=vec2(0.0f), const vec4& color=vec4(1.0f));
         void add_triangle(const ivec3& indices);
         void add_triangle(int a, int b, int c) { add_triangle(ivec3(a, b, c)); }
@@ -33,6 +35,9 @@ namespace frame
         std::size_t num_vertices() { return positions.size(); }
         void load_obj_str(const std::string& obj, bool normalize=false, bool center=false);
         void finalize();
+
+    public:
+        const glm::vec3 get_position(size_t index) { return positions[index]; }
 
     private:
         void release_gl_objects();
@@ -50,6 +55,14 @@ namespace frame
         unsigned int vbo_uvs;
         unsigned int vbo_colors;
         unsigned int vbo_indices;
+
+        // These are vectors which bake the product of the weight level,
+        // the inverse bind pose bone matrix for each bone, and the
+        // model-space vertex position.
+        std::vector<mat4> weight_offsets;
+        std::vector<ivec4> weight_indices;
+        unsigned int vbo_weight_offsets;
+        unsigned int vbo_weight_indices;
 
     public:
 

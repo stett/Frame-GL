@@ -54,7 +54,7 @@ namespace frame
         }
 
     public:
-        MeshRenderer* set_layer(unsigned int layer) { _layer = layer; }
+        MeshRenderer* set_layer(unsigned int layer) { _layer = layer; return this; }
 
     public:
         Resource<Mesh> mesh() { return _mesh; }
