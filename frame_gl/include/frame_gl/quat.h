@@ -41,10 +41,6 @@ namespace frame
             return *this;
         }
 
-        /*quat_t operator*(const quat_t& other) {
-            return (quat_t(*this) *= other);
-        }*/
-
         quat_t& operator*=(const quat_t& other) {
             T s_old = s;
             s = (s * other.s) - glm::dot(v, other.v);
@@ -57,12 +53,6 @@ namespace frame
             v *= c;
             return *this;
         }
-
-        /*
-        glm::tvec3<T> operator*(glm::tvec3<T> vec) const {
-            return (operator*(quat_t(0.0f, vec)) * conjugated()).v;
-        }
-        */
 
         bool operator==(const quat_t& other) const { return (s == other.s) && (v == other.v); }
 
