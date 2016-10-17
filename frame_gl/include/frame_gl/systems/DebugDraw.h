@@ -90,6 +90,12 @@ namespace frame_gl
                     "   if (character_code == 32) {" 
                     "   }"
 
+                    // -
+                    "   if (character_code == 45) {"
+                    "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .5, 0, 0) * scale; EmitVertex();"
+                    "   }"
+
                     // .
                     "   if (character_code == 46) {"
                     "       gl_Position = pos + vec4(.45, .1, 0, 0) * scale; EmitVertex();"

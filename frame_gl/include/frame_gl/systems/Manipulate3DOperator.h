@@ -5,6 +5,7 @@
 #include "frame_gl/components/Camera.h"
 #include "frame_gl/systems/Input.h"
 #include "frame_gl/systems/DebugDraw.h"
+#include "frame_gl/systems/UIText.h"
 #include "frame_gl/components/Manipulate3D.h"
 #include "frame_gl/math.h"
 #include "frame_gl/colors.h"
@@ -21,6 +22,8 @@ namespace frame
             if (input == nullptr) return;
 
             auto debug_draw = frame()->systems().get<frame_gl::DebugDraw>();
+            auto ui_text = frame()->systems().get<frame_gl::UIText>();
+            glm::vec4 ui_text_color(1.0f, 0.5f, 0.25f, 1.0f);
 
             for (auto manipulator : node<Transform, Manipulate3D>()) {
                 auto transform = manipulator.get<Transform>();
@@ -28,6 +31,12 @@ namespace frame
 
                 // Only control this object if the manipulation button is being held
                 if (input->mouse_down(manipulate->button())) {
+
+                    // Add control prompts
+                    ui_text->add_line("Zoom        - Mouse Wheel", ui_text_color);
+                    ui_text->add_line("Move        - W/A/S/D", ui_text_color);
+                    ui_text->add_line("Raise/Lower - E/Q", ui_text_color);
+                    ui_text->add_line("Re-center   - Space", ui_text_color);
 
                     // Angle manipulation
                     manipulate->shift_angle(input->mouse_delta(), -10.0f * input->mouse_scroll().y);
@@ -44,6 +53,10 @@ namespace frame
 
                     if (input->key_pressed(KEY_SPACE))
                         manipulate->set_focus(vec3(0.0f));
+                } else {
+
+                    // Add mouse control prompt
+                    ui_text->add_line(std::string("Manipulate view - ") + (manipulate->button() == Input::MouseButton::Left ? "Left Mouse Button" : "Right Mouse Button"), ui_text_color);
                 }
 
                 // Interpolate motion
