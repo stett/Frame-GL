@@ -35,6 +35,7 @@ namespace frame
                     // Add control prompts
                     ui_text->add_line("Zoom        - Mouse Wheel", ui_text_color);
                     ui_text->add_line("Move        - W/A/S/D", ui_text_color);
+                    ui_text->add_line("Move Fast   - Left Shift", ui_text_color);
                     ui_text->add_line("Raise/Lower - E/Q", ui_text_color);
                     ui_text->add_line("Re-center   - Space", ui_text_color);
 
@@ -43,12 +44,13 @@ namespace frame
 
                     // Translation manipulation
                     glm::vec3 focus_delta;
-                    if (input->key_down(KEY_W)) focus_delta.z -= 1.0f;
-                    if (input->key_down(KEY_S)) focus_delta.z += 1.0f;
-                    if (input->key_down(KEY_A)) focus_delta.x += 1.0f;
-                    if (input->key_down(KEY_D)) focus_delta.x -= 1.0f;
-                    if (input->key_down(KEY_E)) focus_delta.y += 1.0f;
-                    if (input->key_down(KEY_Q)) focus_delta.y -= 1.0f;
+                    float speed = input->key_down(KEY_LEFT_SHIFT) ? 5.0f : 1.0f;
+                    if (input->key_down(KEY_W)) focus_delta.z -= speed;
+                    if (input->key_down(KEY_S)) focus_delta.z += speed;
+                    if (input->key_down(KEY_A)) focus_delta.x += speed;
+                    if (input->key_down(KEY_D)) focus_delta.x -= speed;
+                    if (input->key_down(KEY_E)) focus_delta.y += speed;
+                    if (input->key_down(KEY_Q)) focus_delta.y -= speed;
                         manipulate->shift_focus(focus_delta);
 
                     if (input->key_pressed(KEY_SPACE))
