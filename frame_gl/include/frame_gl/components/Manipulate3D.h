@@ -19,7 +19,7 @@ namespace frame
             target_pitch(pitch),
             target_yaw(yaw),
             pan_sensitivity(0.01f),
-            scroll_sensitivity(0.1f),
+            scroll_sensitivity(0.000001f),
             _responsiveness(responsiveness),
             _position(focus + vec3(0.0f, 0.0f, distance)),
             _rotation(quat()),
@@ -28,7 +28,7 @@ namespace frame
     public:
         void shift_angle(const vec2& delta, float delta_zoom=0.0f) {
             float sign = invert ? -1.0f : 1.0f;
-            target_distance += delta_zoom * scroll_sensitivity * sign;
+            target_distance += delta_zoom * sign * scroll_sensitivity * (target_distance * target_distance);
             target_yaw += delta.x * pan_sensitivity * sign;
             target_pitch += delta.y * pan_sensitivity * sign;
             if (target_distance < 0.0f) target_distance = 0.0f;

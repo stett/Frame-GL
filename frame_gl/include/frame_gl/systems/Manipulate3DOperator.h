@@ -39,12 +39,14 @@ namespace frame
                     ui_text->add_line("Raise/Lower - E/Q", ui_text_color);
                     ui_text->add_line("Re-center   - Space", ui_text_color);
 
+                    // Adjust zoom & scroll speed with shift
+                    float speed = input->key_down(KEY_LEFT_SHIFT) ? 5.0f : 1.0f;
+
                     // Angle manipulation
-                    manipulate->shift_angle(input->mouse_delta(), -10.0f * input->mouse_scroll().y);
+                    manipulate->shift_angle(input->mouse_delta(), -10.0f * speed * input->mouse_scroll().y);
 
                     // Translation manipulation
                     glm::vec3 focus_delta;
-                    float speed = input->key_down(KEY_LEFT_SHIFT) ? 5.0f : 1.0f;
                     if (input->key_down(KEY_W)) focus_delta.z -= speed;
                     if (input->key_down(KEY_S)) focus_delta.z += speed;
                     if (input->key_down(KEY_A)) focus_delta.x += speed;
