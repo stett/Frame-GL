@@ -98,37 +98,37 @@ void Shader::unbind_all() {
     glUseProgram(0);
 }
 
-void Shader::uniform(int location, int value) {
+void Shader::uniform(int location, int value) const {
     glUniform1i(location, value);
     gl_check();
 }
 
-void Shader::uniform(int location, float value) {
+void Shader::uniform(int location, float value) const {
     glUniform1f(location, value);
     gl_check();
 }
 
-void Shader::uniform(int location, const vec2& value) {
+void Shader::uniform(int location, const vec2& value) const {
     glUniform2fv(location, 1, glm::value_ptr(value));
     gl_check();
 }
 
-void Shader::uniform(int location, const vec3& value) {
+void Shader::uniform(int location, const vec3& value) const {
     glUniform3fv(location, 1, glm::value_ptr(value));
     gl_check();
 }
 
-void Shader::uniform(int location, const vec4& value) {
+void Shader::uniform(int location, const vec4& value) const {
     glUniform4fv(location, 1, glm::value_ptr(value));
     gl_check();
 }
 
-void Shader::uniform(int location, const mat4& value) {
+void Shader::uniform(int location, const mat4& value) const {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
     gl_check();
 }
 
-void Shader::uniform(ShaderUniform location, const mat4& value) {
+void Shader::uniform(ShaderUniform location, const mat4& value) const {
     //
     // TODO: This is horrible. Stupid using both enums
     //       and nasty, reducible switch statements.
@@ -138,13 +138,13 @@ void Shader::uniform(ShaderUniform location, const mat4& value) {
     else if (location == Projection)    uniform(uniforms().projection, value);
 }
 
-void Shader::uniform_array(int array_location, const mat4* values, int count, int count_location) {
+void Shader::uniform_array(int array_location, const mat4* values, int count, int count_location) const {
     glUniformMatrix4fv(array_location, count, GL_FALSE, glm::value_ptr(values[0]));
     if (count_location != -1) glUniform1i(count_location, count);
     gl_check();
 }
 
-int Shader::locate(const char* uniform_name) {
+int Shader::locate(const char* uniform_name) const {
 
     glUseProgram(_id);
 
@@ -166,12 +166,14 @@ Resource<ShaderPart> Shader::Preset::vert_standard() {
         "uniform mat4 view;                                                     "
         "uniform mat4 projection;                                               "
         "out vec4 frag_position;                                                "
+        "out vec4 frag_position_world;                                          "
         "out vec3 frag_normal;                                                  "
         "out vec2 frag_uv;                                                      "
         "out vec4 frag_color;                                                   "
         "void main() {                                                          "
-        "    mat4 transform = projection * view * model;                        "
-        "    frag_position  = transform * vec4(vert_position, 1.0);             "
+        "    mat4 transform = projection * view;                                "
+        "    frag_position_world = model * vec4(vert_position, 1);              "
+        "    frag_position  = transform * frag_position_world;                  "
         "    frag_normal    = normalize(vert_normal * inverse(mat3(model)));    "
         "    frag_uv        = vert_uv;                                          "
         "    frag_color     = vert_color;                                       "
@@ -306,6 +308,21 @@ Resource<ShaderPart> Shader::Preset::frag_white() {
         "void main() {                  "
         "    pixel_color = vec4(1);"
         "}                              "
+    );
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_flat() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                                                 "
+        "in vec3 frag_normal;                                           "
+        "out vec4 pixel_color;                                          "
+        "uniform vec3 light_normal;                                     "
+        "uniform vec3 light_color;                                      "
+        "void main() {                                                  "
+        "   float intensity = max(0, dot(light_normal, frag_normal));   "
+        "   pixel_color = vec4(intensity * light_color, 1);             "
+        "}                                                              "
     );
     return part;
 }

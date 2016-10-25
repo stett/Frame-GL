@@ -63,21 +63,21 @@ namespace frame
         void unbind();
         static void unbind_all();
 
-        const ShaderUniformLocations& uniforms() { return _uniforms; }
+        const ShaderUniformLocations& uniforms() const { return _uniforms; }
 
         template <typename T>
-        void uniform(const char* name, const T& value)
+        void uniform(const char* name, const T& value) const
         { uniform(locate(name), value); }
 
-        void uniform(int location, int value);
-        void uniform(int location, float value);
-        void uniform(int location, const vec2& value);
-        void uniform(int location, const vec3& value);
-        void uniform(int location, const vec4& value);
-        void uniform(int location, const mat4& value);
-        void uniform(ShaderUniform location, const mat4& value);
-        void uniform_array(int array_location, const mat4* values, int count, int count_location=-1);
-        int locate(const char* name);
+        void uniform(int location, int value) const;
+        void uniform(int location, float value) const;
+        void uniform(int location, const vec2& value) const;
+        void uniform(int location, const vec3& value) const;
+        void uniform(int location, const vec4& value) const;
+        void uniform(int location, const mat4& value) const;
+        void uniform(ShaderUniform location, const mat4& value) const;
+        void uniform_array(int array_location, const mat4* values, int count, int count_location=-1) const;
+        int locate(const char* name) const;
 
         unsigned int id() { return _id; }
 
@@ -101,6 +101,7 @@ namespace frame
             static Resource<ShaderPart> frag_coords();
             static Resource<ShaderPart> frag_depth();
             static Resource<ShaderPart> frag_white();
+            static Resource<ShaderPart> frag_flat();
             static Resource<Shader> model_uvs();
             static Resource<Shader> model_colors();
             static Resource<Shader> model_normals();

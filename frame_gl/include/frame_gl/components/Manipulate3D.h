@@ -19,7 +19,7 @@ namespace frame
             target_pitch(pitch),
             target_yaw(yaw),
             pan_sensitivity(0.01f),
-            scroll_sensitivity(0.1f),
+            scroll_sensitivity(1.0f),
             _responsiveness(responsiveness),
             _position(focus + vec3(0.0f, 0.0f, distance)),
             _rotation(quat()),
