@@ -2,6 +2,7 @@
 #include <memory>
 #include <queue>
 #include <utility>
+#include <unordered_map>
 #include "frame/System.h"
 #include "frame_gl/systems/Render.h"
 #include "frame_gl/components/Camera.h"
@@ -14,10 +15,10 @@ using namespace frame;
 namespace
 {
     struct Line {
-        Line(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color, float thickness = 1.0f)
+        Line(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color, size_t thickness = 1)
         : a(a), b(b), color(color), thickness(thickness) {}
         glm::vec3 a, b, color;
-        float thickness;
+        size_t thickness;
     };
 
     struct String {
@@ -40,6 +41,58 @@ namespace frame_gl
         DebugDraw(int main_layer=0, int gui_layer=1)
         : main_layer(main_layer), gui_layer(gui_layer), render(nullptr), main_camera(nullptr), gui_camera(nullptr) {}
         ~DebugDraw() {}
+
+    public:
+
+        void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& color=glm::vec3(1.0f), size_t thickness=1) {
+            lines.push(Line(p0, p1, color, thickness));
+        }
+
+        void cube(const glm::vec3& point, float scale=1.0f) {
+            cube(glm::scale(glm::translate(glm::mat4(1.0f), point), glm::vec3(scale)));
+        }
+
+        void cube(const glm::mat4& transform) {
+            cubes.push(transform);
+        }
+
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size = 12.0f) {
+            world_text(position, text, vec4(color, 1.0f), size);
+        }
+
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
+            world_strings.push(String(position, text, color, size));
+        }
+
+        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
+            screen_text(TopLeft, position, text, color, size);
+        }
+
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color, float size=12.0f) {
+            screen_text(alignment, position, text, color, size);
+        }
+
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
+
+            // If we haven't got a gui camera, then this won't get rendered anyway
+            if (gui_camera == nullptr) return;
+
+            // Get the camera's target's resolution
+            ivec2 screen_size = gui_camera->target()->size();
+
+            // Get the actual size of a character in pixels (they are square)
+            //float pixel_size = screen_size
+
+            // Adjust the position for alignment
+            if (alignment == TopRight || alignment == BottomRight)
+                position.x += screen_size.x - float(text.size() * size);
+            if (alignment == BottomLeft || alignment == BottomRight)
+                position.y += screen_size.y;
+            else
+                position.y += size;
+
+            screen_strings.push(String(glm::vec3(position.x, position.y, 0.0f), text, color, size));
+        }
 
     protected:
         void setup() {
@@ -583,10 +636,12 @@ namespace frame_gl
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             // Build a mesh with a bunch of lines
+            //std::unordered_map<int, Mesh> meshes;
             Mesh mesh;
             int mesh_indices = 0;
             while (!lines.empty()) {
                 auto& line = lines.front();
+                //auto& mesh = meshes[line.thickness];
                 mesh.add_position(line.a);
                 mesh.add_position(line.b);
                 mesh.add_color(vec4(line.color, 1.0f));
@@ -596,7 +651,12 @@ namespace frame_gl
                 lines.pop();
             }
 
-            // Draw it
+            // Draw all the meshes
+            /*for (auto& mesh : meshes) {
+                glLineWidth(float(mesh.first));
+                mesh.second.finalize();
+                mesh.second.render();
+            }*/
             mesh.finalize();
             mesh.render();
 
@@ -673,58 +733,6 @@ namespace frame_gl
             }
 
             text_shader->unbind();
-        }
-
-    public:
-
-        void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& color=glm::vec3(1.0f), float thickness=1.0f) {
-            lines.push(Line(p0, p1, color, thickness));
-        }
-
-        void cube(const glm::vec3& point, float scale=1.0f) {
-            cube(glm::scale(glm::translate(glm::mat4(1.0f), point), glm::vec3(scale)));
-        }
-
-        void cube(const glm::mat4& transform) {
-            cubes.push(transform);
-        }
-
-        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size = 12.0f) {
-            world_text(position, text, vec4(color, 1.0f), size);
-        }
-
-        void world_text(const glm::vec3& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
-            world_strings.push(String(position, text, color, size));
-        }
-
-        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
-            screen_text(TopLeft, position, text, color, size);
-        }
-
-        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color, float size=12.0f) {
-            screen_text(alignment, position, text, color, size);
-        }
-
-        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
-
-            // If we haven't got a gui camera, then this won't get rendered anyway
-            if (gui_camera == nullptr) return;
-
-            // Get the camera's target's resolution
-            ivec2 screen_size = gui_camera->target()->size();
-
-            // Get the actual size of a character in pixels (they are square)
-            //float pixel_size = screen_size
-
-            // Adjust the position for alignment
-            if (alignment == TopRight || alignment == BottomRight)
-                position.x += screen_size.x - float(text.size() * size);
-            if (alignment == BottomLeft || alignment == BottomRight)
-                position.y += screen_size.y;
-            else
-                position.y += size;
-
-            screen_strings.push(String(glm::vec3(position.x, position.y, 0.0f), text, color, size));
         }
 
     private:
