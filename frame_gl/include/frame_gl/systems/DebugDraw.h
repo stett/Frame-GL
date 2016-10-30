@@ -48,6 +48,15 @@ namespace frame_gl
             lines.push(Line(p0, p1, color, thickness));
         }
 
+        void circle(const glm::vec3& position, float inner_radius, float outer_radius=0.0f, const glm::vec4& color=glm::vec4(1.0f)) {
+            if (outer_radius < inner_radius)
+                outer_radius = inner_radius;
+            //
+            // TODO: Add a circle queue.
+            // TODO: Add circle renderer - billboarding geometry shader!
+            //
+        }
+
         void cube(const glm::vec3& point, float scale=1.0f) {
             cube(glm::scale(glm::translate(glm::mat4(1.0f), point), glm::vec3(scale)));
         }
