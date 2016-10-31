@@ -9,7 +9,7 @@ namespace frame_gl
 {
     FRAME_SYSTEM(UIText) {
     public:
-        UIText() : size(14.0f), spacing(1.0f) {}
+        UIText() : size(16.0f), spacing(1.0f) {}
 
     public:
         void setup() {
