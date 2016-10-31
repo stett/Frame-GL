@@ -29,6 +29,15 @@ namespace
         glm::vec4 color;
         float size;
     };
+
+    struct Circle {
+        Circle(const glm::vec3& position, float inner_radius, float outer_radius, const glm::vec4& color)
+        : position(position), inner_radius(inner_radius), outer_radius(outer_radius), color(color) {}
+        glm::vec3 position;
+        float inner_radius;
+        float outer_radius;
+        glm::vec4 color;
+    };
 }
 
 namespace frame_gl
@@ -48,13 +57,10 @@ namespace frame_gl
             lines.push(Line(p0, p1, color, thickness));
         }
 
-        void circle(const glm::vec3& position, float inner_radius, float outer_radius=0.0f, const glm::vec4& color=glm::vec4(1.0f)) {
+        void circle(const glm::vec3& position, float inner_radius=1.0f, float outer_radius=2.0f, const glm::vec4& color=glm::vec4(1.0f)) {
             if (outer_radius < inner_radius)
                 outer_radius = inner_radius;
-            //
-            // TODO: Add a circle queue.
-            // TODO: Add circle renderer - billboarding geometry shader!
-            //
+            circles.push(Circle(position, inner_radius, outer_radius, color));
         }
 
         void cube(const glm::vec3& point, float scale=1.0f) {
@@ -117,6 +123,67 @@ namespace frame_gl
                 "Debug Line Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_colors());
+
+            circle_shader = new Shader(
+                "Debug Circle Shader",
+
+                Resource<ShaderPart>(ShaderPart::Type::Vertex,
+                    "#version 330\n                                                 "
+                    "layout(location = 0)in vec3 vert_position;                     "
+                    "layout(location = 2)in vec2 vert_uv;                           "
+                    "layout(location = 3)in vec4 vert_color;                        "
+                    "uniform mat4 model;                                            "
+                    "uniform mat4 view;                                             "
+                    "uniform mat4 projection;                                       "
+                    "out vec4 geom_position;                                        "
+                    "out vec2 geom_radii;                                           "
+                    "out vec4 geom_color;                                           "
+                    "void main() {                                                  "
+                    "   mat4 transform  = projection * view * model;                "
+                    "   geom_position   = transform * vec4(vert_position, 1.0);     "
+                    "   geom_radii      = vert_uv;                                  "
+                    "   geom_color      = vert_color;                               "
+                    "   gl_Position     = geom_position;                            "
+                    "}                                                              "
+                    ),
+
+                Resource<ShaderPart>(ShaderPart::Type::Geometry,
+                    "#version 330\n"
+                    "#define pi 3.1415926535897932384626433832795\n"
+                    "layout(lines) in;"
+                    "layout(triangle_strip, max_vertices = 128) out;"
+                    //"uniform vec2 screen_size;"
+                    "in vec4 geom_position[2];"
+                    "in vec2 geom_radii[2];"
+                    "in vec4 geom_color[2];"
+                    "out vec4 frag_color;"
+                    "void main() {"
+                    //"   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w * character_size);"
+                    "   vec4 center = geom_position[0];                             "
+                    "   float inner_radius = geom_radii[0].x;                       "
+                    "   float outer_radius = geom_radii[0].y;                       "
+                    "   for (int i = 0; i < 64; ++i) {                              "
+                    "       float t = float(i) / 63;                                "
+                    "       float c = cos(2 * pi * t);                              "
+                    "       float s = sin(2 * pi * t);                              "
+                    "       gl_Position = center + inner_radius * vec4(c, s, 0, 0); "
+                    "       frag_color = geom_color[0];                             "
+                    "       EmitVertex();                                           "
+                    "       gl_Position = center + inner_radius * vec4(c, s, 0, 0); "
+                    "       frag_color = geom_color[0];                             "
+                    "       EmitVertex();                                           "
+                    "   }                                                           "
+                    "}"
+                    ),
+
+                Resource<ShaderPart>(ShaderPart::Type::Fragment,
+                    "#version 330\n"
+                    "in vec4 frag_color;"
+                    "out vec4 pixel_color;"
+                    "void main() {"
+                    "   pixel_color = vec4(1);"
+                    "}"
+                ));
 
             text_shader = new Shader(
                 "Debug Text Shader",
@@ -192,87 +259,87 @@ namespace frame_gl
 
                     // 2
                     "   else if (character_code == 50) {"
-                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, .35, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, .45, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, .35, 0, 0) * scale;   EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .45, 0, 0) * scale;   EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .9, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.35, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.35, 1, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .9, 0, 0) * scale;    EmitVertex();"
                     "   }"
 
                     // 3
                     "   else if (character_code == 51) {"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, 1, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .9, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .6, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.65, .5, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.5, .5, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.5, .5, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.65, .5, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .4, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;     EmitVertex();"
                     "   }"
 
                     // 4
                     "   else if (character_code == 52) {"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .5, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;     EmitVertex();"
                     "   }"
 
                     // 5
                     "   else if (character_code == 53) {"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, .75, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, .65, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, .55, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .75, 0, 0) * scale;   EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, .65, 0, 0) * scale;   EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .55, 0, 0) * scale;   EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.65, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.35, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.65, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.35, 0, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .1, 0, 0) * scale;    EmitVertex();"
                     "   }"
 
                     // 6
                     "   else if (character_code == 54) {"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .4, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .4, 0, 0) * scale;    EmitVertex();"
                     "   }"
 
                     // 7
                     "   else if (character_code == 55) {"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;     EmitVertex();"
                     "   }"
 
                     // 8
                     "   else if (character_code == 56) {"
                     "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .5, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .5, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
                     "   }"
 
                     // 9
                     "   else if (character_code == 57) {"
-                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;    EmitVertex();"
-                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;    EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, 1, 0, 0) * scale;     EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, 1, 0, 0) * scale;     EmitVertex();"
                     "       gl_Position = pos + vec4(.25, .6, 0, 0) * scale;    EmitVertex();"
                     "       gl_Position = pos + vec4(.75, .6, 0, 0) * scale;    EmitVertex();"
                     "   }"
@@ -585,7 +652,9 @@ namespace frame_gl
         }
 
         void teardown() {
+            delete line_shader;
             delete shape_shader;
+            delete circle_shader;
             delete text_shader;
         }
 
@@ -601,9 +670,10 @@ namespace frame_gl
                 // Bind the render target
                 main_camera->bind_target();
 
-                // Draw shit
+                // Draw worldspace stuff
                 render_lines(main_camera);
                 render_cubes(main_camera);
+                render_circles(main_camera);
                 render_text(main_camera, world_strings);
 
                 // Tear down
@@ -616,7 +686,7 @@ namespace frame_gl
                 // Bind the render target
                 gui_camera->bind_target();
 
-                // Draw shit
+                // Draw gui (screen) space stuff
                 render_text(gui_camera, screen_strings);
 
                 // Tear down
@@ -696,6 +766,38 @@ namespace frame_gl
             shape_shader->unbind();
         }
 
+        void render_circles(Camera* camera) {
+
+            if (circles.empty())
+                return;
+
+            circle_shader->bind();
+            circle_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            circle_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            circle_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            glDisable(GL_CULL_FACE);
+            glDisable(GL_DEPTH_TEST);
+
+            Mesh mesh;
+            int mesh_indices = 0;
+            while (!circles.empty()) {
+                auto& circle = circles.front();
+                mesh.add_position(circle.position);
+                mesh.add_uv(vec2(circle.inner_radius, circle.outer_radius));
+                mesh.add_color(circle.color);
+                mesh.add_line(mesh_indices, mesh_indices);
+                ++mesh_indices;
+                circles.pop();
+            }
+
+            mesh.finalize();
+            mesh.render();
+
+            circle_shader->unbind();
+        }
+
         void render_text(Camera* camera, std::queue< String >& strings) {
 
             if (strings.empty() && strings.empty())
@@ -750,12 +852,14 @@ namespace frame_gl
         Camera* gui_camera;
         Shader* line_shader;
         Shader* shape_shader;
+        Shader* circle_shader;
         Shader* text_shader;
         int text_shader_characters;
         std::queue< Line > lines;
         std::queue< glm::mat4 > cubes;
         std::queue< String > world_strings;
         std::queue< String > screen_strings;
+        std::queue< Circle > circles;
         int main_layer;
         int gui_layer;
     };
