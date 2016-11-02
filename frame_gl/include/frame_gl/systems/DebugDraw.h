@@ -152,24 +152,24 @@ namespace frame_gl
                     "#define pi 3.1415926535897932384626433832795\n"
                     "layout(lines) in;"
                     "layout(triangle_strip, max_vertices = 128) out;"
-                    //"uniform vec2 screen_size;"
+                    "uniform vec2 screen_size;"
                     "in vec4 geom_position[2];"
                     "in vec2 geom_radii[2];"
                     "in vec4 geom_color[2];"
                     "out vec4 frag_color;"
                     "void main() {"
-                    //"   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w * character_size);"
+                    "   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w);"
                     "   vec4 center = geom_position[0];                             "
                     "   float inner_radius = geom_radii[0].x;                       "
                     "   float outer_radius = geom_radii[0].y;                       "
-                    "   for (int i = 0; i < 64; ++i) {                              "
-                    "       float t = float(i) / 63;                                "
+                    "   for (int i = 0; i < 32; ++i) {                              "
+                    "       float t = float(i) / 31;                                "
                     "       float c = cos(2 * pi * t);                              "
                     "       float s = sin(2 * pi * t);                              "
-                    "       gl_Position = center + inner_radius * vec4(c, s, 0, 0); "
+                    "       gl_Position = center + (scale * inner_radius) * vec4(c, s, 0, 0); "
                     "       frag_color = geom_color[0];                             "
                     "       EmitVertex();                                           "
-                    "       gl_Position = center + inner_radius * vec4(c, s, 0, 0); "
+                    "       gl_Position = center + (scale * outer_radius) * vec4(c, s, 0, 0); "
                     "       frag_color = geom_color[0];                             "
                     "       EmitVertex();                                           "
                     "   }                                                           "
@@ -181,7 +181,7 @@ namespace frame_gl
                     "in vec4 frag_color;"
                     "out vec4 pixel_color;"
                     "void main() {"
-                    "   pixel_color = vec4(1);"
+                    "   pixel_color = frag_color;"
                     "}"
                 ));
 
@@ -775,8 +775,9 @@ namespace frame_gl
             circle_shader->uniform(ShaderUniform::View, camera->view_matrix());
             circle_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
             circle_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
+            circle_shader->uniform("screen_size", camera->target()->size());
 
-            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
 
