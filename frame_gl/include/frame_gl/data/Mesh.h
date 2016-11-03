@@ -37,7 +37,8 @@ namespace frame
         void finalize();
 
     public:
-        const glm::vec3 get_position(size_t index) { return positions[index]; }
+        size_t position_count() const { return positions.size(); }
+        const glm::vec3 get_position(size_t index) const { return positions[index]; }
 
     private:
         void release_gl_objects();

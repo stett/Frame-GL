@@ -715,29 +715,26 @@ namespace frame_gl
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             // Build a mesh with a bunch of lines
-            //std::unordered_map<int, Mesh> meshes;
-            Mesh mesh;
-            int mesh_indices = 0;
+            std::unordered_map<int, Mesh> meshes;
             while (!lines.empty()) {
                 auto& line = lines.front();
-                //auto& mesh = meshes[line.thickness];
+                auto& mesh = meshes[line.thickness];
                 mesh.add_position(line.a);
                 mesh.add_position(line.b);
                 mesh.add_color(vec4(line.color, 1.0f));
                 mesh.add_color(vec4(line.color, 1.0f));
-                mesh.add_line(mesh_indices, mesh_indices+1);
-                mesh_indices += 2;
+                mesh.add_line(mesh.position_count() - 2, mesh.position_count() - 1);
                 lines.pop();
             }
 
             // Draw all the meshes
-            /*for (auto& mesh : meshes) {
+            for (auto& mesh : meshes) {
                 glLineWidth(float(mesh.first));
                 mesh.second.finalize();
                 mesh.second.render();
-            }*/
-            mesh.finalize();
-            mesh.render();
+            }
+            //mesh.finalize();
+            //mesh.render();
 
             line_shader->unbind();
         }
