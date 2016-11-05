@@ -18,7 +18,9 @@ void Input::setup() {
 
 void Input::step_post(float dt) {
     mouse[Previous] = mouse[Current];
+    mouse[Current] = mouse[Next];
     keyboard[Previous] = keyboard[Current];
+    keyboard[Current] = keyboard[Next];
 }
 
 bool Input::mouse_down(MouseButton button, States state) const {
@@ -68,24 +70,24 @@ bool Input::key_released(int key) const {
 void Input::keyboard_callback(int key, int scancode, int action, int mods) {
     if (key >= KeyboardState::NUM_KEYS) return;
     if (action == GLFW_PRESS) {
-        keyboard[States::Current].keys[key] = true;
+        keyboard[States::Next].keys[key] = true;
     } else if (action == GLFW_RELEASE) {
-        keyboard[States::Current].keys[key] = false;
+        keyboard[States::Next].keys[key] = false;
     }
 }
 
 void Input::mouse_button_callback(int button, int action, int mods) {
     if (action == GLFW_PRESS) {
-        mouse[States::Current].buttons |= (1 << button);
+        mouse[States::Next].buttons |= (1 << button);
     } else if (action == GLFW_RELEASE) {
-        mouse[States::Current].buttons &= ~(1 << button);
+        mouse[States::Next].buttons &= ~(1 << button);
     }
 }
 
 void Input::mouse_position_callback(const vec2& position) {
-    mouse[States::Current].position = position;
+    mouse[States::Next].position = position;
 }
 
 void Input::mouse_scroll_callback(const vec2& delta) {
-    mouse[States::Current].scroll += delta;
+    mouse[States::Next].scroll += delta;
 }

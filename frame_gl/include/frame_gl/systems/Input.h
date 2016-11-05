@@ -158,7 +158,7 @@ namespace frame
             KeyboardState() : keys(0) {}
         };
 
-        enum States { Previous = 0, Current, Count };
+        enum States { Previous = 0, Current, Next, Count };
 
     protected:
         void setup();
@@ -187,5 +187,7 @@ namespace frame
     private:
         MouseState mouse[States::Count];
         KeyboardState keyboard[States::Count];
+        vec2 _mouse_delta;
+        vec2 _mouse_scroll;
     };
 }
