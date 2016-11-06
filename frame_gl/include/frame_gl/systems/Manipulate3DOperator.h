@@ -24,8 +24,8 @@ namespace frame
             auto input = frame()->systems().get<Input>();
             if (input == nullptr) return;
 
-            auto debug_draw = frame()->systems().get<frame_gl::DebugDraw>();
-            auto ui_text = frame()->systems().get<frame_gl::UIText>();
+            auto debug_draw = system<frame_gl::DebugDraw>();
+            auto ui_text = system<frame_gl::UIText>();
             glm::vec4 ui_text_color(1.0f, 0.5f, 0.25f, 1.0f);
 
             for (auto manipulator : node<Transform, Manipulate3D>()) {
