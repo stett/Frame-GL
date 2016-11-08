@@ -5,6 +5,7 @@ include_directories(${FrameGL_SOURCE_DIR}/external/frame/frame/include)
 include_directories(${FrameGL_SOURCE_DIR}/external/glew-cmake/include)
 include_directories(${FrameGL_SOURCE_DIR}/external/glfw/include)
 include_directories(${FrameGL_SOURCE_DIR}/external/gli)
+include_directories(${FrameGL_SOURCE_DIR}/external/gli/external/glm)
 
 OPTION( glew-cmake_BUILD_SHARED "Build the shared glew library" OFF )
 
