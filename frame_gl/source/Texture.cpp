@@ -1,7 +1,11 @@
 #define GLEW_STATIC
 #include <cstdio>
 #include <GL/glew.h>
-//#include <png.h>
+#include <gli/texture2d.hpp>
+#include <gli/convert.hpp>
+#include <gli/generate_mipmaps.hpp>
+#include <gli/load.hpp>
+//#include <gli/save.hpp>
 #include "frame/Log.h"
 #include "frame_gl/data/Texture.h"
 #include "frame_gl/error.h"
@@ -39,6 +43,7 @@ Texture::Texture(const ivec2& size, bool multisample) : _size(size), _multisampl
 }
 
 Texture::Texture(const std::string& filename) {
+    auto test = gli::load(filename);
 }
 
 Texture::~Texture() { glDeleteTextures(1, &_id); }
