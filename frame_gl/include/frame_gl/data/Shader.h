@@ -10,13 +10,15 @@ namespace frame
     enum ShaderUniform {
         Model = 0,
         View,
-        Projection
+        Projection,
+        Diffuse
     };
 
     struct ShaderUniformLocations {
         int model;
         int view;
         int projection;
+        int diffuse;
     };
 
     /// \class ShaderPart
@@ -76,6 +78,7 @@ namespace frame
         void uniform(int location, const vec4& value) const;
         void uniform(int location, const mat4& value) const;
         void uniform(ShaderUniform location, const mat4& value) const;
+        void uniform(ShaderUniform location, int value) const;
         void uniform_array(int array_location, const mat4* values, int count, int count_location=-1) const;
         int locate(const char* name) const;
 
@@ -96,6 +99,7 @@ namespace frame
             static Resource<ShaderPart> vert_standard();
             static Resource<ShaderPart> vert_skinned();
             static Resource<ShaderPart> frag_uvs();
+            static Resource<ShaderPart> frag_diffuse();
             static Resource<ShaderPart> frag_colors();
             static Resource<ShaderPart> frag_normals();
             static Resource<ShaderPart> frag_coords();

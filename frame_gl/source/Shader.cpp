@@ -75,8 +75,11 @@ Shader::Shader(const std::string& name, const std::vector< Resource<ShaderPart> 
     _uniforms.model         = glGetUniformLocation(_id, "model");
     _uniforms.view          = glGetUniformLocation(_id, "view");
     _uniforms.projection    = glGetUniformLocation(_id, "projection");
+    _uniforms.diffuse       = glGetUniformLocation(_id, "diffuse");
 
     glUseProgram(0);
+
+    gl_check();
 
     // Print success message
     Log::success("Shader program linked: " + name + " (" + std::to_string(_id) + ")");
@@ -133,9 +136,13 @@ void Shader::uniform(ShaderUniform location, const mat4& value) const {
     // TODO: This is horrible. Stupid using both enums
     //       and nasty, reducible switch statements.
     //
-    if (location == Model)              uniform(uniforms().model, value);
-    else if (location == View)          uniform(uniforms().view, value);
-    else if (location == Projection)    uniform(uniforms().projection, value);
+    if      (location == Model)         uniform(uniforms().model,       value);
+    else if (location == View)          uniform(uniforms().view,        value);
+    else if (location == Projection)    uniform(uniforms().projection,  value);
+}
+
+void Shader::uniform(ShaderUniform location, int value) const {
+    if      (location == Diffuse)       uniform(uniforms().diffuse,     value);
 }
 
 void Shader::uniform_array(int array_location, const mat4* values, int count, int count_location) const {
@@ -247,8 +254,24 @@ Resource<ShaderPart> Shader::Preset::frag_uvs() {
         "in vec2 frag_uv;                           "
         "out vec4 pixel_color;                      "
         "void main() {                              "
-        "    pixel_color = vec4(frag_uv, .5, 1);    "
+        "   pixel_color = vec4(frag_uv, .5, 1);     "
         "}                                          "
+    );
+    return part;
+}
+
+Resource<ShaderPart> Shader::Preset::frag_diffuse() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                                             "
+        "in vec2 frag_uv;                                           "
+        "uniform sampler2D diffuse;                                 "
+        //"uniform int diffuse;                                 "
+        "out vec4 pixel_color;                                      "
+        "void main() {                                              "
+        //"   pixel_color = vec4(frag_uv, .5, 1);                     "
+        "   pixel_color = vec4(texture(diffuse, frag_uv).bgr, 1.0f);"
+        //"   pixel_color = vec4(texture(diffuse, frag_uv).rgb, 1.0f);"
+        "}                                                          "
     );
     return part;
 }
