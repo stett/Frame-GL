@@ -13,6 +13,7 @@ add_subdirectory(external/frame)
 add_subdirectory(external/glew-cmake)
 add_subdirectory(external/glfw)
 add_subdirectory(external/gli)
+add_subdirectory(external/gli/external/glm)
 
 file(GLOB frame_gl_sources "source/*.cpp")
 
