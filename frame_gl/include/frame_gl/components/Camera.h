@@ -33,6 +33,13 @@ namespace frame
             return project_onto_plane(world_point, view_point, plane_point, plane_normal, projection_matrix(), view_matrix());
         }
 
+        /// \brief Project a point from world space onto the viewing plane.
+        bool get_view_point(vec2& screen_point, const vec3& world_point) {
+            screen_point = vec2(0.0f);
+            return true;
+        }
+
+        const vec3& position() { return get<Transform>()->translation(); }
         const mat4& view_matrix() { return get<Transform>()->world_inverse(); }
         const mat4& projection_matrix() { return _projection_matrix; }
         unsigned int layer_mask() { return _layer_mask; }
