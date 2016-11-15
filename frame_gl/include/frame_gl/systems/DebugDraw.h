@@ -57,7 +57,7 @@ namespace frame_gl
             lines.push(Line(p0, p1, color, thickness));
         }
 
-        void circle(const glm::vec3& position, float inner_radius=1.0f, float outer_radius=2.0f, const glm::vec4& color=glm::vec4(1.0f)) {
+        void circle(const glm::vec3& position, float inner_radius=5.0f, float outer_radius=10.0f, const glm::vec4& color=glm::vec4(1.0f)) {
             if (outer_radius < inner_radius)
                 outer_radius = inner_radius;
             circles.push(Circle(position, inner_radius, outer_radius, color));
