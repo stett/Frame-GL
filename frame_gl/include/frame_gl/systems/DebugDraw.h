@@ -12,36 +12,43 @@
 #include "glm/gtc/matrix_transform.hpp"
 using namespace frame;
 
-namespace
-{
-    struct Line {
-        Line(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color, size_t thickness = 1)
-        : a(a), b(b), color(color), thickness(thickness) {}
-        glm::vec3 a, b, color;
-        size_t thickness;
-    };
-
-    struct String {
-        String(const glm::vec3& position, const std::string& text, const glm::vec4& color, float size)
-        : position(position), text(text), color(color), size(size) {}
-        glm::vec3 position;
-        std::string text;
-        glm::vec4 color;
-        float size;
-    };
-
-    struct Circle {
-        Circle(const glm::vec3& position, float inner_radius, float outer_radius, const glm::vec4& color)
-        : position(position), inner_radius(inner_radius), outer_radius(outer_radius), color(color) {}
-        glm::vec3 position;
-        float inner_radius;
-        float outer_radius;
-        glm::vec4 color;
-    };
-}
-
 namespace frame_gl
 {
+    namespace
+    {
+        struct Range { float min, max; };
+
+        struct Line {
+            Line(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color, size_t thickness = 1)
+                : a(a), b(b), color(color), thickness(thickness) {}
+            glm::vec3 a, b, color;
+            size_t thickness;
+        };
+
+        struct String {
+            String(const glm::vec3& position, const std::string& text, const glm::vec4& color, float size)
+                : position(position), text(text), color(color), size(size) {}
+            glm::vec3 position;
+            std::string text;
+            glm::vec4 color;
+            float size;
+        };
+
+        struct Circle {
+            Circle(const glm::vec3& position, float inner_radius, float outer_radius, const glm::vec4& color)
+                : position(position), radii({ inner_radius, outer_radius }), color(color) {}
+            glm::vec3 position;
+            Range radii;
+            glm::vec4 color;
+        };
+
+        struct Arc : Circle {
+            Arc(const glm::vec3& position, float inner_radius, float outer_radius, float start_angle, float end_angle, const glm::vec4& color)
+                : Circle(position, inner_radius, outer_radius, color), angles({ start_angle, end_angle }) {}
+            Range angles;
+        };
+    }
+
     FRAME_SYSTEM(DebugDraw) {
     public:
         enum Alignment { TopLeft, TopRight, BottomLeft, BottomRight };
@@ -61,6 +68,12 @@ namespace frame_gl
             if (outer_radius < inner_radius)
                 outer_radius = inner_radius;
             circles.push(Circle(position, inner_radius, outer_radius, color));
+        }
+
+        void arc(const glm::vec3& position, float inner_radius=5.0f, float outer_radius=10.0f, float start_angle=0.0f, float end_angle=pi, const glm::vec4& color=glm::vec4(1.0f)) {
+            if (outer_radius < inner_radius)
+                outer_radius = inner_radius;
+            arcs.push(Arc(position, inner_radius, outer_radius, start_angle, end_angle, color));
         }
 
         void cube(const glm::vec3& point, float scale=1.0f) {
@@ -124,29 +137,31 @@ namespace frame_gl
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_colors());
 
+            auto arc_shader_vert = Resource<ShaderPart>(ShaderPart::Type::Vertex,
+                "#version 330\n                                                 "
+                "layout(location = 0)in vec3 vert_position;                     "
+                "layout(location = 1)in vec3 vert_normal;                       "
+                "layout(location = 2)in vec2 vert_uv;                           "
+                "layout(location = 3)in vec4 vert_color;                        "
+                "uniform mat4 model;                                            "
+                "uniform mat4 view;                                             "
+                "uniform mat4 projection;                                       "
+                "out vec4 geom_position;                                        "
+                "out vec2 geom_angles;                                          "
+                "out vec2 geom_radii;                                           "
+                "out vec4 geom_color;                                           "
+                "void main() {                                                  "
+                "   mat4 transform  = projection * view * model;                "
+                "   geom_position   = transform * vec4(vert_position, 1.0);     "
+                "   geom_angles     = vert_normal.xy;                           "
+                "   geom_radii      = vert_uv;                                  "
+                "   geom_color      = vert_color;                               "
+                "   gl_Position     = geom_position;                            "
+                "}                                                              ");
+
             circle_shader = new Shader(
                 "Debug Circle Shader",
-
-                Resource<ShaderPart>(ShaderPart::Type::Vertex,
-                    "#version 330\n                                                 "
-                    "layout(location = 0)in vec3 vert_position;                     "
-                    "layout(location = 2)in vec2 vert_uv;                           "
-                    "layout(location = 3)in vec4 vert_color;                        "
-                    "uniform mat4 model;                                            "
-                    "uniform mat4 view;                                             "
-                    "uniform mat4 projection;                                       "
-                    "out vec4 geom_position;                                        "
-                    "out vec2 geom_radii;                                           "
-                    "out vec4 geom_color;                                           "
-                    "void main() {                                                  "
-                    "   mat4 transform  = projection * view * model;                "
-                    "   geom_position   = transform * vec4(vert_position, 1.0);     "
-                    "   geom_radii      = vert_uv;                                  "
-                    "   geom_color      = vert_color;                               "
-                    "   gl_Position     = geom_position;                            "
-                    "}                                                              "
-                    ),
-
+                arc_shader_vert,
                 Resource<ShaderPart>(ShaderPart::Type::Geometry,
                     "#version 330\n"
                     "#define pi 3.1415926535897932384626433832795\n"
@@ -162,8 +177,8 @@ namespace frame_gl
                     "   vec4 center = geom_position[0];                             "
                     "   float inner_radius = geom_radii[0].x;                       "
                     "   float outer_radius = geom_radii[0].y;                       "
-                    "   for (int i = 0; i < 32; ++i) {                              "
-                    "       float t = float(i) / 31;                                "
+                    "   for (int i = 0; i < 64; ++i) {                              "
+                    "       float t = float(i) / 63;                                "
                     "       float c = cos(2 * pi * t);                              "
                     "       float s = sin(2 * pi * t);                              "
                     "       gl_Position = center + (scale * inner_radius) * vec4(c, s, 0, 0); "
@@ -184,6 +199,51 @@ namespace frame_gl
                     "   pixel_color = frag_color;"
                     "}"
                 ));
+
+            arc_shader = new Shader(
+                "Debug Arc Shader",
+                arc_shader_vert,
+                Resource<ShaderPart>(ShaderPart::Type::Geometry,
+                    "#version 330\n                                                                 "
+                    "#define pi 3.1415926535897932384626433832795\n                                 "
+                    "layout(lines) in;                                                              "
+                    "layout(triangle_strip, max_vertices = 128) out;                                "
+                    "uniform vec2 screen_size;                                                      "
+                    "in vec4 geom_position[2];                                                      "
+                    "in vec2 geom_angles[2];                                                        "
+                    "in vec2 geom_radii[2];                                                         "
+                    "in vec4 geom_color[2];                                                         "
+                    "out vec4 frag_color;                                                           "
+                    "void main() {                                                                  "
+                    "   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w);"
+                    "   vec4 center = geom_position[0];                                             "
+                    "   float inner_radius = geom_radii[0].x;                                       "
+                    "   float outer_radius = geom_radii[0].y;                                       "
+                    "   float start_angle = geom_angles[0].x;                                       "
+                    "   float end_angle = geom_angles[0].y;                                         "
+                    "   for (int i = 0; i < 64; ++i) {                                              "
+                    "       float t = float(i) / 63;                                                "
+                    "       float angle = start_angle + (end_angle - start_angle) * t;              "
+                    "       float c = cos(angle);                                                   "
+                    "       float s = sin(angle);                                                   "
+                    "       gl_Position = center + (scale * inner_radius) * vec4(c, s, 0, 0);       "
+                    "       frag_color = geom_color[0];                                             "
+                    "       EmitVertex();                                                           "
+                    "       gl_Position = center + (scale * outer_radius) * vec4(c, s, 0, 0);       "
+                    "       frag_color = geom_color[0];                                             "
+                    "       EmitVertex();                                                           "
+                    "   }                                                                           "
+                    "}"
+                    ),
+
+                Resource<ShaderPart>(ShaderPart::Type::Fragment,
+                    "#version 330\n"
+                    "in vec4 frag_color;"
+                    "out vec4 pixel_color;"
+                    "void main() {"
+                    "   pixel_color = frag_color;"
+                    "}"
+                    ));
 
             text_shader = new Shader(
                 "Debug Text Shader",
@@ -783,7 +843,7 @@ namespace frame_gl
             while (!circles.empty()) {
                 auto& circle = circles.front();
                 mesh.add_position(circle.position);
-                mesh.add_uv(vec2(circle.inner_radius, circle.outer_radius));
+                mesh.add_uv(vec2(circle.radii.min, circle.radii.max));
                 mesh.add_color(circle.color);
                 mesh.add_line(mesh_indices, mesh_indices);
                 ++mesh_indices;
@@ -794,6 +854,40 @@ namespace frame_gl
             mesh.render();
 
             circle_shader->unbind();
+        }
+
+        void render_arcs(Camera* camera) {
+
+            if (arcs.empty())
+                return;
+
+            arc_shader->bind();
+            arc_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            arc_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            arc_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
+            arc_shader->uniform("screen_size", camera->target()->size());
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glDisable(GL_CULL_FACE);
+            glDisable(GL_DEPTH_TEST);
+
+            Mesh mesh;
+            int mesh_indices = 0;
+            while (!arcs.empty()) {
+                auto& arc = arcs.front();
+                mesh.add_position(arc.position);
+                mesh.add_normal(vec3(arc.angles.min, arc.radii.max, 0.0f));
+                mesh.add_uv(vec2(arc.radii.min, arc.radii.max));
+                mesh.add_color(arc.color);
+                mesh.add_line(mesh_indices, mesh_indices);
+                ++mesh_indices;
+                arcs.pop();
+            }
+
+            mesh.finalize();
+            mesh.render();
+
+            arc_shader->unbind();
         }
 
         void render_text(Camera* camera, std::queue< String >& strings) {
@@ -851,6 +945,7 @@ namespace frame_gl
         Shader* line_shader;
         Shader* shape_shader;
         Shader* circle_shader;
+        Shader* arc_shader;
         Shader* text_shader;
         int text_shader_characters;
         std::queue< Line > lines;
@@ -858,6 +953,7 @@ namespace frame_gl
         std::queue< String > world_strings;
         std::queue< String > screen_strings;
         std::queue< Circle > circles;
+        std::queue< Arc > arcs;
         int main_layer;
         int gui_layer;
     };
