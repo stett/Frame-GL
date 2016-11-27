@@ -724,7 +724,7 @@ namespace frame_gl
                     "uniform vec4 character_color;"
                     "out vec4 pixel_color;"
                     "void main() {"
-                    "    pixel_color = character_color;"//vec4(character_color, 1);
+                    "    pixel_color = character_color;"
                     "}"
                 )
             );
@@ -837,9 +837,10 @@ namespace frame_gl
             while (!shapes.empty()) {
                 Shape& shape = shapes.front();
                 Resource< Mesh > mesh;
-                for (int i = 0; i < shape.vertices.size(); ++i) {
+                for (size_t i = 0; i < shape.vertices.size(); ++i) {
                     mesh->add_position(shape.vertices[i]);
-                    if (i > 1) mesh->add_triangle(0, i-1, i);
+                    if (i > 1)
+                        mesh->add_triangle(0, i-1, i);
                 }
                 meshes.push_back(std::make_tuple(shape.fill_color, shape.line_color, mesh));
                 shapes.pop();
@@ -854,6 +855,7 @@ namespace frame_gl
             // Draw shape fills
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             for (auto& mesh : meshes) {
+                if (std::get<0>(mesh).a == 0.0f) continue;
                 shape_shader->uniform(color, std::get<0>(mesh));
                 std::get<2>(mesh)->finalize();
                 std::get<2>(mesh)->render();
@@ -862,6 +864,7 @@ namespace frame_gl
             // Draw shape lines
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             for (auto& mesh : meshes) {
+                if (std::get<1>(mesh).a == 0.0f) continue;
                 shape_shader->uniform(color, std::get<1>(mesh));
                 std::get<2>(mesh)->finalize();
                 std::get<2>(mesh)->render();
