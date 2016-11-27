@@ -21,6 +21,7 @@ namespace frame
             v.y = glmquat.y;
             v.z = glmquat.z;
         }
+        quat_t(const glm::tvec3<T>& a, const glm::tvec3<T>& b) { from_rotation(a,b); }
         ~quat_t() {}
 
         quat_t& operator=(const quat_t& other) {
@@ -73,6 +74,29 @@ namespace frame
             // Just to be safe...
             normalize();
         }
+
+        void from_rotation(const glm::vec3 a, const glm::vec3 b) {
+
+            float norm_a_norm_b = sqrt(dot(a, a) * dot(b, b));
+            if (norm_a_norm_b < std::numeric_limits<float>::epsilon()) {
+                v = vec3(0.0f, 1.0f, 0.0f);
+                s = 0.0f;
+                return;
+            }
+            float cos_theta = dot(a, b) / norm_a_norm_b;
+            if (cos_theta < -1.0f + std::numeric_limits<float>::epsilon()) {
+                v = vec3(0.0f, 1.0f, 0.0f);
+                s = 0.0f;
+                return;
+            }
+
+            s = sqrt(0.5f * (1.f + cos_theta));
+            v = cross(a, b) / (norm_a_norm_b * 2.f * s);
+
+            // Unsure that this is necessary...
+            normalize();
+        }
+
 
         quat_t& normalize() {
             T m_inv = 1.0f / magnitude();
