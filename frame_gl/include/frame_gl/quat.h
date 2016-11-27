@@ -75,6 +75,7 @@ namespace frame
             normalize();
         }
 
+        // Adapted from: http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
         void from_rotation(const glm::vec3 a, const glm::vec3 b) {
 
             float norm_a_norm_b = sqrt(dot(a, a) * dot(b, b));
