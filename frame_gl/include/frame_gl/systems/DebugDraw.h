@@ -1,5 +1,7 @@
 #pragma once
 #include <memory>
+#include <tuple>
+#include <utility>
 #include <queue>
 #include <utility>
 #include <unordered_map>
@@ -47,6 +49,14 @@ namespace frame_gl
                 : Circle(position, inner_radius, outer_radius, color), angles({ start_angle, end_angle }) {}
             Range angles;
         };
+
+        struct Shape {
+            Shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color, const glm::vec4& fill_color)
+                : vertices(vertices), line_color(line_color), fill_color(fill_color) {}
+            std::vector<glm::vec3> vertices;
+            glm::vec4 line_color;
+            glm::vec4 fill_color;
+        };
     }
 
     FRAME_SYSTEM(DebugDraw) {
@@ -62,6 +72,10 @@ namespace frame_gl
 
         void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& color=glm::vec3(1.0f), size_t thickness=1) {
             lines.push(Line(p0, p1, color, thickness));
+        }
+
+        void shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(1.0f), 0.5f)) {
+            shapes.push(Shape(vertices, line_color, fill_color));
         }
 
         void circle(const glm::vec3& position, float inner_radius=5.0f, float outer_radius=10.0f, const glm::vec4& color=glm::vec4(1.0f)) {
@@ -127,8 +141,8 @@ namespace frame_gl
 
             render = system<Render>();
 
-            shape_shader = new Shader(
-                "Debug Shape Shader",
+            cube_shader = new Shader(
+                "Debug Cube Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_normals());
 
@@ -136,6 +150,11 @@ namespace frame_gl
                 "Debug Line Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_colors());
+
+            shape_shader = new Shader(
+                "Debug Shape Shader",
+                Shader::Preset::vert_standard(),
+                Shader::Preset::frag_solid());
 
             auto arc_shader_vert = Resource<ShaderPart>(ShaderPart::Type::Vertex,
                 "#version 330\n                                                 "
@@ -713,7 +732,7 @@ namespace frame_gl
 
         void teardown() {
             delete line_shader;
-            delete shape_shader;
+            delete cube_shader;
             delete circle_shader;
             delete text_shader;
         }
@@ -732,6 +751,7 @@ namespace frame_gl
 
                 // Draw worldspace stuff
                 render_lines(main_camera);
+                render_shapes(main_camera);
                 render_cubes(main_camera);
                 render_circles(main_camera);
                 render_text(main_camera, world_strings);
@@ -799,9 +819,9 @@ namespace frame_gl
             line_shader->unbind();
         }
 
-        void render_cubes(Camera* camera) {
+        void render_shapes(Camera* camera) {
 
-            if (cubes.empty())
+            if (shapes.empty())
                 return;
 
             // Bind the shape shader
@@ -809,18 +829,69 @@ namespace frame_gl
             shape_shader->uniform(ShaderUniform::View, camera->view_matrix());
             shape_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
+            // Just need one model matrix
+            shape_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
+
+            // Build a mesh with a bunch of lines
+            std::vector< std::tuple< vec4, vec4, Resource< Mesh > > > meshes;
+            while (!shapes.empty()) {
+                Shape& shape = shapes.front();
+                Resource< Mesh > mesh;
+                for (int i = 0; i < shape.vertices.size(); ++i) {
+                    mesh->add_position(shape.vertices[i]);
+                    if (i > 1) mesh->add_triangle(0, i-1, i);
+                }
+                meshes.push_back(std::make_tuple(shape.fill_color, shape.line_color, mesh));
+                shapes.pop();
+            }
+
+            glDisable(GL_CULL_FACE);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            int color = shape_shader->locate("color");
+
+            // Draw shape fills
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            for (auto& mesh : meshes) {
+                shape_shader->uniform(color, std::get<0>(mesh));
+                std::get<2>(mesh)->finalize();
+                std::get<2>(mesh)->render();
+            }
+
+            // Draw shape lines
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            for (auto& mesh : meshes) {
+                shape_shader->uniform(color, std::get<1>(mesh));
+                std::get<2>(mesh)->finalize();
+                std::get<2>(mesh)->render();
+            }
+
+            line_shader->unbind();
+        }
+
+        void render_cubes(Camera* camera) {
+
+            if (cubes.empty())
+                return;
+
+            // Bind the shape shader
+            cube_shader->bind();
+            cube_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            cube_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+
             Resource<Mesh> mesh = Mesh::Factory::cube(1.0f);
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glEnable(GL_CULL_FACE);
 
             while (!cubes.empty()) {
-                shape_shader->uniform(ShaderUniform::Model, cubes.front());
+                cube_shader->uniform(ShaderUniform::Model, cubes.front());
                 mesh->render();
                 cubes.pop();
             }
 
-            shape_shader->unbind();
+            cube_shader->unbind();
         }
 
         void render_circles(Camera* camera) {
@@ -944,11 +1015,13 @@ namespace frame_gl
         Camera* gui_camera;
         Shader* line_shader;
         Shader* shape_shader;
+        Shader* cube_shader;
         Shader* circle_shader;
         Shader* arc_shader;
         Shader* text_shader;
         int text_shader_characters;
         std::queue< Line > lines;
+        std::queue< Shape > shapes;
         std::queue< glm::mat4 > cubes;
         std::queue< String > world_strings;
         std::queue< String > screen_strings;

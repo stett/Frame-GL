@@ -335,6 +335,18 @@ Resource<ShaderPart> Shader::Preset::frag_white() {
     return part;
 }
 
+Resource<ShaderPart> Shader::Preset::frag_solid() {
+    static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
+        "#version 330\n                 "
+        "uniform vec4 color;            "
+        "out vec4 pixel_color;          "
+        "void main() {                  "
+        "    pixel_color = color;       "
+        "}                              "
+    );
+    return part;
+}
+
 Resource<ShaderPart> Shader::Preset::frag_flat() {
     static Resource<ShaderPart> part(ShaderPart::Type::Fragment,
         "#version 330\n                                                 "
