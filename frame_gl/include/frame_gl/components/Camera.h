@@ -42,6 +42,11 @@ namespace frame
         const vec3& position() { return get<Transform>()->translation(); }
         const mat4& view_matrix() { return get<Transform>()->world_inverse(); }
         const mat4& projection_matrix() { return _projection_matrix; }
+        const vec3& direction() {
+            _direction = normalize(vec3(get<Transform>()->world_matrix() * vec4(0.0f, 0.0f, 1.0f, 0.0f)));
+            return _direction;
+        }
+
         unsigned int layer_mask() { return _layer_mask; }
         bool has_layer(unsigned int layer) { return (_layer_mask & (1 << layer)) != 0; }
 
@@ -65,5 +70,6 @@ namespace frame
     private:
         unsigned int _layer_mask;
         mat4 _projection_matrix;
+        vec3 _direction;
     };
 }
