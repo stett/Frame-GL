@@ -45,6 +45,12 @@ namespace frame
             return this;
         }
 
+        Transform* set_rotation(const mat4& rotation) {
+            _rotation = quat(rotation);
+            invalidate(ALL);
+            return this;
+        }
+
         Transform* set_rotation(const vec3& axis, float angle) {
             //
             // TODO: Actually set the quaternion...
@@ -53,23 +59,6 @@ namespace frame
             invalidate(ALL);
             return this;
         }
-
-        /*
-        Transform* add_rotation(const vec3& axis) {
-            mat4 r;
-            r[0][0] = 0.0f;
-            r[0][1] = -axis.z;
-            r[0][2] = axis.x;
-            r[1][0] = axis.z;
-            r[1][1] = 0.0f;
-            r[1][2] = -axis.x;
-            r[2][0] = -axis.y;
-            r[2][1] = axis.x;
-            r[2][2] = 0.0f;
-            _rotation = glm::quat_cast(_rotation.matrix());
-            return this;
-        }
-        */
 
         Transform* look(const vec3& target, const vec3& up=vec3(0.0f, 1.0f, 0.0f)) {
             if (_translation == target) return this;
