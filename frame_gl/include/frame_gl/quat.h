@@ -21,6 +21,9 @@ namespace frame
             v.y = glmquat.y;
             v.z = glmquat.z;
         }
+        quat_t(const glm::mat4& matrix) : quat_t(glm::quat(matrix)) {
+            normalize();
+        }
         quat_t(const glm::tvec3<T>& a, const glm::tvec3<T>& b) { from_rotation(a,b); }
         ~quat_t() {}
 
