@@ -9,17 +9,45 @@ namespace frame
 {
     FRAME_COMPONENT(Camera, Transform, RenderTarget) {
     public:
-        Camera(unsigned int layer=0, float vertical_fov=120.0f, float aspect_ratio=1.0f, float clip_near=0.1f, float clip_far=2000.0f)
-        : _layer_mask(1 << layer), _projection_matrix(glm::perspective(vertical_fov, aspect_ratio, clip_near, clip_far)) {}
-        Camera(unsigned int layer, const vec2& ortho_size, float clip_near=0.0f, float clip_far=2000.0f)
-        : _layer_mask(1 << layer), _projection_matrix(glm::ortho(-ortho_size.x * 0.5f, ortho_size.x * 0.5f, -ortho_size.y * 0.5f, ortho_size.y * 0.5f, clip_near, clip_far)) {}
-        Camera(unsigned int layer, const vec2& ortho_topleft, const vec2& ortho_bottomright, float clip_near=0.0f, float clip_far=2000.0f)
-        : _layer_mask(1 << layer), _projection_matrix(glm::ortho(ortho_topleft.x, ortho_bottomright.x, ortho_bottomright.y, ortho_topleft.y, clip_near, clip_far)) {}
+        enum Type { Perspective, Orthographic };
+        struct Settings {
+            float vertical_fov;
+            float aspect_ratio;
+            float clip_near;
+            float clip_far;
+            vec2 ortho_topleft;
+            vec2 ortho_bottomright;
+        };
 
     public:
-        void bind_target(bool clear=false) { get<RenderTarget>()->bind_target(clear); }
+        Camera(unsigned int layer=0, float vertical_fov=120.0f, float aspect_ratio=1.0f, float clip_near=0.1f, float clip_far=2000.0f)
+        : _type(Perspective), _layer_mask(1 << layer), _settings({ vertical_fov, aspect_ratio, clip_near, clip_far, vec2(0.0f), vec2(0.0f) }) { update_matrix(); }
+        Camera(unsigned int layer, const vec2& ortho_size, float clip_near=0.0f, float clip_far=2000.0f)
+        : _type(Orthographic), _layer_mask(1 << layer), _settings({ 0.0f, 0.0f, clip_near, clip_far, vec2(-ortho_size * 0.5f), vec2(ortho_size * 0.5f) }) { update_matrix(); }
+        Camera(unsigned int layer, const vec2& ortho_topleft, const vec2& ortho_bottomright, float clip_near=0.0f, float clip_far=2000.0f)
+        : _type(Orthographic), _layer_mask(1 << layer), _settings({ 0.0f, 0.0f, clip_near, clip_far, ortho_topleft, ortho_bottomright }) { update_matrix(); }
 
-        void unbind_target() { get<RenderTarget>()->unbind_target(); }
+    public:
+
+        Camera* set_settings(const Settings& settings) {
+            _settings = settings;
+            update_matrix();
+            return this;
+        }
+
+        void resize(const ivec2& size) {
+            if (_type == Perspective) {
+                _settings.aspect_ratio = float(size.x) / float(size.y);
+            } else if (_type == Orthographic) {
+                _settings.ortho_topleft = -vec2(size) * 0.5f;
+                _settings.ortho_bottomright = vec2(size) * 0.5f;
+            }
+            update_matrix();
+        }
+
+        Camera* bind_target(bool clear=false) { get<RenderTarget>()->bind_target(clear); return this; }
+
+        Camera* unbind_target() { get<RenderTarget>()->unbind_target(); return this; }
 
         const RenderTarget* target() const { return get<RenderTarget>(); }
 
@@ -39,6 +67,7 @@ namespace frame
             return true;
         }
 
+        const Settings& settings() { return _settings; }
         const vec3& position() { return get<Transform>()->translation(); }
         const mat4& view_matrix() { return get<Transform>()->world_inverse(); }
         const mat4& projection_matrix() { return _projection_matrix; }
@@ -68,6 +97,25 @@ namespace frame
         }
 
     private:
+
+        void update_matrix() {
+            if (_type == Perspective)
+                _projection_matrix = glm::perspective(
+                    _settings.vertical_fov,
+                    _settings.aspect_ratio,
+                    _settings.clip_near,
+                    _settings.clip_far);
+
+            else if (_type == Orthographic)
+                _projection_matrix = glm::ortho(
+                    _settings.ortho_topleft.x, _settings.ortho_bottomright.x,
+                    _settings.ortho_bottomright.y, _settings.ortho_topleft.y,
+                    _settings.clip_near, _settings.clip_far);
+        }
+
+    private:
+        Type _type;
+        Settings _settings;
         unsigned int _layer_mask;
         mat4 _projection_matrix;
         vec3 _direction;
