@@ -4,6 +4,7 @@
 #include "glm/gtx/norm.hpp"
 #include "glm/gtx/hash.hpp"
 #include "frame_gl/quat.h"
+#include "frame_gl/raw.h"
 
 namespace frame
 {
