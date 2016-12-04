@@ -20,7 +20,7 @@ namespace frame
         };
 
     public:
-        MeshRenderer() : _mesh(Mesh::Factory::rectangle()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(true), _layer(0) {}
+        MeshRenderer() : _mesh(Mesh::Factory::cube()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(true), _layer(0) {}
         MeshRenderer(Resource<Mesh> mesh, Resource<Texture> texture, Resource<Shader> shader, PolyMode poly_mode=Fill, bool cull_back=true, unsigned int layer=0)
         : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode), _cull_back(cull_back), _layer(layer) {}
 
@@ -54,6 +54,7 @@ namespace frame
         }
 
     public:
+        MeshRenderer* set_shader(Resource<Shader> shader) { _shader = shader; return this; }
         MeshRenderer* set_layer(unsigned int layer) { _layer = layer; return this; }
 
     public:
