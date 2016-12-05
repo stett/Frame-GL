@@ -24,7 +24,8 @@ namespace frame
         ~Window();
 
     public:
-        const ivec2& size() const;
+        const ivec2& size() const { return _size; }
+        const vec2& area() const { return _area; }
         void set_clear_color(const vec3& clear_color) { this->clear_color = clear_color; };
 
     public:
@@ -61,7 +62,9 @@ namespace frame
     private:
         GLFWwindow* window;
         ivec2 _size;
+        vec2 _area;
         glm::mat4 transform;
+        int transform_location;
         FitMode fit_mode;
         vec3 clear_color;
         bool vsync;

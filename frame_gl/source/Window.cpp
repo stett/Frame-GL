@@ -126,6 +126,8 @@ void Window::setup() {
             "}                                              "
         )
     );
+
+    transform_location = shader->locate("transform");
 }
 
 void Window::teardown() {
@@ -134,14 +136,6 @@ void Window::teardown() {
     delete mesh;
     delete shader;
 }
-
-const ivec2& Window::size() const { return _size; }
-/*
-    int window_width, window_height;
-    glfwGetFramebufferSize(window, &window_width, &window_height);
-    return ivec2(window_width, window_height);
-}
-*/
 
 Window* Window::get_window(Frame* frame) {
 
@@ -209,7 +203,7 @@ void Window::step(float dt) {
 
         // Set the viewport
         glViewport(0, 0, size().x, size().y);
-        
+
         // Set up the final-pass shader
         shader->bind();
 
@@ -218,7 +212,7 @@ void Window::step(float dt) {
 
             // Find the transform to use for the drawing of this buffer and give it to the shader
             calculate_buffer_transform(buffer, transform);
-            shader->uniform("transform", transform);
+            shader->uniform(transform_location, transform);
 
             // Bind the display buffer's texture for reading, and render it to the screen buffer
             buffer->bind_texture(0);
@@ -299,9 +293,29 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
         ->mouse_button(button, action, mods);
 }
 
-void Window::mouse_position_callback(GLFWwindow* window, double x, double y) {
-    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))
-        ->mouse_position(vec2(x, y));
+void Window::mouse_position_callback(GLFWwindow* glfw_window, double x, double y) {
+    Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+
+    // Scale the position to the main buffer
+    //
+    // TODO: Add a better way to select the "main" buffer!
+    // Need something better than "just pick the first one".
+    //
+    vec2 pos(x, y);
+    vec2 window_size(window->size());
+    for (auto buffer : window->node<RenderTarget>()) {
+        if (buffer->display_layer() != -1) {
+            mat4 transform;
+            window->calculate_buffer_transform(buffer, transform);
+            vec2 buffer_size(transform * vec4(window->size(), 0.0f, 0.0f));
+            vec2 ratio(window_size / buffer_size);
+            vec2 edges(window_size - buffer_size);
+            pos = (pos - 0.5f * edges) * ratio;
+            break;
+        }
+    }
+
+    window->mouse_position(pos);
 }
 
 void Window::mouse_scroll_callback(GLFWwindow* window, double dx, double dy) {
