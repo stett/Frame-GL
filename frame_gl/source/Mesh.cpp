@@ -17,14 +17,14 @@
 #include "frame_gl/error.h"
 using namespace frame;
 
-Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_count, size_t line_count) :
+Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_count) :
     _attributes(attributes), vao(0), block(0) {
 
     if (glfwGetCurrentContext() == 0)
         Log::error("Can't create a mesh outside of an OpenGL context!");
 
     // Set up empty buffers, & get space for them in gfx
-    resize_block(vertex_count, triangle_count, line_count);
+    resize_block(vertex_count, triangle_count);
     create_buffers();
 }
 
@@ -36,33 +36,26 @@ Mesh::~Mesh() {
 void Mesh::render() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
-    if (_triangle_count)
-        glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
-    if (_line_count)
-        glDrawElements(GL_LINES, 2 * _line_count, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
-void Mesh::resize(size_t vertex_count, size_t triangle_count, size_t line_count) {
+void Mesh::resize(size_t vertex_count, size_t triangle_count) {
     destroy_buffers();
-    resize_block(vertex_count, triangle_count, line_count);
+    resize_block(vertex_count, triangle_count);
     create_buffers();
 }
 
 void Mesh::set_vertex_count(size_t vertex_count) {
-    resize(vertex_count, _triangle_count, _line_count);
+    resize(vertex_count, _triangle_count);
 }
 
 void Mesh::set_triangle_count(size_t triangle_count) {
-    resize(_vertex_count, triangle_count, _line_count);
+    resize(_vertex_count, triangle_count);
 }
 
-void Mesh::set_line_count(size_t line_count) {
-    resize(_vertex_count, _triangle_count, line_count);
-}
-
-void Mesh::resize_block(size_t vertex_count, size_t triangle_count, size_t line_count) {
+void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
 
     //
     // My my, isn't this a little beast.
@@ -72,15 +65,13 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count, size_t line_
     size_t buffers_size = attributes.count * sizeof(VertexBuffer);
     size_t vertex_size = vertex_count * vertex_size();
     size_t triangle_size = triangle_count * sizeof(ivec3);
-    size_t line_size = line_count * sizeof(ivec2);
 
     // Allocate the new block
-    char* new_block = new char[buffers_size + vertex_size + triangle_size + line_size];
+    char* new_block = new char[buffers_size + vertex_size + triangle_size];
 
     // Set basic array locations
     VertexBuffer* new_buffers = new_block;
     ivec3* new_triangles = new_block + buffers_size + vertex_size;
-    ivec2* new_lines = new_block + buffers_size + vertex_size + triangle_size;
 
     // Set up buffers
     for (char* location = new_block + buffers_size, size_t i = 0; i < _attributes.count; ++i) {
@@ -93,7 +84,6 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count, size_t line_
 
         // Copy the old block
         memcpy(new_triangles, triangles, _triangle_count * sizeof(ivec3));
-        memcpy(new_lines, lines, _line_count * sizeof(ivec2));
         for (size_t i = 0; i < _attributes.count; ++i)
             memcpy(new_buffers[i].data, buffers[i].data, _vertex_count * _vertex_size);
 
@@ -105,10 +95,8 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count, size_t line_
     block = new_block;
     buffers = new_buffers;
     triangles = new_triangles;
-    lines = new_lines;
     _vertex_count = vertex_count;
     _triangle_count = triangle_count;
-    _line_count = line_count;
 }
 
 void Mesh::create_buffers() {

@@ -63,7 +63,7 @@ namespace frame
     class Mesh {
 
     public:
-        Mesh(VertexAttributeSet attriubtes=DEFAULT_VERTEX_ATTRIBUTES, size_t vertex_count=0, size_t triangle_count=0, size_t line_count=0);
+        Mesh(VertexAttributeSet attriubtes=DEFAULT_VERTEX_ATTRIBUTES, size_t vertex_count=0, size_t triangle_count=0);
         ~Mesh();
 
     public:
@@ -72,7 +72,6 @@ namespace frame
 
     public:
         void render();
-        void render_lines();
 
     public:
 
@@ -172,10 +171,9 @@ namespace frame
         const VertexAttributeSet& attributes() const { return _attributes; }
 
     public:
-        void resize(size_t vertex_count, size_t triangle_count, size_t line_count);
+        void resize(size_t vertex_count, size_t triangle_count);
         void set_vertex_count(size_t vertex_count);
         void set_triangle_count(size_t triangle_count);
-        void set_line_count(size_t line_count);
 
     public:
         void update_buffers();                      ///< Send all vertex data from local buffer to gfx
@@ -183,7 +181,7 @@ namespace frame
         void update_buffers(size_t i0, size_t i1);  ///< Send a range of vertices to gfx
 
     private:
-        void resize_block(size_t vertex_count, size_t triangle_count, size_t line_count);
+        void resize_block(size_t vertex_count, size_t triangle_count);
         void create_buffers();                      ///< Create vertex and array buffers
         void destroy_buffers();                     ///< Destroy vertex and array buffers
 
@@ -191,12 +189,11 @@ namespace frame
         VertexAttributeSet _attributes;
         size_t _vertex_count;
         size_t _triangle_count;
-        size_t _line_count;
         size_t block_size;
         char* block;
         unsigned int vao;
+        unsigned int vbo_triangles;
         VertexBuffer* buffers;
         ivec3* triangles;
-        ivec2* lines;
     };
 }
