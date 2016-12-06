@@ -63,7 +63,7 @@ namespace frame
     class Mesh {
 
     public:
-        Mesh(VertexAttributeSet attriubtes=DEFAULT_VERTEX_ATTRIBUTES, size_t vertex_count=0, size_t triangle_count=0);
+        Mesh(VertexAttributeSet attriubtes=DEFAULT_VERTEX_ATTRIBUTES, size_t vertex_count=0, size_t triangle_count=0, bool dynamic_triangles=false);
         ~Mesh();
 
     public:
@@ -163,7 +163,9 @@ namespace frame
         void set_line(size_t i, int a, int b) { add_line(ivec2(a, b)); }
         */
 
+        /*
         void load_obj_str(const std::string& obj, bool normalize=false, bool center=false);
+        */
 
     public:
         size_t vertex_count() const { return _vertex_count; }
@@ -189,6 +191,7 @@ namespace frame
         VertexAttributeSet _attributes;
         size_t _vertex_count;
         size_t _triangle_count;
+        bool _dynamic_triangles;
         size_t block_size;
         char* block;
         unsigned int vao;

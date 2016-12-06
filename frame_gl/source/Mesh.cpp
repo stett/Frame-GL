@@ -17,8 +17,8 @@
 #include "frame_gl/error.h"
 using namespace frame;
 
-Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_count) :
-    _attributes(attributes), vao(0), block(0) {
+Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_count, bool dynamic_triangles) :
+    _attributes(attributes), _dynamic_triangles(dynamic_triangles), vao(0), block(0) {
 
     if (glfwGetCurrentContext() == 0)
         Log::error("Can't create a mesh outside of an OpenGL context!");
@@ -35,7 +35,7 @@ Mesh::~Mesh() {
 
 void Mesh::render() {
     glBindVertexArray(vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
     glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -62,19 +62,20 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     //
 
     // Compute new sizes;
-    size_t buffers_size = attributes.count * sizeof(VertexBuffer);
-    size_t vertex_size = vertex_count * vertex_size();
+    size_t buffers_size = _attributes.count * sizeof(VertexBuffer);
+    size_t vertex_size = vertex_count * _attributes.size();
     size_t triangle_size = triangle_count * sizeof(ivec3);
 
     // Allocate the new block
     char* new_block = new char[buffers_size + vertex_size + triangle_size];
 
     // Set basic array locations
-    VertexBuffer* new_buffers = new_block;
-    ivec3* new_triangles = new_block + buffers_size + vertex_size;
+    VertexBuffer* new_buffers = (VertexBuffer*)(new_block);
+    ivec3* new_triangles = (ivec3*)(new_block + buffers_size + vertex_size);
 
     // Set up buffers
-    for (char* location = new_block + buffers_size, size_t i = 0; i < _attributes.count; ++i) {
+    char* location = new_block + buffers_size;
+    for (size_t i = 0; i < _attributes.count; ++i) {
         new_buffers[i].data = location;
         new_buffers[i].size = _vertex_count * _attributes[i].size;
         location += _attributes[i].size;
@@ -85,7 +86,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
         // Copy the old block
         memcpy(new_triangles, triangles, _triangle_count * sizeof(ivec3));
         for (size_t i = 0; i < _attributes.count; ++i)
-            memcpy(new_buffers[i].data, buffers[i].data, _vertex_count * _vertex_size);
+            memcpy(new_buffers[i].data, buffers[i].data, _vertex_count * _attributes.size());
 
         // Delete the old block
         delete[] block;
@@ -107,15 +108,21 @@ void Mesh::create_buffers() {
 
     // Create vertex buffers & set up array attributes
     for (size_t i = 0; i < _attributes.count; ++i) {
-        glGenBuffers(1, &buffers[i].data);
+        glGenBuffers(1, &buffers[i].vbo);
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
-        glBufferData(GL_ARRAY_BUFFER, buffers[k].size, buffers[k].data, _attributes[k].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
         glEnableVertexAttribArray(i);
         glVertexAttribPointer(i, _attributes[i].size / sizeof(float), GL_FLOAT, GL_FALSE, 0, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    // Unbind everything
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Create a buffer for triangle indices
+    glGenBuffers(1, &vbo_triangles);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ivec3) * _triangle_count, triangles, _dynamic_triangles ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // Unbind the vao
     glBindVertexArray(0);
 }
 
@@ -128,8 +135,8 @@ void Mesh::update_buffers(size_t i0, size_t i1) {
     for (size_t i = 0; i < _attributes.count; ++i) {
         size_t size = (i1 - i0) * _attributes[i].size;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[k].data + size);
-        glBufferData(GL_ARRAY_BUFFER, buffers[i].size, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data + size);
+        glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -147,17 +154,9 @@ void Mesh::destroy_buffers() {
     glDeleteVertexArrays(1, &vao);
 }
 
+/*
 void Mesh::load_obj_str(const std::string& obj, bool _normalize, bool _center) {
     clear();
-
-    std::stringstream ifs(obj);
-    //std::istream(obj.begin());
-    //std::ifstream ifs(obj);
-    //std::ifstream ifs(filename);
-    /*if (!ifs.is_open()) {
-        Log::error("Failed to open file: " + filename);
-        return mesh;
-    }*/
 
     // Load OBJ files.
     vec2 input2f;
@@ -252,10 +251,4 @@ void Mesh::load_obj_str(const std::string& obj, bool _normalize, bool _center) {
 
     finalize();
 }
-
-size_t Mesh::get_vertex_size(VertexAttributeSet attributes) {
-    size_t size = 0;
-    for (int i = 0; i < attributes.count(); ++i)
-        size += attributes[i].size;
-    return size;
-}
+*/
