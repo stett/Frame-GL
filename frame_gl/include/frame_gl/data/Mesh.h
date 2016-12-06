@@ -17,26 +17,26 @@ namespace frame
     class VertexAttributeSet {
     public:
         VertexAttributeSet(std::initializer_list<VertexAttribute> attributes)
-            : _size(0), _count(attributes.size()), attributes(new VertexAttribute[_count]) {
+            : _size(0), _count(attributes.size()), _attributes(new VertexAttribute[_count]) {
 
             // Copy the attributes
             std::copy(attributes.begin(), attributes.end(), std::begin(attributes));
 
             // Measure the total vertex size
-            for (int i = 0; i < attributes.count(); ++i)
-                size += attributes[i].size;
+            for (int i = 0; i < _count; ++i)
+                _size += _attributes[i].size;
         }
 
-        ~VertexAttributeSet() { delete[] attributes; }
+        ~VertexAttributeSet() { delete[] _attributes; }
 
-        inline const VertexAttribute& operator[](size_t i) const { return attributes[i]; }
+        inline const VertexAttribute& operator[](size_t i) const { return _attributes[i]; }
         inline size_t size() const { return _size; }
         inline size_t count() const { return _count;  }
 
     private:
         size_t _size;
         size_t _count;
-        VertexAttribute* attributes;
+        VertexAttribute* _attributes;
     };
 
     struct VertexBuffer {
