@@ -23,7 +23,7 @@ namespace frame
             std::copy(attributes.begin(), attributes.end(), std::begin(attributes));
 
             // Measure the total vertex size
-            for (int i = 0; i < _count; ++i)
+            for (size_t i = 0; i < _count; ++i)
                 _size += _attributes[i].size;
         }
 
@@ -125,7 +125,7 @@ namespace frame
         }
 
         int find_attribute_index(const char* name) {
-            for (int i = 0; i < _attributes.count(); ++i)
+            for (size_t i = 0; i < _attributes.count(); ++i)
                 if (strcmp(_attributes[i].name, name) == 0)
                     return i;
             return -1;

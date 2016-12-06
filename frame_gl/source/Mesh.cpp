@@ -62,7 +62,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     //
 
     // Compute new sizes;
-    size_t buffers_size = _attributes.count * sizeof(VertexBuffer);
+    size_t buffers_size = _attributes.count() * sizeof(VertexBuffer);
     size_t vertex_size = vertex_count * _attributes.size();
     size_t triangle_size = triangle_count * sizeof(ivec3);
 
@@ -75,7 +75,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
 
     // Set up buffers
     char* location = new_block + buffers_size;
-    for (size_t i = 0; i < _attributes.count; ++i) {
+    for (size_t i = 0; i < _attributes.count(); ++i) {
         new_buffers[i].data = location;
         new_buffers[i].size = _vertex_count * _attributes[i].size;
         location += _attributes[i].size;
@@ -85,7 +85,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
 
         // Copy the old block
         memcpy(new_triangles, triangles, _triangle_count * sizeof(ivec3));
-        for (size_t i = 0; i < _attributes.count; ++i)
+        for (size_t i = 0; i < _attributes.count(); ++i)
             memcpy(new_buffers[i].data, buffers[i].data, _vertex_count * _attributes.size());
 
         // Delete the old block
@@ -107,7 +107,7 @@ void Mesh::create_buffers() {
     glBindVertexArray(vao);
 
     // Create vertex buffers & set up array attributes
-    for (size_t i = 0; i < _attributes.count; ++i) {
+    for (size_t i = 0; i < _attributes.count(); ++i) {
         glGenBuffers(1, &buffers[i].vbo);
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
         glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
@@ -132,7 +132,7 @@ void Mesh::update_buffers(size_t i) { update_buffers(i, i+1); }
 
 void Mesh::update_buffers(size_t i0, size_t i1) {
     glBindVertexArray(vao);
-    for (size_t i = 0; i < _attributes.count; ++i) {
+    for (size_t i = 0; i < _attributes.count(); ++i) {
         size_t size = (i1 - i0) * _attributes[i].size;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
         glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data + size);
@@ -145,7 +145,7 @@ void Mesh::update_buffers(size_t i0, size_t i1) {
 void Mesh::destroy_buffers() {
 
     // Destroy all vertex buffers
-    for (size_t i = 0; i < _attributes.count; ++i) {
+    for (size_t i = 0; i < _attributes.count(); ++i) {
         glDeleteBuffers(1, &buffers[i].vbo);
         buffers[i].vbo = 0;
     }
