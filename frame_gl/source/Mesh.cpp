@@ -33,12 +33,24 @@ Mesh::~Mesh() {
     destroy_buffers();  // Delete gfx buffers
 }
 
-void Mesh::render() {
+void Mesh::bind() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
-    glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
+}
+
+void Mesh::unbind() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void Mesh::draw() {
+    glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
+}
+
+void Mesh::render() {
+    bind();
+    draw();
+    unbind();
 }
 
 void Mesh::resize(size_t vertex_count, size_t triangle_count) {
@@ -48,11 +60,13 @@ void Mesh::resize(size_t vertex_count, size_t triangle_count) {
 }
 
 void Mesh::set_vertex_count(size_t vertex_count) {
-    resize(vertex_count, _triangle_count);
+    if (vertex_count != _vertex_count)
+        resize(vertex_count, _triangle_count);
 }
 
 void Mesh::set_triangle_count(size_t triangle_count) {
-    resize(_vertex_count, triangle_count);
+    if (triangle_count != _triangle_count)
+        resize(_vertex_count, triangle_count);
 }
 
 void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
@@ -84,7 +98,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     if (block) {
 
         // Copy the old block
-        memcpy(new_triangles, triangles, _triangle_count * sizeof(ivec3));
+        memcpy(new_triangles, _triangles, _triangle_count * sizeof(ivec3));
         for (size_t i = 0; i < _attributes.count(); ++i)
             memcpy(new_buffers[i].data, buffers[i].data, _vertex_count * _attributes.size());
 
@@ -95,7 +109,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     // Update pointers & sizes
     block = new_block;
     buffers = new_buffers;
-    triangles = new_triangles;
+    _triangles = new_triangles;
     _vertex_count = vertex_count;
     _triangle_count = triangle_count;
 }
@@ -119,7 +133,7 @@ void Mesh::create_buffers() {
     // Create a buffer for triangle indices
     glGenBuffers(1, &vbo_triangles);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ivec3) * _triangle_count, triangles, _dynamic_triangles ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ivec3) * _triangle_count, _triangles, _dynamic_triangles ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Unbind the vao

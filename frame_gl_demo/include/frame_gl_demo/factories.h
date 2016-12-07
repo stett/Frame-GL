@@ -21,10 +21,10 @@
 using namespace frame;
 
 Entity* make_axes(Frame* frame, float scale=1.0f) {
-    auto mesh_x = Mesh::Factory::arrow(vec3(0.0f), scale * vec3(1.0f, 0.0f, 0.0f), vec4(axis_color_x, 1.0f), scale * 0.2f);
-    auto mesh_y = Mesh::Factory::arrow(vec3(0.0f), scale * vec3(0.0f, 1.0f, 0.0f), vec4(axis_color_y, 1.0f), scale * 0.2f);
-    auto mesh_z = Mesh::Factory::arrow(vec3(0.0f), scale * vec3(0.0f, 0.0f, 1.0f), vec4(axis_color_z, 1.0f), scale * 0.2f);
-    auto mesh = Mesh::Factory::combine({ mesh_x, mesh_y, mesh_z });
+    auto mesh_x = MeshFactory::arrow(vec3(0.0f), scale * vec3(1.0f, 0.0f, 0.0f), vec4(axis_color_x, 1.0f), scale * 0.2f);
+    auto mesh_y = MeshFactory::arrow(vec3(0.0f), scale * vec3(0.0f, 1.0f, 0.0f), vec4(axis_color_y, 1.0f), scale * 0.2f);
+    auto mesh_z = MeshFactory::arrow(vec3(0.0f), scale * vec3(0.0f, 0.0f, 1.0f), vec4(axis_color_z, 1.0f), scale * 0.2f);
+    auto mesh = MeshFactory::combine({ mesh_x, mesh_y, mesh_z });
     auto texture = Resource<Texture>(ivec2(1));
     auto shader = Shader::Preset::model_colors();
     auto obj = frame->entities().add<Transform>();
@@ -35,7 +35,7 @@ Entity* make_axes(Frame* frame, float scale=1.0f) {
 Entity* make_metabox(Frame* frame, std::size_t slots=1) {
 
     // Make box mesh
-    auto mesh = Mesh::Factory::cube(1.0f);
+    auto mesh = MeshFactory::cube(1.0f);
     auto texture = Resource<Texture>(ivec2(1));
     auto shader = Shader::Preset::model_colors();
     auto obj = frame->entities().add<Transform>();

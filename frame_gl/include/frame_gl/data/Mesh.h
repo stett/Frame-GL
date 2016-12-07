@@ -2,8 +2,10 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <iterator>
 #include "frame/Resource.h"
 #include "frame_gl/math.h"
+#include "frame_gl/data/MeshFactory.h"
 
 namespace frame
 {
@@ -63,7 +65,8 @@ namespace frame
     class Mesh {
 
     public:
-        Mesh(VertexAttributeSet attriubtes=DEFAULT_VERTEX_ATTRIBUTES, size_t vertex_count=0, size_t triangle_count=0, bool dynamic_triangles=false);
+        Mesh(size_t vertex_count = 0, size_t triangle_count = 0, bool dynamic_triangles = false) : Mesh(DEFAULT_VERTEX_ATTRIBUTES, vertex_count, triangle_count, dynamic_triangles) {}
+        Mesh(VertexAttributeSet attriubtes, size_t vertex_count = 0, size_t triangle_count = 0, bool dynamic_triangles = false);
         ~Mesh();
 
     public:
@@ -71,31 +74,51 @@ namespace frame
         Mesh& operator=(const Mesh& other) = delete;
 
     public:
-        void render();
+        inline void render();
+        inline void bind();
+        inline void draw();
+        inline void unbind();
 
     public:
 
-        ///\brief Set values for a particular attribute for all vertices
+        ///\brief Set values for a particular attribute for all vertices.
+        ///       If count==0, then the vertex buffers will not be resized.
         template <typename T>
-        void set_vertices(const char* attribute_name, const T* values) {
+        void set_vertices(const char* attribute_name, const T* values, size_t count=0) {
             int index = find_attribute_index(attribute_name);
-            if (index != -1)
-                set_vertices<T>(index, values);
+            if (index != -1) set_vertices<T>(index, values, count);
         }
 
         ///\brief Set values for a particular attribute for all vertices
         template <typename T>
-        void set_vertices(int attribute_index, const T* values) {
+        void set_vertices(int attribute_index, const T* values, size_t count=0) {
+            if (count) set_vertex_count(count);
             size_t size = _vertex_count * _attributes[attribute_index].size;
             memcpy(buffers[attribute_index].data, values, size);
+        }
+
+        template <typename... T>
+        void test(size_t count = 0, std::initializer_list<T>... values) {
+
+        }
+
+        template <typename... T>
+        void set_vertices(std::initializer_list<T>... values) {
+            set_vertices<T>(0, values);
+        }
+
+        template <typename T0, typename... T>
+        void set_vertices(int first_attribute_index, std::initializer_list<T0> values0, std::initializer_list<T>... values) {
+            int i = first_attribute_index;
+            set_vertices(i++, values0, values0.size());
+            set_vertices(i++, values, values0.size())...;
         }
 
         ///\brief Set a single vertex attribute value
         template <typename T>
         void set_vertex(const char* attribute_name, size_t vertex_index, const T& value) {
             int index = find_attribute_index(attribute_name);
-            if (index != -1)
-                set_vertex(index, vertex_index, value);
+            if (index != -1) set_vertex(index, vertex_index, value);
         }
 
         template <typename T>
@@ -106,11 +129,11 @@ namespace frame
         }
 
 
-        template <typename... T>
-        void set_vertex(size_t vertex_index, const T&... values) {
-            size_t i = 0;
-            set_vertex(i++, vertex_index, value)...;
-        }
+        //template <typename... T>
+        //void set_vertex(size_t vertex_index, const T&... values) {
+        //    size_t i = 0;
+        //    set_vertex(i++, vertex_index, value)...;
+        //}
 
         template <typename T>
         T* get_vertices(const char* name) {
@@ -131,10 +154,24 @@ namespace frame
             return -1;
         }
 
-        void set_positions(const vec3* positions)
-        { set_vertices<vec3>("position", positions); }
+        void set_triangle(size_t triangle_index, const ivec3& triangle) {
+            _triangles[triangle_index] = triangle;
+        }
+
+        void set_triangles(std::initializer_list<ivec3> triangles) {
+            set_triangle_count(triangles.size());
+            std::copy(triangles.begin(), triangles.end(), _triangles);
+        }
+
+        void set_triangles(const ivec3* triangles, size_t count) {
+            set_triangle_count(count);
+            memcpy(_triangles, triangles, count * sizeof(ivec3));
+        }
+
 
         /*
+        void set_positions(const vec3* positions)
+        { set_vertices<vec3>("position", positions); }
         void set_normals(const vec3* normals);
         void set_uvs(const vec2* uvs);
         void set_colors(const vec4* colors);
@@ -168,9 +205,13 @@ namespace frame
         */
 
     public:
-        size_t vertex_count() const { return _vertex_count; }
-        size_t vertex_size() const { return  _attributes.size(); }
-        const VertexAttributeSet& attributes() const { return _attributes; }
+        inline int vertex_array_vao() const { return vao; }
+        inline int index_buffer_vbo() const { return vbo_triangles; }
+
+    public:
+        inline size_t vertex_count() const { return _vertex_count; }
+        inline size_t vertex_size() const { return  _attributes.size(); }
+        inline const VertexAttributeSet& attributes() const { return _attributes; }
 
     public:
         void resize(size_t vertex_count, size_t triangle_count);
@@ -197,6 +238,6 @@ namespace frame
         unsigned int vao;
         unsigned int vbo_triangles;
         VertexBuffer* buffers;
-        ivec3* triangles;
+        ivec3* _triangles;
     };
 }

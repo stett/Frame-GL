@@ -41,7 +41,7 @@ namespace frame_demo
     protected:
         void setup() {
 
-            node_mesh = Mesh::Factory::quad(vec2(1.0f), vec3(0.0f, 0.0f, 1.0f), vec4(vec3(0.25f), 1.0f));
+            node_mesh = MeshFactory::quad(vec2(1.0f), vec3(0.0f, 0.0f, 1.0f), vec4(vec3(0.25f), 1.0f));
             node_texture = Resource<Texture>(ivec2(1));
             node_shader = Shader::Preset::model_colors();
 

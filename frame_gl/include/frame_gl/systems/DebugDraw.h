@@ -799,22 +799,17 @@ namespace frame_gl
             while (!lines.empty()) {
                 auto& line = lines.front();
                 auto& mesh = meshes[line.thickness];
-                mesh.add_position(line.a);
-                mesh.add_position(line.b);
-                mesh.add_color(vec4(line.color, 1.0f));
-                mesh.add_color(vec4(line.color, 1.0f));
-                mesh.add_line(mesh.position_count() - 2, mesh.position_count() - 1);
+                mesh.resize(2, 1);
+                mesh.set_vertices({ line.a, line.b }, { vec4(line.color, 1.0f), vec4(line.color, 1.0f) });
+                mesh.set_triangles({ ivec3(0, 1, 1) });
                 lines.pop();
             }
 
             // Draw all the meshes
             for (auto& mesh : meshes) {
                 glLineWidth(float(mesh.first));
-                mesh.second.finalize();
                 mesh.second.render();
             }
-            //mesh.finalize();
-            //mesh.render();
 
             line_shader->unbind();
         }
@@ -836,11 +831,11 @@ namespace frame_gl
             std::vector< std::tuple< vec4, vec4, Resource< Mesh > > > meshes;
             while (!shapes.empty()) {
                 Shape& shape = shapes.front();
-                Resource< Mesh > mesh;
+                Resource< Mesh > mesh(shape.vertices.size(), shape.vertices.size() - 1);
                 for (size_t i = 0; i < shape.vertices.size(); ++i) {
-                    mesh->add_position(shape.vertices[i]);
+                    mesh->set_vertex("position", i, shape.vertices[i]);
                     if (i > 1)
-                        mesh->add_triangle(0, i-1, i);
+                        mesh->set_triangle(i-1, ivec3(0, i-1, i));
                 }
                 meshes.push_back(std::make_tuple(shape.fill_color, shape.line_color, mesh));
                 shapes.pop();
@@ -857,7 +852,7 @@ namespace frame_gl
             for (auto& mesh : meshes) {
                 if (std::get<0>(mesh).a == 0.0f) continue;
                 shape_shader->uniform(color, std::get<0>(mesh));
-                std::get<2>(mesh)->finalize();
+                //std::get<2>(mesh)->finalize();
                 std::get<2>(mesh)->render();
             }
 
@@ -866,7 +861,7 @@ namespace frame_gl
             for (auto& mesh : meshes) {
                 if (std::get<1>(mesh).a == 0.0f) continue;
                 shape_shader->uniform(color, std::get<1>(mesh));
-                std::get<2>(mesh)->finalize();
+                //std::get<2>(mesh)->finalize();
                 std::get<2>(mesh)->render();
             }
 
@@ -883,7 +878,7 @@ namespace frame_gl
             cube_shader->uniform(ShaderUniform::View, camera->view_matrix());
             cube_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
-            Resource<Mesh> mesh = Mesh::Factory::cube(1.0f);
+            Resource<Mesh> mesh = MeshFactory::cube(1.0f);
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glEnable(GL_CULL_FACE);
@@ -912,7 +907,7 @@ namespace frame_gl
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
 
-            Mesh mesh;
+            Mesh mesh(circles.size(), circles.size());
             int mesh_indices = 0;
             while (!circles.empty()) {
                 auto& circle = circles.front();

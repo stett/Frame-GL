@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
         cube->add<Transform>()
             ->set_translation(vec3(0.0f, 1.0f, 0.0f));
         cube->add<MeshRenderer>(
-            Mesh::Factory::sphere(0.5f, 3),
+            MeshFactory::sphere(0.5f, 3),
             Resource<Texture>(ivec2(1)),
             Shader::Preset::model_normals(),
             MeshRenderer::PolyMode::Fill, true);
