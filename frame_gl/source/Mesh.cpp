@@ -100,7 +100,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
         // Copy the old block
         memcpy(new_triangles, _triangles, _triangle_count * sizeof(ivec3));
         for (size_t i = 0; i < _attributes.count(); ++i)
-            memcpy(new_buffers[i].data, buffers[i].data, _vertex_count * _attributes.size());
+            memcpy(new_buffers[i].data, buffers[i].data, buffers[i].size);
 
         // Delete the old block
         delete[] block;
@@ -112,6 +112,23 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     _triangles = new_triangles;
     _vertex_count = vertex_count;
     _triangle_count = triangle_count;
+}
+
+void Mesh::append(const Mesh& other) {
+    assert(_attributes == other.attributes);
+
+    // Resize to make room for the new guy
+    size_t[] offsets = { _vertex_count, _triangle_count };
+    resize(offsets[0] + other._vertex_count,
+           offsets[1] + other._triangle_count);
+
+    // Copy vertex data
+    for (size_t i = 0; i < _attributes.count(); ++i) {
+        memcpy(buffers[i].data + offsets[0] * _attributes[i].size, other.buffers[i].data, other.buffers[i].size);
+    }
+
+    // Copy triangle data
+    memcpy(_triangles + offsets[1] * sizeof(ivec3), other._triangles, other._triangle_count * sizeof(ivec3));
 }
 
 void Mesh::create_buffers() {
@@ -167,102 +184,3 @@ void Mesh::destroy_buffers() {
     // Destroy vertex array object
     glDeleteVertexArrays(1, &vao);
 }
-
-/*
-void Mesh::load_obj_str(const std::string& obj, bool _normalize, bool _center) {
-    clear();
-
-    // Load OBJ files.
-    vec2 input2f;
-    vec3 input3f;
-    ivec3 input3i;
-    int input15i[15];
-    char *pch;
-    int vertexCount = 0;
-    char buf[1024];
-    vec3 minima;
-    vec3 maxima;
-
-    while (ifs.peek() != EOF) {
-
-        // Parse every line until end of file
-        ifs >> buf;
-        if (buf[0] == '#') ifs.getline(buf, 1024); // comment block
-        else if (strcmp(buf, "g") == 0) ifs.getline(buf, 1024); // group block
-        else if (strcmp(buf, "s") == 0) ifs.getline(buf, 1024); 
-        else if (strcmp(buf, "usemtl") == 0) ifs.getline(buf, 1024); // material block
-        else if (strcmp(buf, "v") == 0) {
-
-            // raw vertex posistion data parsing
-            ifs >> input3f[0] >> input3f[1] >> input3f[2];
-            positions.push_back(input3f);
-
-            // record minima/maximua
-            if (input3f.x < minima.x) minima.x = input3f.x;
-            if (input3f.y < minima.y) minima.y = input3f.y;
-            if (input3f.z < minima.z) minima.z = input3f.z;
-            if (input3f.x > maxima.x) maxima.x = input3f.x;
-            if (input3f.y > maxima.y) maxima.y = input3f.y;
-            if (input3f.z > maxima.z) maxima.z = input3f.z;
-
-        } else if (strcmp(buf, "vt") == 0) {
-
-            // raw vertex uv data parsing
-            ifs >> input2f[0] >> input2f[1];
-            input2f[1] = 1 - input2f[1];
-            uvs.push_back(input2f);
-
-        } else if (strcmp(buf, "vn") == 0) {
-
-            // raw vertex normal data parsing
-            ifs >> input3f[0] >> input3f[1] >> input3f[2];
-            normals.push_back(input3f);
-
-        } else if (strcmp(buf, "f") == 0) {
-
-            // raw face/index data parsing
-            // Should consider both tris and quads
-            ifs.getline(buf, 1024);
-            char str[5][32];
-            memset(str, 0, sizeof(char) * 5 * 32);
-            pch = strtok(buf, " ");
-            vertexCount = 0;
-
-            // eliminate all extra spaces.
-            while (pch) {
-                strcpy(str[vertexCount++], pch);
-                pch = strtok(NULL, " ");
-            }
-
-            int i = 0;
-            int stride;
-            for (int j = 0; j < vertexCount; ++j) {
-                stride = 0;
-                pch = strtok(str[j], "/");
-                while (pch) {
-                    ++stride;
-                    input15i[i++] = std::stoi(pch);
-                    pch = strtok(NULL, "/");
-                }
-            }
-
-            input3i = ivec3(input15i[0], input15i[1*stride], input15i[2*stride]) - ivec3(1);
-            triangles.push_back(input3i);
-        }
-    }
-
-    //ifs.close();
-
-    if (_normalize) {
-        vec3 shift = _center ? -(minima + maxima) * 0.5f : vec3(0.0f);
-        vec3 extrema = maxima - minima;
-        float scale = 1.0f;
-        for (int i = 0; i < 3; ++i)
-            scale = min(scale, 2.0f / extrema[i]);
-        for (vec3& pos : positions)
-            pos = (pos + shift) * scale;
-    }
-
-    finalize();
-}
-*/

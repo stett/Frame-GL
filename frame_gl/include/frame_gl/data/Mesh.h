@@ -5,7 +5,6 @@
 #include <iterator>
 #include "frame/Resource.h"
 #include "frame_gl/math.h"
-#include "frame_gl/data/MeshFactory.h"
 
 namespace frame
 {
@@ -14,6 +13,12 @@ namespace frame
         char* name;
         size_t size;
         bool dynamic;
+
+        bool operator==(const VertexAttribute& other) {
+            if (size != other.size) return false;
+            if (dynamic != other.dynamic) return false;
+            return strcmp(name, other.name) == 0;
+        }
     };
 
     class VertexAttributeSet {
@@ -31,9 +36,20 @@ namespace frame
 
         ~VertexAttributeSet() { delete[] _attributes; }
 
-        inline const VertexAttribute& operator[](size_t i) const { return _attributes[i]; }
         inline size_t size() const { return _size; }
         inline size_t count() const { return _count;  }
+
+    public:
+        inline const VertexAttribute& operator[](size_t i) const { return _attributes[i]; }
+
+        inline bool operator==(const VertexAttributeSet& other) const {
+            if (_count != other._count) return false;
+            if (_size != other._size) return false;
+            for (size_t i = 0; i < _count; ++i)
+                if (_attributes[i] != other._attributes[i])
+                    return false;
+            return true;
+        }
 
     private:
         size_t _size;
@@ -98,11 +114,6 @@ namespace frame
         }
 
         template <typename... T>
-        void test(size_t count = 0, std::initializer_list<T>... values) {
-
-        }
-
-        template <typename... T>
         void set_vertices(std::initializer_list<T>... values) {
             set_vertices<T>(0, values);
         }
@@ -127,13 +138,6 @@ namespace frame
             assert(sizeof(T) == size);
             memcpy(buffers[attribute_index].data + vertex_index, &value, size);
         }
-
-
-        //template <typename... T>
-        //void set_vertex(size_t vertex_index, const T&... values) {
-        //    size_t i = 0;
-        //    set_vertex(i++, vertex_index, value)...;
-        //}
 
         template <typename T>
         T* get_vertices(const char* name) {
@@ -168,41 +172,7 @@ namespace frame
             memcpy(_triangles, triangles, count * sizeof(ivec3));
         }
 
-
-        /*
-        void set_positions(const vec3* positions)
-        { set_vertices<vec3>("position", positions); }
-        void set_normals(const vec3* normals);
-        void set_uvs(const vec2* uvs);
-        void set_colors(const vec4* colors);
-        void set_weights(const ivec4* indices, const vec4** offsets);
-        void set_triangles(const ivec3* triangles);
-        void set_lines(const ivec2* lines);
-        */
-
-        /*
-        void set_position(size_t i, const vec3& position)
-        { set_vertex<vec3>("position", i, position); }
-
-        void set_uv(size_t i, const vec3& position)
-        { set_uv<vec3>("uv", i, position); }
-
-        void set_uv(size_t i, const vec2& uv);
-        void set_normal(size_t i, const vec3& normal);
-        void set_color(size_t i, const vec4& color);
-        void set_weight(size_t i, const ivec4& indices, const vec4(&offsets)[4]);
-        void set_vertex(size_t i, const vec3& position, const vec3& normal=vec3(0.0f), const vec2& uv=vec2(0.0f), const vec4& color=vec4(1.0f));
-        void set_triangle(size_t i, const ivec3& indices);
-        void set_triangle(size_t i, int a, int b, int c) { add_triangle(ivec3(a, b, c)); }
-        void set_quad(size_t i, const ivec4& indices);
-        void set_quad(size_t i, int a, int b, int c, int d) { add_quad(ivec4(a, b, c, d)); }
-        void set_line(size_t i, const ivec2& indices);
-        void set_line(size_t i, int a, int b) { add_line(ivec2(a, b)); }
-        */
-
-        /*
-        void load_obj_str(const std::string& obj, bool normalize=false, bool center=false);
-        */
+        void append(const Mesh& other);
 
     public:
         inline int vertex_array_vao() const { return vao; }
@@ -212,6 +182,7 @@ namespace frame
         inline size_t vertex_count() const { return _vertex_count; }
         inline size_t vertex_size() const { return  _attributes.size(); }
         inline const VertexAttributeSet& attributes() const { return _attributes; }
+        inline bool dynamic_triangles() const { return _dynamic_triangles; }
 
     public:
         void resize(size_t vertex_count, size_t triangle_count);

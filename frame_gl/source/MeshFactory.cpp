@@ -13,6 +13,7 @@
 #include "frame/Log.h"
 #include "frame/Resource.h"
 #include "frame_gl/data/Mesh.h"
+#include "frame_gl/data/MeshFactory.h"
 #include "frame_gl/math.h"
 #include "frame_gl/error.h"
 using namespace frame;
@@ -37,7 +38,7 @@ namespace
     }
 }
 
-Resource<Mesh> MeshFactory::load(const std::string& filename, bool normalize, bool center) {
+Resource<Mesh> MeshFactory::load_obj_file(const std::string& filename, bool normalize, bool center) {
     Resource<Mesh> mesh;
     std::ifstream ifs(filename);
     if (!ifs.is_open()) {
@@ -50,18 +51,111 @@ Resource<Mesh> MeshFactory::load(const std::string& filename, bool normalize, bo
     return mesh;
 }
 
-Resource<Mesh> MeshFactory::combine(const std::vector< Resource<Mesh> >& meshes) {
-    Resource<Mesh> combined;
-    for (auto mesh : meshes) {
-        int offset = combined->positions.size();
-        combined->positions.insert(combined->positions.end(), mesh->positions.begin(), mesh->positions.end());
-        combined->normals.insert(combined->normals.end(), mesh->normals.begin(), mesh->normals.end());
-        combined->uvs.insert(combined->uvs.end(), mesh->uvs.begin(), mesh->uvs.end());
-        combined->colors.insert(combined->colors.end(), mesh->colors.begin(), mesh->colors.end());
-        for (auto triangle : mesh->triangles)
-            combined->add_triangle(triangle + ivec3(offset));
+Resource<Mesh> MeshFactory::load_obj_str(const std::string& obj, bool normalize, bool center) {
+    return Resource<Mesh>();
+
+    /*
+    clear();
+
+    // Load OBJ files.
+    vec2 input2f;
+    vec3 input3f;
+    ivec3 input3i;
+    int input15i[15];
+    char *pch;
+    int vertexCount = 0;
+    char buf[1024];
+    vec3 minima;
+    vec3 maxima;
+
+    while (ifs.peek() != EOF) {
+
+        // Parse every line until end of file
+        ifs >> buf;
+        if (buf[0] == '#') ifs.getline(buf, 1024); // comment block
+        else if (strcmp(buf, "g") == 0) ifs.getline(buf, 1024); // group block
+        else if (strcmp(buf, "s") == 0) ifs.getline(buf, 1024); 
+        else if (strcmp(buf, "usemtl") == 0) ifs.getline(buf, 1024); // material block
+        else if (strcmp(buf, "v") == 0) {
+
+            // raw vertex posistion data parsing
+            ifs >> input3f[0] >> input3f[1] >> input3f[2];
+            positions.push_back(input3f);
+
+            // record minima/maximua
+            if (input3f.x < minima.x) minima.x = input3f.x;
+            if (input3f.y < minima.y) minima.y = input3f.y;
+            if (input3f.z < minima.z) minima.z = input3f.z;
+            if (input3f.x > maxima.x) maxima.x = input3f.x;
+            if (input3f.y > maxima.y) maxima.y = input3f.y;
+            if (input3f.z > maxima.z) maxima.z = input3f.z;
+
+        } else if (strcmp(buf, "vt") == 0) {
+
+            // raw vertex uv data parsing
+            ifs >> input2f[0] >> input2f[1];
+            input2f[1] = 1 - input2f[1];
+            uvs.push_back(input2f);
+
+        } else if (strcmp(buf, "vn") == 0) {
+
+            // raw vertex normal data parsing
+            ifs >> input3f[0] >> input3f[1] >> input3f[2];
+            normals.push_back(input3f);
+
+        } else if (strcmp(buf, "f") == 0) {
+
+            // raw face/index data parsing
+            // Should consider both tris and quads
+            ifs.getline(buf, 1024);
+            char str[5][32];
+            memset(str, 0, sizeof(char) * 5 * 32);
+            pch = strtok(buf, " ");
+            vertexCount = 0;
+
+            // eliminate all extra spaces.
+            while (pch) {
+                strcpy(str[vertexCount++], pch);
+                pch = strtok(NULL, " ");
+            }
+
+            int i = 0;
+            int stride;
+            for (int j = 0; j < vertexCount; ++j) {
+                stride = 0;
+                pch = strtok(str[j], "/");
+                while (pch) {
+                    ++stride;
+                    input15i[i++] = std::stoi(pch);
+                    pch = strtok(NULL, "/");
+                }
+            }
+
+            input3i = ivec3(input15i[0], input15i[1*stride], input15i[2*stride]) - ivec3(1);
+            triangles.push_back(input3i);
+        }
     }
-    combined->finalize();
+
+    //ifs.close();
+
+    if (_normalize) {
+        vec3 shift = _center ? -(minima + maxima) * 0.5f : vec3(0.0f);
+        vec3 extrema = maxima - minima;
+        float scale = 1.0f;
+        for (int i = 0; i < 3; ++i)
+            scale = min(scale, 2.0f / extrema[i]);
+        for (vec3& pos : positions)
+            pos = (pos + shift) * scale;
+    }
+
+    finalize();
+    */
+}
+
+Resource<Mesh> MeshFactory::combine(const std::vector< Resource<Mesh> >& meshes, bool dynamic_triangles) {
+    Resource<Mesh> combined(meshes[0]->attributes());
+    for (auto mesh : meshes)
+        combined->append(*mesh);
     return combined;
 }
 
