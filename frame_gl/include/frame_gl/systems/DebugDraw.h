@@ -878,7 +878,7 @@ namespace frame_gl
             cube_shader->uniform(ShaderUniform::View, camera->view_matrix());
             cube_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
-            Resource<Mesh> mesh = MeshFactory::cube(1.0f);
+            Resource<Mesh> mesh = MeshFactory::cube();// vec3(1.0f));
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glEnable(GL_CULL_FACE);

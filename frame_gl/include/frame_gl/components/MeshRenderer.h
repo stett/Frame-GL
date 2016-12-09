@@ -5,6 +5,7 @@
 #include "frame_gl/components/Transform.h"
 #include "frame_gl/components/Camera.h"
 #include "frame_gl/data/Mesh.h"
+#include "frame_gl/data/MeshFactory.h"
 #include "frame_gl/data/Texture.h"
 #include "frame_gl/data/Shader.h"
 #include "frame/Resource.h"

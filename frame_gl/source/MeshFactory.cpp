@@ -47,11 +47,10 @@ Resource<Mesh> MeshFactory::load_obj_file(const std::string& filename, bool norm
     }
     std::string obj = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
     ifs.close();
-    mesh->load_obj_str(obj, normalize, center);
-    return mesh;
+    return load_obj_string(obj, normalize, center);
 }
 
-Resource<Mesh> MeshFactory::load_obj_str(const std::string& obj, bool normalize, bool center) {
+Resource<Mesh> MeshFactory::load_obj_string(const std::string& obj, bool normalize, bool center) {
     return Resource<Mesh>();
 
     /*
@@ -160,38 +159,38 @@ Resource<Mesh> MeshFactory::combine(const std::vector< Resource<Mesh> >& meshes,
 }
 
 Resource<Mesh> MeshFactory::rectangle(const vec2& size, const vec3& center) {
-    Resource<Mesh> mesh;
+    Resource<Mesh> mesh(4, 2);
     vec3 normal(0.0f, 0.0f, 1.0f);
-    mesh->add_vertex(center + vec3(-size.x, -size.y, 0.0f) * 0.5f, normal, vec2(0.0f, 0.0f));
-    mesh->add_vertex(center + vec3(-size.x,  size.y, 0.0f) * 0.5f, normal, vec2(0.0f, 1.0f));
-    mesh->add_vertex(center + vec3( size.x,  size.y, 0.0f) * 0.5f, normal, vec2(1.0f, 1.0f));
-    mesh->add_vertex(center + vec3( size.x, -size.y, 0.0f) * 0.5f, normal, vec2(1.0f, 0.0f));
-    mesh->add_triangle(0, 1, 2);
-    mesh->add_triangle(0, 2, 3);
-    mesh->finalize();
+    mesh->set_vertices(
+        {   center + vec3(-size.x, -size.y, 0.0f) * 0.5f,
+            center + vec3(-size.x,  size.y, 0.0f) * 0.5f,
+            center + vec3( size.x,  size.y, 0.0f) * 0.5f,
+            center + vec3( size.x, -size.y, 0.0f) * 0.5f },
+        { normal, normal, normal, normal },
+        { vec2(0.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 0.0f) });
+    mesh->set_triangles({ ivec3(0, 1, 2), ivec3(0, 2, 3) });
     return mesh;
 }
 
 Resource<Mesh> MeshFactory::circle(float radius, const vec3& center, float verts_per_length) {
-    Resource<Mesh> mesh;
 
     vec3 normal(0.0f, 0.0f, 1.0f);
     float circumference = 2.0f * pi * radius;
     std::size_t count = (std::size_t)(verts_per_length * circumference);
+
+    Resource<Mesh> mesh(count, count - 2);
 
     // Build the vertices
     for (std::size_t index = 0; index < count; ++index) {
         float angle = (float)index / (float)count;
         vec3 position = vec3(glm::cos(angle), glm::sin(angle), 0.0f) * radius;
         vec2 uv = vec3(glm::cos(angle), -glm::sin(angle), 0.0f) * 0.5f + vec3(0.5f, 0.5f, 0.0f);
-        mesh->add_vertex(position, normal, uv);
+        mesh->set_vertex(index, position, normal, uv);
     }
 
     // Build the indices
     for (std::size_t index = 2; index < count; ++index)
-        mesh->add_triangle(0, index - 1, index);
-
-    mesh->finalize();
+        mesh->set_triangle(index - 2, ivec3(0, index - 1, index));
 
     return mesh;
 }
@@ -201,163 +200,150 @@ Resource<Mesh> MeshFactory::arrow(const vec3& base, const vec3& tip, const vec4&
     // TODO: Add support for line and point style meshes
     //       so that it's not necessary to hack this!!
     //
-    Resource<Mesh> mesh;
+    Resource<Mesh> mesh(7, 3);
     vec3 norm = normalize(tip - base);
     vec3 perp1 = orthogonal(norm);
-    vec3 perp2 = cross(norm, perp1);//orthogonal(perp1);
+    vec3 perp2 = cross(norm, perp1);
     vec3 head1 = tip + size * (perp1 - norm);
     vec3 head2 = tip + size * (-perp1 - norm);
     vec3 head3 = tip + size * (perp2 - norm);
     vec3 head4 = tip + size * (-perp2 - norm);
     vec3 subtip = tip + norm * dot(norm, size * (perp1 - norm));
-    mesh->add_vertex(base, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_vertex(tip, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_vertex(subtip, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_vertex(head1, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_vertex(head2, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_vertex(head3, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_vertex(head4, vec3(0.0f), vec2(0.0f), color);
-    mesh->add_triangle(0, 2, 2);
-    mesh->add_triangle(1, 3, 4);
-    mesh->add_triangle(1, 5, 6);
-    mesh->finalize();
+
+    mesh->set_vertices(
+        { base, tip, subtip, head1, head2, head3, head4 },
+        { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
+        { vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f) },
+        { color, color, color, color, color, color, color });
+    mesh->set_triangles({ ivec3(0, 2, 2), ivec3(1, 3, 4), ivec3(1, 5, 6) });
+
     return mesh;
 }
 
 Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
-    Resource<Mesh> mesh;
     float half = edge * 0.5f;
 
     if (smooth) {
 
+        Resource<Mesh> mesh(8, 12);
+
         float normag = sqrt(3 * half * half);
 
-        mesh->add_vertex(vec3(-half, -half, -half), vec3(-normag, -normag, -normag), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, -half, -half), vec3(normag, -normag, -normag), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, half, -half), vec3(-normag, normag, -normag), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, half, -half), vec3(normag, normag, -normag), vec3(0.0f), color);
+        mesh->set_vertices({
+            vec3(-half, -half, -half), vec3(half, -half, -half),
+            vec3(-half, half, -half), vec3(half, half, -half),
+            vec3(-half, -half, half), vec3(half, -half, half),
+            vec3(-half, half, half), vec3(half, half, half)
+        }, {
+            vec3(-normag, -normag, -normag), vec3(normag, -normag, -normag),
+            vec3(-normag, normag, -normag), vec3(normag, normag, -normag),
+            vec3(-normag, -normag, normag), vec3(normag, -normag, normag),
+            vec3(-normag, normag, normag), vec3(normag, normag, normag)
+        }, {
+            vec3(0.0f), vec3(0.0f),
+            vec3(0.0f), vec3(0.0f),
+            vec3(0.0f), vec3(0.0f),
+            vec3(0.0f), vec3(0.0f),
+        }, {
+            color, color, color, color,
+            color, color, color, color
+        });
 
-        mesh->add_vertex(vec3(-half, -half, half), vec3(-normag, -normag, normag), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, -half, half), vec3(normag, -normag, normag), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, half, half), vec3(-normag, normag, normag), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, half, half), vec3(normag, normag, normag), vec3(0.0f), color);
+        mesh->set_triangles({
+            ivec3(0, 1, 2), ivec3(1, 2, 3), // back
+            ivec3(0, 1, 4), ivec3(1, 4, 5), // bottom
+            ivec3(4, 5, 6), ivec3(5, 6, 7), // front
+            ivec3(7, 3, 6), ivec3(3, 6, 2), // top
+            ivec3(0, 2, 4), ivec3(2, 4, 6), // left
+            ivec3(1, 3, 5), ivec3(3, 5, 7)  // right
+        });
 
-        // back
-        mesh->add_triangle(0, 1, 2);
-        mesh->add_triangle(1, 2, 3);
-
-        // bottom
-        mesh->add_triangle(0, 1, 4);
-        mesh->add_triangle(1, 4, 5);
-
-        // front
-        mesh->add_triangle(4, 5, 6);
-        mesh->add_triangle(5, 6, 7);
-
-        // top
-        mesh->add_triangle(7, 3, 6);
-        mesh->add_triangle(3, 6, 2);
-
-        // left
-        mesh->add_triangle(0, 2, 4);
-        mesh->add_triangle(2, 4, 6);
-
-        // right
-        mesh->add_triangle(1, 3, 5);
-        mesh->add_triangle(3, 5, 7);
+        return mesh;
 
     } else {
 
-        // 0
-        mesh->add_vertex(vec3(-half, -half, -half), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, -half, -half), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, -half, -half), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), color);
+        Resource<Mesh> mesh(24, 12);
 
-        // 1
-        mesh->add_vertex(vec3(half, -half, -half), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, -half, -half), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, -half, -half), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), color);
+        mesh->set_vertices({
+            vec3(-half, -half, -half), vec3(-half, -half, -half), vec3(-half, -half, -half),
+            vec3(half, -half, -half), vec3(half, -half, -half), vec3(half, -half, -half),
+            vec3(-half, half, -half), vec3(-half, half, -half), vec3(-half, half, -half),
+            vec3(half, half, -half), vec3(half, half, -half), vec3(half, half, -half),
+            vec3(-half, -half, half), vec3(-half, -half, half), vec3(-half, -half, half),
+            vec3(half, -half, half), vec3(half, -half, half), vec3(half, -half, half),
+            vec3(-half, half, half), vec3(-half, half, half), vec3(-half, half, half),
+            vec3(half, half, half), vec3(half, half, half), vec3(half, half, half)
+        }, {
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)
+        }, {
+            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
+            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
+            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
+            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
+        }, {
+            color, color, color, color, color, color,
+            color, color, color, color, color, color
+        });
 
-        // 2
-        mesh->add_vertex(vec3(-half, half, -half), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, half, -half), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, half, -half), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), color);
+        mesh->set_triangles({
 
-        // 3
-        mesh->add_vertex(vec3(half, half, -half), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, half, -half), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, half, -half), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), color);
+            // back
+            ivec3((0*3)+2, (2*3)+2, (1*3)+2),
+            ivec3((1*3)+2, (2*3)+2, (3*3)+2),
 
-        // 4
-        mesh->add_vertex(vec3(-half, -half, half), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, -half, half), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, -half, half), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), color);
+            // bottom
+            ivec3((0*3)+1, (1*3)+1, (4*3)+1),
+            ivec3((1*3)+1, (5*3)+1, (4*3)+1),
 
-        // 5
-        mesh->add_vertex(vec3(half, -half, half), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, -half, half), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, -half, half), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), color);
+            // front
+            ivec3((4*3)+2, (5*3)+2, (6*3)+2),
+            ivec3((5*3)+2, (7*3)+2, (6*3)+2),
 
-        // 6
-        mesh->add_vertex(vec3(-half, half, half), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, half, half), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(-half, half, half), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), color);
+            // top
+            ivec3((7*3)+1, (3*3)+1, (6*3)+1),
+            ivec3((3*3)+1, (2*3)+1, (6*3)+1),
 
-        // 7
-        mesh->add_vertex(vec3(half, half, half), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, half, half), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f), color);
-        mesh->add_vertex(vec3(half, half, half), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), color);
+            // left
+            ivec3(0*3, 4*3, 2*3),
+            ivec3(2*3, 4*3, 6*3),
 
-        // back
-        mesh->add_triangle((0*3)+2, (2*3)+2, (1*3)+2);
-        mesh->add_triangle((1*3)+2, (2*3)+2, (3*3)+2);
+            // right
+            ivec3(1*3, 3*3, 5*3),
+            ivec3(3*3, 7*3, 5*3)
+        });
 
-        // bottom
-        mesh->add_triangle((0*3)+1, (1*3)+1, (4*3)+1);
-        mesh->add_triangle((1*3)+1, (5*3)+1, (4*3)+1);
-
-        // front
-        mesh->add_triangle((4*3)+2, (5*3)+2, (6*3)+2);
-        mesh->add_triangle((5*3)+2, (7*3)+2, (6*3)+2);
-
-        // top
-        mesh->add_triangle((7*3)+1, (3*3)+1, (6*3)+1);
-        mesh->add_triangle((3*3)+1, (2*3)+1, (6*3)+1);
-
-        // left
-        mesh->add_triangle(0*3, 4*3, 2*3);
-        mesh->add_triangle(2*3, 4*3, 6*3);
-
-        // right
-        mesh->add_triangle(1*3, 3*3, 5*3);
-        mesh->add_triangle(3*3, 7*3, 5*3);
+        return mesh;
     }
-
-    mesh->finalize();
-
-    return mesh;
 }
 
 Resource<Mesh> MeshFactory::quad(const vec2& size, const vec3& normal, const vec4& color) {
-    Resource<Mesh> mesh;
+    Resource<Mesh> mesh(4, 2);
     vec2 half = size * 0.5f;
 
     //
     // TODO: Transform this to face in the normal direction
     //
 
-    mesh->add_vertex(vec3(-half.x, half.y, 0.0f), vec3(0.0f), vec3(0.0f), color);
-    mesh->add_vertex(vec3(half.x, half.y, 0.0f), vec3(0.0f), vec3(0.0f), color);
-    mesh->add_vertex(vec3(-half.x, -half.y, 0.0f), vec3(0.0f), vec3(0.0f), color);
-    mesh->add_vertex(vec3(half.x, -half.y, 0.0f), vec3(0.0f), vec3(0.0f), color);
-    mesh->add_triangle(2, 1, 0);
-    mesh->add_triangle(1, 2, 3);
-    mesh->finalize();
+    mesh->set_vertices({
+        vec3(-half.x, half.y, 0.0f), vec3(half.x, half.y, 0.0f),
+        vec3(-half.x, -half.y, 0.0f), vec3(half.x, -half.y, 0.0f) },
+    { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
+    { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
+    { color, color, color, color });
+
+    mesh->set_triangles({ ivec3(2, 1, 0), ivec3(1, 2, 3) });
+
     return mesh;
 }
 
 Resource<Mesh> MeshFactory::sphere(float radius, int recursion, const vec4& color) {
-    Resource<Mesh> mesh;
     std::unordered_map<ivec2, int> midpoint_cache;
     std::vector<ivec3>* faces = new std::vector<ivec3>();
     std::vector<vec3> vertices;
@@ -429,18 +415,13 @@ Resource<Mesh> MeshFactory::sphere(float radius, int recursion, const vec4& colo
         faces = faces2;
     }
 
-    // Add triangles to mesh
-    for (const vec3& position : vertices) {
-        mesh->add_position(position * 0.5f * radius);
-        mesh->add_normal(normalize(position));
-    }
-
-    for (const ivec3& face : *faces) {
-        mesh->add_triangle(face);
-    }
+    // build the mesh
+    Resource<Mesh> mesh(vertices.size(), faces->size());
+    for (int i = 0; i < vertices.size(); +i)
+        mesh->set_vertex(i, vertices[i] * 0.5f * radius, normalize(vertices[i]));
+    for (int i = 0; i < faces->size(); ++i)
+        mesh->set_triangle(i, faces->at(i));
 
     delete faces;
-
-    mesh->finalize();
     return mesh;
 }

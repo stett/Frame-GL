@@ -14,10 +14,14 @@ namespace frame
         size_t size;
         bool dynamic;
 
-        bool operator==(const VertexAttribute& other) {
+        bool operator==(const VertexAttribute& other) const {
             if (size != other.size) return false;
             if (dynamic != other.dynamic) return false;
             return strcmp(name, other.name) == 0;
+        }
+
+        bool operator!=(const VertexAttribute& other) const {
+            return !operator==(other);
         }
     };
 
@@ -42,7 +46,7 @@ namespace frame
     public:
         inline const VertexAttribute& operator[](size_t i) const { return _attributes[i]; }
 
-        inline bool operator==(const VertexAttributeSet& other) const {
+        bool operator==(const VertexAttributeSet& other) const {
             if (_count != other._count) return false;
             if (_size != other._size) return false;
             for (size_t i = 0; i < _count; ++i)
@@ -108,6 +112,7 @@ namespace frame
         ///\brief Set values for a particular attribute for all vertices
         template <typename T>
         void set_vertices(int attribute_index, const T* values, size_t count=0) {
+            assert(sizeof(T) == _attributes[attribute_index].size);
             if (count) set_vertex_count(count);
             size_t size = _vertex_count * _attributes[attribute_index].size;
             memcpy(buffers[attribute_index].data, values, size);
@@ -119,13 +124,35 @@ namespace frame
         }
 
         template <typename T0, typename... T>
-        void set_vertices(int first_attribute_index, std::initializer_list<T0> values0, std::initializer_list<T>... values) {
-            int i = first_attribute_index;
-            set_vertices(i++, values0, values0.size());
-            set_vertices(i++, values, values0.size())...;
+        void set_vertices(size_t first_attribute_index, std::initializer_list<T0> values0, std::initializer_list<T>... values) {
+            // Note: The reason we've shaved off T0 is to extract the size of the initializer list.
+            // Each list should have the same length or else there's a problem... so be fucking careful.
+            size_t count = values0.size();
+            assert(count == values.size())...;
+            size_t i = first_attribute_index;
+            set_vertices(i++, values0, count);
+            set_vertices(i++, values, count)...;
+        }
+
+        template <typename T>
+        void set_vertex(size_t vertex_index, size_t attribute_index, const T& value) {
+            assert(sizeof(T) == _attributes[attribute_index].size);
+            memcpy(buffers[attribute_index].data, &value, sizeof(T));
+        }
+
+        template <typename... T>
+        void set_vertex(size_t vertex_index, size_t first_attribute_index, const T&... values) {
+            size_t i = first_attribute_index;
+            set_vertex(vertex_index, i++, values.size())...;
+        }
+
+        template <typename... T>
+        void set_vertex(size_t vertex_index, const T&... values) {
+            set_vertex(vertex_index, 0, values);
         }
 
         ///\brief Set a single vertex attribute value
+        /*
         template <typename T>
         void set_vertex(const char* attribute_name, size_t vertex_index, const T& value) {
             int index = find_attribute_index(attribute_name);
@@ -138,6 +165,7 @@ namespace frame
             assert(sizeof(T) == size);
             memcpy(buffers[attribute_index].data + vertex_index, &value, size);
         }
+        */
 
         template <typename T>
         T* get_vertices(const char* name) {
