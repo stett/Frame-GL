@@ -33,6 +33,16 @@ Mesh::~Mesh() {
     destroy_buffers();  // Delete gfx buffers
 }
 
+void Mesh::render() {
+    bind();
+    draw();
+    unbind();
+}
+
+void Mesh::draw() {
+    glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
+}
+
 void Mesh::bind() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
@@ -43,15 +53,6 @@ void Mesh::unbind() {
     glBindVertexArray(0);
 }
 
-void Mesh::draw() {
-    glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
-}
-
-void Mesh::render() {
-    bind();
-    draw();
-    unbind();
-}
 
 void Mesh::resize(size_t vertex_count, size_t triangle_count) {
     destroy_buffers();

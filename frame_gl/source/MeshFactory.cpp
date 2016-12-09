@@ -417,9 +417,9 @@ Resource<Mesh> MeshFactory::sphere(float radius, int recursion, const vec4& colo
 
     // build the mesh
     Resource<Mesh> mesh(vertices.size(), faces->size());
-    for (int i = 0; i < vertices.size(); +i)
+    for (size_t i = 0; i < vertices.size(); ++i)
         mesh->set_vertex(i, vertices[i] * 0.5f * radius, normalize(vertices[i]));
-    for (int i = 0; i < faces->size(); ++i)
+    for (size_t i = 0; i < faces->size(); ++i)
         mesh->set_triangle(i, faces->at(i));
 
     delete faces;
