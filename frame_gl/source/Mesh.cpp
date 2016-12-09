@@ -92,8 +92,8 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     char* location = new_block + buffers_size;
     for (size_t i = 0; i < _attributes.count(); ++i) {
         new_buffers[i].data = location;
-        new_buffers[i].size = _vertex_count * _attributes[i].size;
-        location += _attributes[i].size;
+        new_buffers[i].size = vertex_count * _attributes[i].size;
+        location += vertex_count * _attributes[i].size;
     }
 
     if (block) {

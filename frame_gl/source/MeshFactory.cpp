@@ -200,7 +200,8 @@ Resource<Mesh> MeshFactory::arrow(const vec3& base, const vec3& tip, const vec4&
     // TODO: Add support for line and point style meshes
     //       so that it's not necessary to hack this!!
     //
-    Resource<Mesh> mesh(7, 3);
+    //Resource<Mesh> mesh(7, 3);
+    Mesh* mesh = new Mesh(7, 3);
     vec3 norm = normalize(tip - base);
     vec3 perp1 = orthogonal(norm);
     vec3 perp2 = cross(norm, perp1);
@@ -217,7 +218,8 @@ Resource<Mesh> MeshFactory::arrow(const vec3& base, const vec3& tip, const vec4&
         { color, color, color, color, color, color, color });
     mesh->set_triangles({ ivec3(0, 2, 2), ivec3(1, 3, 4), ivec3(1, 5, 6) });
 
-    return mesh;
+    //return mesh;
+    return Resource<Mesh>();
 }
 
 Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {

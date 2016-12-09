@@ -10,14 +10,14 @@ namespace frame
 {
 
     struct VertexAttribute {
-        char* name;
+        std::string name;
         size_t size;
         bool dynamic;
 
         bool operator==(const VertexAttribute& other) const {
             if (size != other.size) return false;
             if (dynamic != other.dynamic) return false;
-            return strcmp(name, other.name) == 0;
+            return name == other.name;
         }
 
         bool operator!=(const VertexAttribute& other) const {
@@ -172,7 +172,7 @@ namespace frame
 
         int find_attribute_index(const char* name) {
             for (size_t i = 0; i < _attributes.count(); ++i)
-                if (strcmp(_attributes[i].name, name) == 0)
+                if (strcmp(_attributes[i].name.c_str(), name) == 0)
                     return i;
             return -1;
         }
