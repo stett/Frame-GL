@@ -96,28 +96,25 @@ namespace frame_gl
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             // Draw rectangles around each GUI element
-            Mesh mesh;
+            size_t rect_count = node<GUIRect>().size();
+            Mesh mesh(4 * rect_count, 4 * rect_count);
             int index = 0;
             for (auto rect : node<GUIRect>()) {
-                mesh.add_position(vec3(rect->top_left(), 0.0f));
-                mesh.add_position(vec3(rect->top_right(), 0.0f));
-                mesh.add_position(vec3(rect->bottom_right(), 0.0f));
-                mesh.add_position(vec3(rect->bottom_left(), 0.0f));
-
                 vec4 color(vec3(rect.entity() == focus ? 1.0f : 0.4f), 1.0f);
-                mesh.add_color(color);
-                mesh.add_color(color);
-                mesh.add_color(color);
-                mesh.add_color(color);
+                mesh.set_vertex(index + 0, vec3(rect->top_left(), 0.0f), color);
+                mesh.set_vertex(index + 1, vec3(rect->top_right(), 0.0f), color);
+                mesh.set_vertex(index + 2, vec3(rect->bottom_right(), 0.0f), color);
+                mesh.set_vertex(index + 3, vec3(rect->bottom_left(), 0.0f), color);
 
-                mesh.add_line(index, index+1);
-                mesh.add_line(index+1, index+2);
-                mesh.add_line(index+2, index+3);
-                mesh.add_line(index+3, index);
+                mesh.set_triangles({
+                    ivec3(index, index+1, index+1),
+                    ivec3(index+1, index+2, index+2),
+                    ivec3(index+2, index+3, index+3),
+                    ivec3(index+3, index+4, index+4),
+                });
 
                 index += 4;
             }
-            mesh.finalize();
             mesh.render();
 
             line_shader->unbind();

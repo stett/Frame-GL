@@ -53,15 +53,16 @@ void Planes::setup() {
         )
     );
 
-    Resource<Mesh> mesh;
+    Resource<Mesh> mesh(4, 2);
     vec3 normal(0.0f, 1.0f, 0.0f);
-    mesh->add_vertex(vec3(-0.5f, 0.0f, -0.5f) * 0.5f, normal, vec2(0.0f, 0.0f));
-    mesh->add_vertex(vec3(-0.5f, 0.0f,  0.5f) * 0.5f, normal, vec2(0.0f, 1.0f));
-    mesh->add_vertex(vec3( 0.5f, 0.0f,  0.5f) * 0.5f, normal, vec2(1.0f, 1.0f));
-    mesh->add_vertex(vec3( 0.5f, 0.0f, -0.5f) * 0.5f, normal, vec2(1.0f, 0.0f));
-    mesh->add_triangle(0, 1, 2);
-    mesh->add_triangle(0, 2, 3);
-    mesh->finalize();
+
+    mesh->set_vertices({
+        vec3(-0.5f, 0.0f, -0.5f) * 0.5f, vec3(-0.5f, 0.0f,  0.5f) * 0.5f,
+        vec3(0.5f, 0.0f,  0.5f) * 0.5f, vec3(0.5f, 0.0f, -0.5f) * 0.5f },
+        { normal, normal, normal, normal },
+        { vec2(0.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 0.0f) });
+
+    mesh->set_triangles({ ivec3(0, 1, 2), ivec3(0, 2, 3) });
 
     plane = frame()->entities().add();
     plane->add<Transform>();

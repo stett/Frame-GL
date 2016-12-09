@@ -84,11 +84,13 @@ namespace frame_gl
             circles.push(Circle(position, inner_radius, outer_radius, color));
         }
 
+        /*
         void arc(const glm::vec3& position, float inner_radius=5.0f, float outer_radius=10.0f, float start_angle=0.0f, float end_angle=pi, const glm::vec4& color=glm::vec4(1.0f)) {
             if (outer_radius < inner_radius)
                 outer_radius = inner_radius;
             arcs.push(Arc(position, inner_radius, outer_radius, start_angle, end_angle, color));
         }
+        */
 
         void cube(const glm::vec3& point, float scale=1.0f) {
             cube(glm::scale(glm::translate(glm::mat4(1.0f), point), glm::vec3(scale)));
@@ -833,7 +835,7 @@ namespace frame_gl
                 Shape& shape = shapes.front();
                 Resource< Mesh > mesh(shape.vertices.size(), shape.vertices.size() - 1);
                 for (size_t i = 0; i < shape.vertices.size(); ++i) {
-                    mesh->set_vertex("position", i, shape.vertices[i]);
+                    mesh->set_vertex(i, shape.vertices[i]);
                     if (i > 1)
                         mesh->set_triangle(i-1, ivec3(0, i-1, i));
                 }
@@ -908,55 +910,18 @@ namespace frame_gl
             glDisable(GL_DEPTH_TEST);
 
             Mesh mesh(circles.size(), circles.size());
-            int mesh_indices = 0;
+            int index = 0;
             while (!circles.empty()) {
                 auto& circle = circles.front();
-                mesh.add_position(circle.position);
-                mesh.add_uv(vec2(circle.radii.min, circle.radii.max));
-                mesh.add_color(circle.color);
-                mesh.add_line(mesh_indices, mesh_indices);
-                ++mesh_indices;
+                mesh.set_vertex(index, circle.position, vec3(1.0f, 0.0f, 0.0f), vec2(circle.radii.min, circle.radii.max), circle.color);
+                mesh.set_triangle(index, ivec3(index));
+                ++index;
                 circles.pop();
             }
 
-            mesh.finalize();
             mesh.render();
 
             circle_shader->unbind();
-        }
-
-        void render_arcs(Camera* camera) {
-
-            if (arcs.empty())
-                return;
-
-            arc_shader->bind();
-            arc_shader->uniform(ShaderUniform::View, camera->view_matrix());
-            arc_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
-            arc_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
-            arc_shader->uniform("screen_size", camera->target()->size());
-
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            glDisable(GL_CULL_FACE);
-            glDisable(GL_DEPTH_TEST);
-
-            Mesh mesh;
-            int mesh_indices = 0;
-            while (!arcs.empty()) {
-                auto& arc = arcs.front();
-                mesh.add_position(arc.position);
-                mesh.add_normal(vec3(arc.angles.min, arc.radii.max, 0.0f));
-                mesh.add_uv(vec2(arc.radii.min, arc.radii.max));
-                mesh.add_color(arc.color);
-                mesh.add_line(mesh_indices, mesh_indices);
-                ++mesh_indices;
-                arcs.pop();
-            }
-
-            mesh.finalize();
-            mesh.render();
-
-            arc_shader->unbind();
         }
 
         void render_text(Camera* camera, std::queue< String >& strings) {
@@ -975,11 +940,9 @@ namespace frame_gl
             // Bind the text shader
             text_shader->bind();
 
-            Mesh mesh;
-            mesh.add_position(vec3(0.0f));
-            mesh.add_position(vec3(0.0f));
-            mesh.add_line(0, 0);
-            mesh.finalize();
+            Mesh mesh(2, 1);
+            mesh.set_vertices({ vec3(0.0f), vec3(0.0f) });
+            mesh.set_triangles({ ivec3(0, 0, 0) });
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
             glDisable(GL_CULL_FACE);
@@ -1024,7 +987,7 @@ namespace frame_gl
         std::queue< String > world_strings;
         std::queue< String > screen_strings;
         std::queue< Circle > circles;
-        std::queue< Arc > arcs;
+        //std::queue< Arc > arcs;
         int main_layer;
         int gui_layer;
     };

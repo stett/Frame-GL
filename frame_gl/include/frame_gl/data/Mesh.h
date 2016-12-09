@@ -120,7 +120,7 @@ namespace frame
 
         template <typename... T>
         void set_vertices(std::initializer_list<T>... values) {
-            set_vertices<T>(0, values);
+            set_vertices<T>(0, values...);
         }
 
         template <typename T0, typename... T>
@@ -148,7 +148,7 @@ namespace frame
 
         template <typename... T>
         void set_vertex(size_t vertex_index, const T&... values) {
-            set_vertex(vertex_index, 0, values);
+            set_vertex(vertex_index, 0, values...);
         }
 
         ///\brief Set a single vertex attribute value

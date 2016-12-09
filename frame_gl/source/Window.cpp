@@ -91,14 +91,11 @@ void Window::setup() {
     glfwMakeContextCurrent(window);
 
     // Build the buffer mesh
-    mesh = new Mesh();
-    mesh->add_position(vec3(-1.0f, -1.0f, 0.0f)); mesh->add_uv(vec2(0.0f, 0.0f));
-    mesh->add_position(vec3(-1.0f,  1.0f, 0.0f)); mesh->add_uv(vec2(0.0f, 1.0f));
-    mesh->add_position(vec3( 1.0f,  1.0f, 0.0f)); mesh->add_uv(vec2(1.0f, 1.0f));
-    mesh->add_position(vec3( 1.0f, -1.0f, 0.0f)); mesh->add_uv(vec2(1.0f, 0.0f));
-    mesh->add_triangle(0, 1, 2);
-    mesh->add_triangle(0, 2, 3);
-    mesh->finalize();
+    mesh = new Mesh(4, 2);
+    mesh->set_vertices(
+        { vec3(-1.0f, -1.0f, 0.0f), vec3(-1.0f,  1.0f, 0.0f), vec3(1.0f,  1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f) },
+        { vec2(0.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 0.0f) });
+    mesh->set_triangles({ ivec3(0, 1, 2), ivec3(0, 2, 3) });
 
     // Build the final phase shader
     shader = new Shader(
