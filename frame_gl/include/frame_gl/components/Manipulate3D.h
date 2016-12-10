@@ -26,11 +26,12 @@ namespace frame
             _focus(focus) {}
 
     public:
-        void set_pitch(float _pitch) {
+        Manipulate3D* set_pitch(float _pitch) {
             pitch = target_pitch = _pitch;
+            return this;
         }
 
-        void shift_angle(const vec2& delta, float delta_zoom=0.0f) {
+        Manipulate3D* shift_angle(const vec2& delta, float delta_zoom=0.0f) {
             float sign = invert ? -1.0f : 1.0f;
             target_distance += delta_zoom * sign * scroll_sensitivity * (max(100.0f, min(100000.0f, target_distance * target_distance)));
             target_yaw += delta.x * pan_sensitivity * sign;
@@ -38,21 +39,25 @@ namespace frame
             if (target_distance < 0.0f) target_distance = 0.0f;
             if (target_pitch > pi * 0.5f) target_pitch = pi * 0.5f;
             if (target_pitch < -pi * 0.5f) target_pitch = -pi * 0.5f;
+            return this;
         }
 
-        void shift_focus(vec3 delta) {
+        Manipulate3D* shift_focus(vec3 delta) {
             delta *= (distance + 1.0f) * 0.001f;
             _target_focus += vec3(
                -delta.x * cos(yaw) - delta.z * sin(yaw),
                 delta.y,
                -delta.x * sin(yaw) + delta.z * cos(yaw));
+            return this;
         }
 
-        void set_focus(const vec3& position) {
+        Manipulate3D* set_focus(const vec3& position) {
             _target_focus = position;
+            return this;
+
         }
 
-        void update(float dt) {
+        Manipulate3D* update(float dt) {
             distance += (target_distance - distance) * _responsiveness * dt;
             pitch += (target_pitch - pitch) * _responsiveness * dt;
             yaw += (target_yaw - yaw) * _responsiveness * dt;
@@ -61,6 +66,7 @@ namespace frame
             _focus += (_target_focus - _focus) * _responsiveness * dt;
             _position = _focus + distance * vec3(-sin(yaw)*cos(pitch), sin(pitch), cos(yaw)*cos(pitch));
             _rotation = glm::angleAxis(-yaw, vec3(0.0f, 1.0f, 0.0f)) * glm::angleAxis(-pitch, vec3(1.0f, 0.0f, 0.0f));
+            return this;
         }
 
         Input::MouseButton button() const { return _button; }
