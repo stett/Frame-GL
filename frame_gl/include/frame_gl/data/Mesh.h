@@ -135,8 +135,19 @@ namespace frame
             assert(sizeof(T) == size);
             #endif
             set_vertex_count(values.size());
-            // SAFE? NO??
-            memcpy(buffers[attribute_index].data, values.begin(), size);
+
+            // Copy the initializer list data
+            // TODO: Can we make this a memcpy? It'd be so nice.
+            T* buffer = (T*)(buffers[attribute_index].data);
+            size_t i = 0;
+            for (auto& value : values)
+                buffer[i++] = value;
+
+            // SAFE? NO?? Apparently, no.
+            //memcpy(buffers[attribute_index].data, values.begin(), size);
+
+            // Update the gfx buffer
+            update_vertex_buffer(attribute_index, 0, _vertex_count);
         }
 
         template <typename... T>
@@ -212,16 +223,19 @@ namespace frame
 
         void set_triangle(size_t triangle_index, const ivec3& triangle) {
             _triangles[triangle_index] = triangle;
+            update_index_buffer(triangle_index);
         }
 
         void set_triangles(std::initializer_list<ivec3> triangles) {
             set_triangle_count(triangles.size());
             memcpy(_triangles, triangles.begin(), sizeof(ivec3) * triangles.size());
+            update_index_buffer();
         }
 
         void set_triangles(const ivec3* triangles, size_t count) {
             set_triangle_count(count);
             memcpy(_triangles, triangles, count * sizeof(ivec3));
+            update_index_buffer();
         }
 
         void append(const Mesh& other);
@@ -242,14 +256,18 @@ namespace frame
         void set_triangle_count(size_t triangle_count);
 
     public:
-        void update_buffers();                      ///< Send all vertex data from local buffer to gfx
-        void update_buffers(size_t i);              ///< Send a single vertex from local buffer to gfx
-        void update_buffers(size_t i0, size_t i1);  ///< Send a range of vertices to gfx
+        void update_vertex_buffers();                               ///< Send all vertex data from local buffer to gfx
+        void update_vertex_buffers(size_t i);                       ///< Send a single vertex from local buffer to gfx
+        void update_vertex_buffers(size_t i0, size_t i1);           ///< Send a range of vertices to gfx
+        void update_vertex_buffer(size_t i, size_t i0, size_t i1); ///< Send a range of vertices from a single buffer to gfx
+        void update_index_buffer();                                 ///< Update all triangles
+        void update_index_buffer(size_t i);                         ///< Update a single triangle
+        void update_index_buffer(size_t i0, size_t i1);             ///< Update a range of triangles
 
     private:
         void resize_block(size_t vertex_count, size_t triangle_count);
-        void create_buffers();                      ///< Create vertex and array buffers
-        void destroy_buffers();                     ///< Destroy vertex and array buffers
+        void create_buffers();  ///< Create vertex and array buffers
+        void destroy_buffers(); ///< Destroy vertex and array buffers
 
     private:
         VertexAttributeSet _attributes;

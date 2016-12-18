@@ -120,7 +120,8 @@ void Window::setup() {
             "out vec4 pixel_color;                          "
             "uniform sampler2D texture;                     "
             "void main() {                                  "
-            "    pixel_color = texture2D(texture, frag_uv); "
+            "   pixel_color = vec4(1, 0, 0, 1);"
+            //"    pixel_color = texture2D(texture, frag_uv); "
             "}                                              "
         )
     );
@@ -213,9 +214,9 @@ void Window::step(float dt) {
             shader->uniform(transform_location, transform);
 
             // Bind the display buffer's texture for reading, and render it to the screen buffer
-            buffer->bind_texture(0);
+            //buffer->bind_texture(0);
             mesh->render();
-            buffer->unbind_texture();
+            //buffer->unbind_texture();
         }
 
         // We are done with this shader now

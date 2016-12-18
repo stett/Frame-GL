@@ -158,22 +158,49 @@ void Mesh::create_buffers() {
 
     // Unbind the vao
     glBindVertexArray(0);
+    gl_check();
 }
 
-void Mesh::update_buffers() { update_buffers(0, _vertex_count); }
+void Mesh::update_vertex_buffers() { update_vertex_buffers(0, _vertex_count); }
 
-void Mesh::update_buffers(size_t i) { update_buffers(i, i+1); }
+void Mesh::update_vertex_buffers(size_t i) { update_vertex_buffers(i, i+1); }
 
-void Mesh::update_buffers(size_t i0, size_t i1) {
+void Mesh::update_vertex_buffers(size_t i0, size_t i1) {
     glBindVertexArray(vao);
     for (size_t i = 0; i < _attributes.count(); ++i) {
         size_t size = (i1 - i0) * _attributes[i].size;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
         glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data + size);
-        glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    gl_check();
+}
+
+void Mesh::update_vertex_buffer(size_t i, size_t i0, size_t i1) {
+    size_t size = (i1 - i0) * _attributes[i].size;
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data);
+    //glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    gl_check();
+}
+
+void Mesh::update_index_buffer() { update_index_buffer(0, _triangle_count); }
+
+void Mesh::update_index_buffer(size_t i) { update_index_buffer(i, i+1); }
+
+void Mesh::update_index_buffer(size_t i0, size_t i1) {
+    size_t size = (i1 - i0) * sizeof(ivec3);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, i0 * sizeof(ivec3), size, _triangles);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    gl_check();
 }
 
 void Mesh::destroy_buffers() {
