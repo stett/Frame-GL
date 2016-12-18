@@ -116,7 +116,9 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
 }
 
 void Mesh::append(const Mesh& other) {
+    #ifdef FRAME_ASSERTS
     assert(_attributes == other._attributes);
+    #endif
 
     // Resize to make room for the new guy
     size_t offsets[] = { _vertex_count, _triangle_count };

@@ -120,7 +120,9 @@ namespace frame
         ///\brief Set values for a particular attribute for all vertices
         template <typename T>
         void set_vertices(int attribute_index, const T* values, size_t count=0) {
+            #ifdef FRAME_ASSERTS
             assert(sizeof(T) == _attributes[attribute_index].size);
+            #endif
             if (count) set_vertex_count(count);
             size_t size = _vertex_count * _attributes[attribute_index].size;
             memcpy(buffers[attribute_index].data, values, size);
@@ -151,7 +153,9 @@ namespace frame
 
         template <typename T0, typename T1>
         void check_vertices(std::initializer_list<T0> values0, std::initializer_list<T1> values1) {
+            #ifdef FRAME_ASSERTS
             assert(values0.size() == values1.size());
+            #endif
         }
 
         template <typename T0, typename... T>
@@ -168,7 +172,9 @@ namespace frame
 
         template <typename T>
         void set_vertex_attribute(size_t vertex_index, size_t attribute_index, const T& value) {
+            #ifdef FRAME_ASSERTS
             assert(sizeof(T) == _attributes[attribute_index].size);
+            #endif
             memcpy(buffers[attribute_index].data, &value, sizeof(T));
         }
 
@@ -191,7 +197,9 @@ namespace frame
         template <typename T>
         T* get_vertices(size_t attribute_index) {
             size_t size = _attributes[attribute_index].size;
+            #ifdef FRAME_ASSERTS
             assert(sizeof(T) == size);
+            #endif
             return buffers[attribute_index].data;
         }
 
