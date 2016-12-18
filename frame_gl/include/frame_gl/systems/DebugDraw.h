@@ -802,7 +802,7 @@ namespace frame_gl
                 auto& line = lines.front();
                 auto& mesh = meshes[line.thickness];
                 mesh.resize(2, 1);
-                mesh.set_vertices({ line.a, line.b }, { vec4(line.color, 1.0f), vec4(line.color, 1.0f) });
+                mesh.set_vertices({ line.a, line.b }, { vec3(0.0f), vec3(0.0f) }, { vec2(0.0f), vec2(0.0f) }, { vec4(line.color, 1.0f), vec4(line.color, 1.0f) });
                 mesh.set_triangles({ ivec3(0, 1, 1) });
                 lines.pop();
             }

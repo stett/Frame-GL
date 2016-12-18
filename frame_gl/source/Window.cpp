@@ -94,6 +94,7 @@ void Window::setup() {
     mesh = new Mesh(4, 2);
     mesh->set_vertices(
         { vec3(-1.0f, -1.0f, 0.0f), vec3(-1.0f,  1.0f, 0.0f), vec3(1.0f,  1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f) },
+        { vec3(0.0f, 1.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f) },
         { vec2(0.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 0.0f) });
     mesh->set_triangles({ ivec3(0, 1, 2), ivec3(0, 2, 3) });
 

@@ -30,14 +30,20 @@ namespace frame
         VertexAttributeSet(std::initializer_list<VertexAttribute> attributes)
             : _size(0), _count(attributes.size()), _attributes(new VertexAttribute[_count]) {
 
-            // Copy the attributes
-            int i = 0;
-            for (auto attribute : attributes)
+            // Copy the attributes & measure total vertex size
+            size_t i = 0;
+            for (auto attribute : attributes) {
                 _attributes[i++] = attribute;
+                _size += attribute.size;
+            }
+        }
 
-            // Measure the total vertex size
+        VertexAttributeSet(const VertexAttributeSet& other)
+            : _size(other._size), _count(other._count), _attributes(new VertexAttribute[_count]) {
+
+            // Copy the attributes
             for (size_t i = 0; i < _count; ++i)
-                _size += _attributes[i].size;
+                _attributes[i] = other._attributes[i];
         }
 
         ~VertexAttributeSet() { delete[] _attributes; }
