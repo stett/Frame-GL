@@ -36,11 +36,13 @@ namespace frame
                 if (input->mouse_down(manipulate->button())) {
 
                     // Add control prompts
-                    ui_text->add_line("Zoom              Mouse Wheel", ui_text_color);
-                    ui_text->add_line("Move              W/A/S/D", ui_text_color);
-                    ui_text->add_line("Move Fast         Left Shift", ui_text_color);
-                    ui_text->add_line("Raise/Lower       E/Q", ui_text_color);
-                    ui_text->add_line("Re-center         Space", ui_text_color);
+                    if (ui_text) {
+                        ui_text->add_line("Zoom              Mouse Wheel", ui_text_color);
+                        ui_text->add_line("Move              W/A/S/D", ui_text_color);
+                        ui_text->add_line("Move Fast         Left Shift", ui_text_color);
+                        ui_text->add_line("Raise/Lower       E/Q", ui_text_color);
+                        ui_text->add_line("Re-center         Space", ui_text_color);
+                    }
 
                     // Adjust zoom & scroll speed with shift
                     float speed = input->key_down(KEY_LEFT_SHIFT) ? 5.0f : 1.0f;
@@ -63,7 +65,8 @@ namespace frame
                 } else {
 
                     // Add mouse control prompt
-                    ui_text->add_line(std::string("Manipulate view   ") + (manipulate->button() == Input::MouseButton::Left ? "Left Mouse Button" : "Right Mouse Button"), ui_text_color);
+                    if (ui_text)
+                        ui_text->add_line(std::string("Manipulate view   ") + (manipulate->button() == Input::MouseButton::Left ? "Left Mouse Button" : "Right Mouse Button"), ui_text_color);
                 }
 
                 // Interpolate motion
