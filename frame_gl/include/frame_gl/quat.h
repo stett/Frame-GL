@@ -78,6 +78,21 @@ namespace frame
             normalize();
         }
 
+        // TODO: Make this an rvalue reference
+        static quat_t&& axis_angle(const glm::tvec3<T>& axis, float angle) {
+            quat_t q;
+            float half_angle = angle * 0.5f;
+            q.s = cos(half_angle);
+            q.v = axis * sin(half_angle);
+            return std::move(q);
+        }
+
+        // TODO: Make this an rvalue reference
+        static quat_t&& axis_angle(glm::tvec3<T> axis_angle) {
+            float angle = length(axis_angle);
+            return std::move(quat_t<T>::axis_angle(axis_angle / angle, angle));
+        }
+
         // Adapted from: http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
         void from_rotation(const glm::vec3 a, const glm::vec3 b) {
 
