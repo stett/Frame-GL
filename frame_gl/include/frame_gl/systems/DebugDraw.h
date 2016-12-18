@@ -801,9 +801,12 @@ namespace frame_gl
             while (!lines.empty()) {
                 auto& line = lines.front();
                 auto& mesh = meshes[line.thickness];
-                mesh.resize(2, 1);
-                mesh.set_vertices({ line.a, line.b }, { vec3(0.0f), vec3(0.0f) }, { vec2(0.0f), vec2(0.0f) }, { vec4(line.color, 1.0f), vec4(line.color, 1.0f) });
-                mesh.set_triangles({ ivec3(0, 1, 1) });
+                mesh.resize(mesh.vertex_count() + 2, mesh.triangle_count() + 1);
+                size_t i0 = mesh.vertex_count() - 2;
+                size_t i1 = mesh.vertex_count() - 1;
+                mesh.set_vertex(i0, line.a, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
+                mesh.set_vertex(i1, line.b, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
+                mesh.set_triangle(mesh.triangle_count() - 1, ivec3(i0, i1, i1));
                 lines.pop();
             }
 
@@ -817,6 +820,8 @@ namespace frame_gl
         }
 
         void render_shapes(Camera* camera) {
+
+            return;
 
             if (shapes.empty())
                 return;
@@ -895,6 +900,8 @@ namespace frame_gl
         }
 
         void render_circles(Camera* camera) {
+
+            return;
 
             if (circles.empty())
                 return;

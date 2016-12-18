@@ -170,8 +170,7 @@ void Mesh::update_vertex_buffers(size_t i0, size_t i1) {
     for (size_t i = 0; i < _attributes.count(); ++i) {
         size_t size = (i1 - i0) * _attributes[i].size;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data + size);
-        //glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data);
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -183,7 +182,6 @@ void Mesh::update_vertex_buffer(size_t i, size_t i0, size_t i1) {
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[i].vbo);
     glBufferSubData(GL_ARRAY_BUFFER, i0 * _attributes[i].size, size, buffers[i].data);
-    //glBufferData(GL_ARRAY_BUFFER, buffers[i].size, buffers[i].data, _attributes[i].dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     gl_check();

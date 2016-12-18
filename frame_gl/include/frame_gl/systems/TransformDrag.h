@@ -24,7 +24,8 @@ namespace frame
             for (auto e : node<Transform, TransformDraggable>()) {
                 Transform* transform = e.get<Transform>();
 
-                debug_draw->circle(transform->translation(), 10.0f, 15.0f);
+                if (debug_draw)
+                    debug_draw->circle(transform->translation(), 10.0f, 15.0f);
 
                 // Mark the currently selected transform as found...
                 // We need to track this in case the object gets deleted.
@@ -48,17 +49,19 @@ namespace frame
                         transform->set_translation(mouse_point);
 
                         // If we have a debug module, draw the focus point
-                        vec3 pos = transform->translation();
-                        debug_draw->line(vec3(pos.x, pos.y, 0.0f), pos, frame_gl::axis_color_z);
-                        debug_draw->line(vec3(pos.x, 0.0f, pos.z), pos, frame_gl::axis_color_y);
-                        debug_draw->line(vec3(0.0f, pos.y, pos.z), pos, frame_gl::axis_color_x);
+                        if (debug_draw) {
+                            vec3 pos = transform->translation();
+                            debug_draw->line(vec3(pos.x, pos.y, 0.0f), pos, frame_gl::axis_color_z);
+                            debug_draw->line(vec3(pos.x, 0.0f, pos.z), pos, frame_gl::axis_color_y);
+                            debug_draw->line(vec3(0.0f, pos.y, pos.z), pos, frame_gl::axis_color_x);
 
-                        if (abs(pos.z) > 0.00001f)
-                            debug_draw->world_text(vec3(pos.x, pos.y, 0.0f), std::to_string(pos.z), frame_gl::axis_color_z);
-                        if (abs(pos.y) > 0.00001f)
-                            debug_draw->world_text(vec3(pos.x, 0.0f, pos.z), std::to_string(pos.y), frame_gl::axis_color_y);
-                        if (abs(pos.x) > 0.00001f)
-                            debug_draw->world_text(vec3(0.0f, pos.y, pos.z), std::to_string(pos.x), frame_gl::axis_color_x);
+                            if (abs(pos.z) > 0.00001f)
+                                debug_draw->world_text(vec3(pos.x, pos.y, 0.0f), std::to_string(pos.z), frame_gl::axis_color_z);
+                            if (abs(pos.y) > 0.00001f)
+                                debug_draw->world_text(vec3(pos.x, 0.0f, pos.z), std::to_string(pos.y), frame_gl::axis_color_y);
+                            if (abs(pos.x) > 0.00001f)
+                                debug_draw->world_text(vec3(0.0f, pos.y, pos.z), std::to_string(pos.x), frame_gl::axis_color_x);
+                        }
 
                     // If the mouse is close to the screen position of the transform, mark it hovered
                     } else if (length(transform->translation() - mouse_point) < 0.5f) {
@@ -71,12 +74,14 @@ namespace frame
                 selected = nullptr;
 
             if (selected) {
-                debug_draw->circle(selected->translation(), 0.0f, 20.0f);
+                if (debug_draw)
+                    debug_draw->circle(selected->translation(), 0.0f, 20.0f);
                 if (input->mouse_up(Input::MouseButton::Left))
                     selected = nullptr;
 
             } else if (hovered) {
-                debug_draw->circle(hovered->translation(), 10.0f, 20.0f);
+                if (debug_draw)
+                    debug_draw->circle(hovered->translation(), 10.0f, 20.0f);
                 if (input->mouse_clicked(Input::MouseButton::Left))
                     selected = hovered;
             }

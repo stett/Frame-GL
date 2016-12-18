@@ -186,18 +186,22 @@ namespace frame
             #ifdef FRAME_ASSERTS
             assert(sizeof(T) == _attributes[attribute_index].size);
             #endif
-            memcpy(buffers[attribute_index].data, &value, sizeof(T));
+
+            // Copy the value into the buffer
+            T* buffer = (T*)(buffers[attribute_index].data);
+            buffer[vertex_index] = value;
         }
 
         template <typename T0, typename... T>
-        void set_vertex_attributes(size_t vertex_index, size_t first_attribute_index, const T0& value0, const T&... values) {
-            set_vertex(vertex_index, first_attribute_index, value0);
-            set_vertex(vertex_index, first_attribute_index+1, values...);
+        void set_vertex_attribute(size_t vertex_index, size_t attribute_index, const T0& value0, const T&... values) {
+            set_vertex_attribute(vertex_index, attribute_index, value0);
+            set_vertex_attribute(vertex_index, attribute_index+1, values...);
         }
 
         template <typename... T>
         void set_vertex(size_t vertex_index, const T&... values) {
-            set_vertex_attributes(vertex_index, 0, values...);
+            set_vertex_attribute(vertex_index, 0, values...);
+            update_vertex_buffers(0, vertex_index + 1);
         }
 
         template <typename T>
@@ -223,7 +227,7 @@ namespace frame
 
         void set_triangle(size_t triangle_index, const ivec3& triangle) {
             _triangles[triangle_index] = triangle;
-            update_index_buffer(triangle_index);
+            update_index_buffer(0, triangle_index + 1);
         }
 
         void set_triangles(std::initializer_list<ivec3> triangles) {
@@ -245,6 +249,7 @@ namespace frame
         inline int index_buffer_vbo() const { return vbo_triangles; }
 
     public:
+        inline size_t triangle_count() const { return _triangle_count; }
         inline size_t vertex_count() const { return _vertex_count; }
         inline size_t vertex_size() const { return  _attributes.size(); }
         inline const VertexAttributeSet& attributes() const { return _attributes; }
