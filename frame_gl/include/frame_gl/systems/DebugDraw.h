@@ -186,12 +186,12 @@ namespace frame_gl
                 Resource<ShaderPart>(ShaderPart::Type::Geometry,
                     "#version 330\n"
                     "#define pi 3.1415926535897932384626433832795\n"
-                    "layout(lines) in;"
+                    "layout(triangles) in;"
                     "layout(triangle_strip, max_vertices = 128) out;"
                     "uniform vec2 screen_size;"
-                    "in vec4 geom_position[2];"
-                    "in vec2 geom_radii[2];"
-                    "in vec4 geom_color[2];"
+                    "in vec4 geom_position[3];"
+                    "in vec2 geom_radii[3];"
+                    "in vec4 geom_color[3];"
                     "out vec4 frag_color;"
                     "void main() {"
                     "   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w);"
@@ -797,6 +797,7 @@ namespace frame_gl
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             // Build a mesh with a bunch of lines
+            // TODO: This could be SO much faster. Please do it.
             std::unordered_map<int, Mesh> meshes;
             while (!lines.empty()) {
                 auto& line = lines.front();
@@ -901,8 +902,6 @@ namespace frame_gl
 
         void render_circles(Camera* camera) {
 
-            return;
-
             if (circles.empty())
                 return;
 
@@ -924,6 +923,7 @@ namespace frame_gl
                 mesh.set_triangle(index, ivec3(index));
                 ++index;
                 circles.pop();
+                break;
             }
 
             mesh.render();
