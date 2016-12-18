@@ -99,9 +99,9 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     if (block) {
 
         // Copy the old block
-        memcpy(new_triangles, _triangles, _triangle_count * sizeof(ivec3));
+        memcpy(new_triangles, _triangles, min(triangle_size, _triangle_count * sizeof(ivec3)));
         for (size_t i = 0; i < _attributes.count(); ++i)
-            memcpy(new_buffers[i].data, buffers[i].data, buffers[i].size);
+            memcpy(new_buffers[i].data, buffers[i].data, min(new_buffers[i].size, buffers[i].size));
 
         // Delete the old block
         delete[] block;

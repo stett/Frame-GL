@@ -243,10 +243,10 @@ Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
             vec3(-normag, -normag, normag), vec3(normag, -normag, normag),
             vec3(-normag, normag, normag), vec3(normag, normag, normag)
         }, {
-            vec3(0.0f), vec3(0.0f),
-            vec3(0.0f), vec3(0.0f),
-            vec3(0.0f), vec3(0.0f),
-            vec3(0.0f), vec3(0.0f),
+            vec2(0.0f), vec2(0.0f),
+            vec2(0.0f), vec2(0.0f),
+            vec2(0.0f), vec2(0.0f),
+            vec2(0.0f), vec2(0.0f),
         }, {
             color, color, color, color,
             color, color, color, color
@@ -286,11 +286,13 @@ Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
             vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
             vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)
         }, {
-            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
-            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
-            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
-            vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f),
+            vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+            vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+            vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+            vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
         }, {
+            color, color, color, color, color, color,
+            color, color, color, color, color, color,
             color, color, color, color, color, color,
             color, color, color, color, color, color
         });

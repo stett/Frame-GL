@@ -926,6 +926,8 @@ namespace frame_gl
 
         void render_text(Camera* camera, std::queue< String >& strings) {
 
+            return;
+
             if (strings.empty() && strings.empty())
                 return;
 

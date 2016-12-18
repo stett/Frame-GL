@@ -129,7 +129,9 @@ namespace frame
         template <typename T>
         void set_vertices(size_t attribute_index, std::initializer_list<T> values) {
             size_t size = _attributes[attribute_index].size;
+            #ifdef FRAME_ASSERTS
             assert(sizeof(T) == size);
+            #endif
             set_vertex_count(values.size());
             // SAFE? NO??
             memcpy(buffers[attribute_index].data, values.begin(), size);
@@ -140,9 +142,26 @@ namespace frame
             set_vertices(0, values...);
         }
 
+        // TODO: Name these functions something more fitting... also hide them.
+        template <typename T0, typename T1, typename... T>
+        void check_vertices(std::initializer_list<T0> values0, std::initializer_list<T1> values1, std::initializer_list<T>... values) {
+            check_vertices(values0, values1);
+            check_vertices(values1, values...);
+        }
+
+        template <typename T0, typename T1>
+        void check_vertices(std::initializer_list<T0> values0, std::initializer_list<T1> values1) {
+            assert(values0.size() == values1.size());
+        }
+
         template <typename T0, typename... T>
         void set_vertices(size_t first_attribute_index, std::initializer_list<T0> values0, std::initializer_list<T>... values) {
             // Note: Each list should have the same length or else there's a problem... so be fucking careful.
+
+            #ifdef FRAME_ASSERTS
+            check_vertices(values0, values...);
+            #endif
+
             set_vertices(first_attribute_index, values0);
             set_vertices(first_attribute_index+1, values...);
         }
