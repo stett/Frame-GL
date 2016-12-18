@@ -78,6 +78,12 @@ namespace frame
             normalize();
         }
 
+        void from_axis_angle(const glm::vec3& axis, float angle) {
+            float half_angle = angle * 0.5f;
+            s = cos(half_angle);
+            v = axis * sin(half_angle);
+        }
+
         // Adapted from: http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
         void from_rotation(const glm::vec3 a, const glm::vec3 b) {
 
