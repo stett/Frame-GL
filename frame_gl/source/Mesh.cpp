@@ -55,19 +55,20 @@ void Mesh::unbind() {
 
 
 void Mesh::resize(size_t vertex_count, size_t triangle_count) {
+    if (vertex_count == _vertex_count &&
+        triangle_count == _triangle_count)
+        return;
     destroy_buffers();
     resize_block(vertex_count, triangle_count);
     create_buffers();
 }
 
 void Mesh::set_vertex_count(size_t vertex_count) {
-    if (vertex_count != _vertex_count)
-        resize(vertex_count, _triangle_count);
+    resize(vertex_count, _triangle_count);
 }
 
 void Mesh::set_triangle_count(size_t triangle_count) {
-    if (triangle_count != _triangle_count)
-        resize(_vertex_count, triangle_count);
+    resize(_vertex_count, triangle_count);
 }
 
 void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
@@ -208,6 +209,9 @@ void Mesh::destroy_buffers() {
         glDeleteBuffers(1, &buffers[i].vbo);
         buffers[i].vbo = 0;
     }
+
+    // Destroy index buffer
+    glDeleteBuffers(1, &vbo_triangles);
 
     // Destroy vertex array object
     glDeleteVertexArrays(1, &vao);

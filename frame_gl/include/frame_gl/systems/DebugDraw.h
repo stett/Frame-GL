@@ -143,17 +143,19 @@ namespace frame_gl
 
             render = system<Render>();
 
-            cube_shader = new Shader(
+            circle_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_DYNAMIC, 0, 0, true);
+
+            cube_shader = Resource<Shader>(
                 "Debug Cube Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_normals());
 
-            line_shader = new Shader(
+            line_shader = Resource<Shader>(
                 "Debug Line Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_colors());
 
-            shape_shader = new Shader(
+            shape_shader = Resource<Shader>(
                 "Debug Shape Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_solid());
@@ -180,7 +182,7 @@ namespace frame_gl
                 "   gl_Position     = geom_position;                            "
                 "}                                                              ");
 
-            circle_shader = new Shader(
+            circle_shader = Resource<Shader>(
                 "Debug Circle Shader",
                 arc_shader_vert,
                 Resource<ShaderPart>(ShaderPart::Type::Geometry,
@@ -221,7 +223,7 @@ namespace frame_gl
                     "}"
                 ));
 
-            arc_shader = new Shader(
+            arc_shader = Resource<Shader>(
                 "Debug Arc Shader",
                 arc_shader_vert,
                 Resource<ShaderPart>(ShaderPart::Type::Geometry,
@@ -266,7 +268,7 @@ namespace frame_gl
                     "}"
                     ));
 
-            text_shader = new Shader(
+            text_shader = Resource<Shader>(
                 "Debug Text Shader",
 
                 Resource<ShaderPart>(ShaderPart::Type::Vertex,
@@ -733,12 +735,7 @@ namespace frame_gl
         }
 
         void teardown() {
-            delete line_shader;
-            delete shape_shader;
-            delete cube_shader;
-            delete arc_shader;
-            delete circle_shader;
-            delete text_shader;
+            delete circle_mesh;
         }
 
         void step(float dt) {
@@ -917,18 +914,20 @@ namespace frame_gl
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
 
-            Mesh mesh(circles.size(), circles.size());
+            //Mesh mesh(circles.size(), circles.size());
+            circle_mesh->resize(circles.size(), circles.size());
             int index = 0;
             while (!circles.empty()) {
                 auto& circle = circles.front();
-                mesh.set_vertex(index, circle.position, vec3(1.0f, 0.0f, 0.0f), vec2(circle.radii.min, circle.radii.max), circle.color);
-                mesh.set_triangle(index, ivec3(index));
+                circle_mesh->set_vertex(index, circle.position, vec3(1.0f, 0.0f, 0.0f), vec2(circle.radii.min, circle.radii.max), circle.color);
+                circle_mesh->set_triangle(index, ivec3(index));
+                circle_mesh->update_buffers();
                 ++index;
                 circles.pop();
                 break;
             }
 
-            mesh.render();
+            circle_mesh->render();
 
             circle_shader->unbind();
         }
@@ -985,12 +984,16 @@ namespace frame_gl
         Render* render;
         Camera* main_camera;
         Camera* gui_camera;
-        Shader* line_shader;
-        Shader* shape_shader;
-        Shader* cube_shader;
-        Shader* circle_shader;
-        Shader* arc_shader;
-        Shader* text_shader;
+
+        Resource<Shader> line_shader;
+        Resource<Shader> shape_shader;
+        Resource<Shader> cube_shader;
+        Resource<Shader> circle_shader;
+        Resource<Shader> arc_shader;
+        Resource<Shader> text_shader;
+
+        Mesh* circle_mesh;
+
         int text_shader_characters;
         std::queue< Line > lines;
         std::queue< Shape > shapes;

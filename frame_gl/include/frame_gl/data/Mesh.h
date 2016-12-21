@@ -88,6 +88,19 @@ namespace frame
         {"weight-offset-3", sizeof(vec4), false},
     };
 
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_DYNAMIC =
+    {
+        {"position", sizeof(vec3), true},
+        {"normal", sizeof(vec3), true},
+        {"uv", sizeof(vec2), true},
+        {"color", sizeof(vec4), true},
+        {"weight-indexes", sizeof(vec4), false},
+        {"weight-offset-0", sizeof(vec4), false},
+        {"weight-offset-1", sizeof(vec4), false},
+        {"weight-offset-2", sizeof(vec4), false},
+        {"weight-offset-3", sizeof(vec4), false},
+    };
+
     /// \class Mesh
     /// \brief Representation and handle for creation and managing of a vertex buffer
     class Mesh {
@@ -201,7 +214,7 @@ namespace frame
         template <typename... T>
         void set_vertex(size_t vertex_index, const T&... values) {
             set_vertex_attribute(vertex_index, 0, values...);
-            update_vertex_buffers(0, vertex_index + 1);
+            //update_vertex_buffers(0, vertex_index + 1);
         }
 
         template <typename T>
@@ -227,7 +240,7 @@ namespace frame
 
         void set_triangle(size_t triangle_index, const ivec3& triangle) {
             _triangles[triangle_index] = triangle;
-            update_index_buffer(0, triangle_index + 1);
+            //update_index_buffer(0, triangle_index + 1);
         }
 
         void set_triangles(std::initializer_list<ivec3> triangles) {
@@ -261,6 +274,7 @@ namespace frame
         void set_triangle_count(size_t triangle_count);
 
     public:
+        void update_buffers() { update_vertex_buffers(); update_index_buffer(); }
         void update_vertex_buffers();                               ///< Send all vertex data from local buffer to gfx
         void update_vertex_buffers(size_t i);                       ///< Send a single vertex from local buffer to gfx
         void update_vertex_buffers(size_t i0, size_t i1);           ///< Send a range of vertices to gfx
