@@ -734,7 +734,9 @@ namespace frame_gl
 
         void teardown() {
             delete line_shader;
+            delete shape_shader;
             delete cube_shader;
+            delete arc_shader;
             delete circle_shader;
             delete text_shader;
         }

@@ -179,22 +179,19 @@ void Window::step(float dt) {
     //Render* render;
     //RenderTarget* buffer;
 
-    /*
-    // If we this frame has a display buffer, add it to the list of buffers to draw to screen
-    if ((render = frame()->systems().get<Render>()) && (buffer = render->display_target()))
-        buffers.insert(buffer);
-    */
+    //// If we this frame has a display buffer, add it to the list of buffers to draw to screen
+    //if ((render = frame()->systems().get<Render>()) && (buffer = render->display_target()))
+    //    buffers.insert(buffer);
+
     // Build a list of all display targets from this frame
     for (auto buffer : node<RenderTarget>())
         if (buffer->display_layer() != -1)
             buffers.insert(buffer);
 
-    /*
-    // Add the display buffers from all subframes
-    for (Frame *f : node<Frame>())
-        if ((render = f->systems().get<Render>()) && (buffer = render->display_target()))
-            buffers.insert(buffer);
-    */
+    //// Add the display buffers from all subframes
+    //for (Frame *f : node<Frame>())
+    //    if ((render = f->systems().get<Render>()) && (buffer = render->display_target()))
+    //        buffers.insert(buffer);
 
     // Only bother setting up stuff if we found some buffers
     if (buffers.size() > 0) {

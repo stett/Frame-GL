@@ -2,6 +2,8 @@
 #include "frame/Component.h"
 #include "frame/System.h"
 #include "frame_gl/components/Transform.h"
+#include "frame_gl/systems/DebugDraw.h"
+using frame_gl::DebugDraw;
 
 namespace frame
 {
