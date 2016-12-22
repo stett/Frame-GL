@@ -128,16 +128,21 @@ void Mesh::append(const Mesh& other) {
     #endif
 
     // Resize to make room for the new guy
-    resize(_vertex_count + other._vertex_count,
-           _triangle_count + other._triangle_count);
+    size_t offsets[] = { _vertex_count, _triangle_count };
+    resize(offsets[0] + other._vertex_count,
+           offsets[1] + other._triangle_count);
 
     // Copy vertex data
     for (size_t i = 0; i < _attributes.count(); ++i) {
-        memcpy(buffers[i].data + _vertex_count * _attributes[i].size, other.buffers[i].data, other.buffers[i].size);
+        memcpy(buffers[i].data + offsets[0] * _attributes[i].size, other.buffers[i].data, other.buffers[i].size);
     }
 
     // Copy triangle data
-    memcpy(_triangles + triangle_count * sizeof(ivec3), other._triangles, other._triangle_count * sizeof(ivec3));
+    memcpy(_triangles + offsets[1], other._triangles, other._triangle_count * sizeof(ivec3));
+
+    // Fix indexes
+    for (int i = 0; i < other._triangle_count; ++i)
+        _triangles[offsets[1] + i] += ivec3(offsets[0]);
 
     unfinalize();
 }
