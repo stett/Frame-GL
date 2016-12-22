@@ -78,7 +78,6 @@ namespace frame
                     debug_draw->line(vec3(pos.x, pos.y, 0.0f), pos, frame_gl::axis_color_z);
                     debug_draw->line(vec3(pos.x, 0.0f, pos.z), pos, frame_gl::axis_color_y);
                     debug_draw->line(vec3(0.0f, pos.y, pos.z), pos, frame_gl::axis_color_x);
-                    debug_draw->circle(pos);
 
                     if (abs(pos.z) > 0.00001f)
                         debug_draw->world_text(vec3(pos.x, pos.y, 0.0f), std::to_string(pos.z), frame_gl::axis_color_z);
