@@ -914,21 +914,18 @@ namespace frame_gl
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
 
-            //Mesh mesh(circles.size(), circles.size());
             circle_mesh->resize(circles.size(), circles.size());
             int index = 0;
             while (!circles.empty()) {
                 auto& circle = circles.front();
                 circle_mesh->set_vertex(index, circle.position, vec3(1.0f, 0.0f, 0.0f), vec2(circle.radii.min, circle.radii.max), circle.color);
                 circle_mesh->set_triangle(index, ivec3(index));
-                circle_mesh->update_buffers();
                 ++index;
                 circles.pop();
                 break;
             }
 
             circle_mesh->render();
-
             circle_shader->unbind();
         }
 
@@ -1002,6 +999,9 @@ namespace frame_gl
         std::queue< String > screen_strings;
         std::queue< Circle > circles;
         //std::queue< Arc > arcs;
+
+        std::atomic<bool> loaded;
+
         int main_layer;
         int gui_layer;
     };

@@ -139,6 +139,7 @@ namespace frame
             if (count) set_vertex_count(count);
             size_t size = _vertex_count * _attributes[attribute_index].size;
             memcpy(buffers[attribute_index].data, values, size);
+            unfinalize();
         }
 
         template <typename T>
@@ -160,7 +161,8 @@ namespace frame
             //memcpy(buffers[attribute_index].data, values.begin(), size);
 
             // Update the gfx buffer
-            update_vertex_buffer(attribute_index, 0, _vertex_count);
+            //update_vertex_buffer(attribute_index, 0, _vertex_count);
+            unfinalize();
         }
 
         template <typename... T>
@@ -203,6 +205,8 @@ namespace frame
             // Copy the value into the buffer
             T* buffer = (T*)(buffers[attribute_index].data);
             buffer[vertex_index] = value;
+
+            unfinalize();
         }
 
         template <typename T0, typename... T>
@@ -241,18 +245,21 @@ namespace frame
         void set_triangle(size_t triangle_index, const ivec3& triangle) {
             _triangles[triangle_index] = triangle;
             //update_index_buffer(0, triangle_index + 1);
+            unfinalize();
         }
 
         void set_triangles(std::initializer_list<ivec3> triangles) {
             set_triangle_count(triangles.size());
             memcpy(_triangles, triangles.begin(), sizeof(ivec3) * triangles.size());
-            update_index_buffer();
+            //update_index_buffer();
+            unfinalize();
         }
 
         void set_triangles(const ivec3* triangles, size_t count) {
             set_triangle_count(count);
             memcpy(_triangles, triangles, count * sizeof(ivec3));
-            update_index_buffer();
+            //update_index_buffer();
+            unfinalize();
         }
 
         void append(const Mesh& other);
@@ -270,6 +277,7 @@ namespace frame
 
     public:
         void resize(size_t vertex_count, size_t triangle_count);
+        void finalize();
         void set_vertex_count(size_t vertex_count);
         void set_triangle_count(size_t triangle_count);
 
@@ -284,6 +292,7 @@ namespace frame
         void update_index_buffer(size_t i0, size_t i1);             ///< Update a range of triangles
 
     private:
+        void unfinalize() { _finalized = false; }
         void resize_block(size_t vertex_count, size_t triangle_count);
         void create_buffers();  ///< Create vertex and array buffers
         void destroy_buffers(); ///< Destroy vertex and array buffers
@@ -299,5 +308,6 @@ namespace frame
         unsigned int vbo_triangles;
         VertexBuffer* buffers;
         ivec3* _triangles;
+        bool _finalized;
     };
 }

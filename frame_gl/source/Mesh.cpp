@@ -18,7 +18,7 @@
 using namespace frame;
 
 Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_count, bool dynamic_triangles) :
-    _attributes(attributes), _dynamic_triangles(dynamic_triangles), vao(0), block(0) {
+    _attributes(attributes), _dynamic_triangles(dynamic_triangles), vao(0), block(0), _finalized(false) {
 
     if (glfwGetCurrentContext() == 0)
         Log::error("Can't create a mesh outside of an OpenGL context!");
@@ -34,6 +34,7 @@ Mesh::~Mesh() {
 }
 
 void Mesh::render() {
+    finalize();
     bind();
     draw();
     unbind();
@@ -53,13 +54,17 @@ void Mesh::unbind() {
     glBindVertexArray(0);
 }
 
-
 void Mesh::resize(size_t vertex_count, size_t triangle_count) {
     if (vertex_count == _vertex_count &&
         triangle_count == _triangle_count)
         return;
-    destroy_buffers();
     resize_block(vertex_count, triangle_count);
+}
+
+void Mesh::finalize() {
+    if (_finalized) return;
+    _finalized = true;
+    destroy_buffers();
     create_buffers();
 }
 
@@ -114,6 +119,7 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     _triangles = new_triangles;
     _vertex_count = vertex_count;
     _triangle_count = triangle_count;
+    _finalized = false;
 }
 
 void Mesh::append(const Mesh& other) {
@@ -204,15 +210,17 @@ void Mesh::update_index_buffer(size_t i0, size_t i1) {
 
 void Mesh::destroy_buffers() {
 
+    // Destroy index buffer
+    glDeleteBuffers(1, &vbo_triangles);
+    //vbo_triangles = 0;
+
     // Destroy all vertex buffers
     for (size_t i = 0; i < _attributes.count(); ++i) {
         glDeleteBuffers(1, &buffers[i].vbo);
-        buffers[i].vbo = 0;
+        //buffers[i].vbo = 0;
     }
-
-    // Destroy index buffer
-    glDeleteBuffers(1, &vbo_triangles);
 
     // Destroy vertex array object
     glDeleteVertexArrays(1, &vao);
+    //vao = 0;
 }
