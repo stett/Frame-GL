@@ -25,8 +25,8 @@ namespace frame
             if (dt < min) min = dt;
             if (dt > max) max = dt;
 
-            //if (debug_draw)
-            //    debug_draw->screen_text(DebugDraw::Alignment::TopRight, glm::vec2(5.0f, 0.0f), status());
+            if (debug_draw)
+                debug_draw->screen_text(DebugDraw::Alignment::TopRight, glm::vec2(5.0f, 0.0f), status());
 
             if (total > interval) {
                 average = total / steps;
@@ -36,7 +36,7 @@ namespace frame
                 min = std::numeric_limits<float>::max();
                 max = 0.0f;
 
-                //if (!debug_draw)
+                if (!debug_draw)
                     Log::write(status());
             }
         }
