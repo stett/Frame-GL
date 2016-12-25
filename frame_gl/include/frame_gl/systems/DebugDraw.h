@@ -797,23 +797,27 @@ namespace frame_gl
 
             // Build a mesh with a bunch of lines
             // TODO: This could be SO much faster. Please do it.
-            std::unordered_map<int, Mesh> meshes;
+            std::unordered_map< int, Resource<Mesh> > meshes;
             while (!lines.empty()) {
                 auto& line = lines.front();
-                auto& mesh = meshes[line.thickness];
-                mesh.resize(mesh.vertex_count() + 2, mesh.triangle_count() + 1);
-                size_t i0 = mesh.vertex_count() - 2;
-                size_t i1 = mesh.vertex_count() - 1;
-                mesh.set_vertex(i0, line.a, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
-                mesh.set_vertex(i1, line.b, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
-                mesh.set_triangle(mesh.triangle_count() - 1, ivec3(i0, i1, i1));
+                auto it = meshes.find(line.thickness);
+                if (it == meshes.end())
+                    it = meshes.emplace(std::make_pair(line.thickness, Resource<Mesh>(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE))).first;
+                Resource<Mesh> mesh = it->second;
+                mesh->resize(mesh->vertex_count() + 2, mesh->triangle_count() + 1);
+                size_t i0 = mesh->vertex_count() - 2;
+                size_t i1 = mesh->vertex_count() - 1;
+                mesh->set_vertex(i0, line.a, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
+                mesh->set_vertex(i1, line.b, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
+                mesh->set_triangle(mesh->triangle_count() - 1, ivec3(i0, i1, i1));
                 lines.pop();
+                meshes[line.thickness] = mesh;
             }
 
             // Draw all the meshes
             for (auto& mesh : meshes) {
                 glLineWidth(float(mesh.first));
-                mesh.second.render();
+                mesh.second->render();
             }
 
             line_shader->unbind();
@@ -930,6 +934,8 @@ namespace frame_gl
         }
 
         void render_text(Camera* camera, std::queue< String >& strings) {
+
+            return;
 
             if (strings.empty() && strings.empty())
                 return;
