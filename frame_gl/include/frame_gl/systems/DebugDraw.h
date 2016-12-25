@@ -973,7 +973,6 @@ namespace frame_gl
                 circle_mesh->set_triangle(index, ivec3(index));
                 ++index;
                 circles.pop();
-                break;
             }
 
             circle_mesh->render();
