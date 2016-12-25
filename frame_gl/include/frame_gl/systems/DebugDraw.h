@@ -143,7 +143,58 @@ namespace frame_gl
 
             render = system<Render>();
 
-            circle_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_DYNAMIC, 0, 0, true);
+
+            cube_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 24, 12, false);
+            {
+                float half(0.5f);
+                vec4 color(1.0f);
+                cube_mesh->set_vertices({
+                    vec3(-half, -half, -half), vec3(-half, -half, -half), vec3(-half, -half, -half),
+                    vec3(half, -half, -half), vec3(half, -half, -half), vec3(half, -half, -half),
+                    vec3(-half, half, -half), vec3(-half, half, -half), vec3(-half, half, -half),
+                    vec3(half, half, -half), vec3(half, half, -half), vec3(half, half, -half),
+                    vec3(-half, -half, half), vec3(-half, -half, half), vec3(-half, -half, half),
+                    vec3(half, -half, half), vec3(half, -half, half), vec3(half, -half, half),
+                    vec3(-half, half, half), vec3(-half, half, half), vec3(-half, half, half),
+                    vec3(half, half, half), vec3(half, half, half), vec3(half, half, half)
+                }, {
+                    vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+                    vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+                    vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+                    vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+                    vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+                    vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+                    vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+                    vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)
+                }, {
+                    vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+                    vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+                    vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+                    vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
+                }, {
+                    color, color, color, color, color, color,
+                    color, color, color, color, color, color,
+                    color, color, color, color, color, color,
+                    color, color, color, color, color, color
+                });
+
+                cube_mesh->set_triangles({
+                    ivec3((0*3)+2, (2*3)+2, (1*3)+2),
+                    ivec3((1*3)+2, (2*3)+2, (3*3)+2),
+                    ivec3((0*3)+1, (1*3)+1, (4*3)+1),
+                    ivec3((1*3)+1, (5*3)+1, (4*3)+1),
+                    ivec3((4*3)+2, (5*3)+2, (6*3)+2),
+                    ivec3((5*3)+2, (7*3)+2, (6*3)+2),
+                    ivec3((7*3)+1, (3*3)+1, (6*3)+1),
+                    ivec3((3*3)+1, (2*3)+1, (6*3)+1),
+                    ivec3(0*3, 4*3, 2*3),
+                    ivec3(2*3, 4*3, 6*3),
+                    ivec3(1*3, 3*3, 5*3),
+                    ivec3(3*3, 7*3, 5*3)
+                });
+            }
+
+            circle_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE_DYNAMIC, 0, 0, true);
 
             cube_shader = Resource<Shader>(
                 "Debug Cube Shader",
@@ -735,6 +786,7 @@ namespace frame_gl
         }
 
         void teardown() {
+            delete cube_mesh;
             delete circle_mesh;
         }
 
@@ -889,14 +941,12 @@ namespace frame_gl
             cube_shader->uniform(ShaderUniform::View, camera->view_matrix());
             cube_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
 
-            Resource<Mesh> mesh = MeshFactory::cube();
-
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glEnable(GL_CULL_FACE);
 
             while (!cubes.empty()) {
                 cube_shader->uniform(ShaderUniform::Model, cubes.front());
-                mesh->render();
+                cube_mesh->render();
                 cubes.pop();
             }
 
@@ -935,8 +985,6 @@ namespace frame_gl
 
         void render_text(Camera* camera, std::queue< String >& strings) {
 
-            return;
-
             if (strings.empty() && strings.empty())
                 return;
 
@@ -971,7 +1019,7 @@ namespace frame_gl
                 text_shader->uniform(character_color, line.color);
                 int i = 0;
                 for (char c : line.text) {
-                    //text_shader->uniform(character_number, i++);
+                    text_shader->uniform(character_number, i++);
                     text_shader->uniform(character_code, (int)c);
                     mesh.render();
                 }
@@ -993,6 +1041,7 @@ namespace frame_gl
         Resource<Shader> arc_shader;
         Resource<Shader> text_shader;
 
+        Mesh* cube_mesh;
         Mesh* circle_mesh;
 
         int text_shader_characters;
