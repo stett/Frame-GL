@@ -29,7 +29,8 @@ Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_c
 }
 
 Mesh::~Mesh() {
-    delete[] block;     // Delete our local buffers 
+    //delete[] block;     // Delete our local buffers 
+    free(block);
     destroy_buffers();  // Delete gfx buffers
 }
 
@@ -88,7 +89,8 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
     size_t triangle_size = triangle_count * sizeof(ivec3);
 
     // Allocate the new block
-    char* new_block = new char[buffers_size + vertex_size + triangle_size];
+    //char* new_block = new char[buffers_size + vertex_size + triangle_size];
+    char* new_block = static_cast<char*>(malloc(buffers_size + vertex_size + triangle_size));
 
     // Set basic array locations
     VertexBuffer* new_buffers = (VertexBuffer*)(new_block);
@@ -110,7 +112,8 @@ void Mesh::resize_block(size_t vertex_count, size_t triangle_count) {
             memcpy(new_buffers[i].data, buffers[i].data, min(new_buffers[i].size, buffers[i].size));
 
         // Delete the old block
-        delete[] block;
+        //delete[] block;
+        free(block);
     }
 
     // Update pointers & sizes
@@ -218,15 +221,12 @@ void Mesh::destroy_buffers() {
 
     // Destroy index buffer
     glDeleteBuffers(1, &vbo_triangles);
-    //vbo_triangles = 0;
 
     // Destroy all vertex buffers
     for (size_t i = 0; i < _attributes.count(); ++i) {
         glDeleteBuffers(1, &buffers[i].vbo);
-        //buffers[i].vbo = 0;
     }
 
     // Destroy vertex array object
     glDeleteVertexArrays(1, &vao);
-    //vao = 0;
 }

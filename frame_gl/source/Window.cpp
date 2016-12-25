@@ -97,7 +97,6 @@ void Window::setup() {
         { vec3(0.0f, 1.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f) },
         { vec2(0.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 0.0f) });
     mesh->set_triangles({ ivec3(0, 1, 2), ivec3(0, 2, 3) });
-    //mesh->finalize();
 
     // Build the final phase shader
     shader = new Shader(
