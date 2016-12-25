@@ -287,13 +287,13 @@ namespace frame_gl
 
                 Resource<ShaderPart>(ShaderPart::Type::Geometry,
                     "#version 330\n"
-                    "layout(lines) in;"
+                    "layout(triangles) in;"
                     "layout(line_strip, max_vertices = 16) out;"
                     "uniform float character_size;"
                     "uniform int character_number;"
                     "uniform int character_code;"
                     "uniform vec2 screen_size;"
-                    "in vec4 geom_position[2];"
+                    "in vec4 geom_position[3];"
                     "void main() {"
                     "   vec4 scale = vec4(1.0f / screen_size.x, 1.0f / screen_size.y, 0, 0) * (geom_position[0].w * character_size);"
                     "   vec4 pos = vec4((character_number) * scale.x, 0, 0, 0) + geom_position[0];"
@@ -931,8 +931,6 @@ namespace frame_gl
 
         void render_text(Camera* camera, std::queue< String >& strings) {
 
-            return;
-
             if (strings.empty() && strings.empty())
                 return;
 
@@ -947,8 +945,8 @@ namespace frame_gl
             // Bind the text shader
             text_shader->bind();
 
-            Mesh mesh(2, 1);
-            mesh.set_vertices({ vec3(0.0f), vec3(0.0f) });
+            Mesh mesh(1, 1);
+            mesh.set_vertices({ vec3(0.0f) });
             mesh.set_triangles({ ivec3(0, 0, 0) });
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
@@ -967,7 +965,7 @@ namespace frame_gl
                 text_shader->uniform(character_color, line.color);
                 int i = 0;
                 for (char c : line.text) {
-                    text_shader->uniform(character_number, i++);
+                    //text_shader->uniform(character_number, i++);
                     text_shader->uniform(character_code, (int)c);
                     mesh.render();
                 }

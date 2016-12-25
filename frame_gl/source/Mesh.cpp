@@ -25,7 +25,7 @@ Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_c
 
     // Set up empty buffers, & get space for them in gfx
     resize_block(vertex_count, triangle_count);
-    create_buffers();
+    //create_buffers();
 }
 
 Mesh::~Mesh() {
@@ -65,8 +65,13 @@ void Mesh::resize(size_t vertex_count, size_t triangle_count) {
 void Mesh::finalize() {
     if (_finalized) return;
     _finalized = true;
-    destroy_buffers();
     create_buffers();
+}
+
+void Mesh::unfinalize() {
+    if (!_finalized) return;
+    _finalized = false;
+    destroy_buffers();
 }
 
 void Mesh::set_vertex_count(size_t vertex_count) {

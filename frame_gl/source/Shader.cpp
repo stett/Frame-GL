@@ -139,10 +139,12 @@ void Shader::uniform(ShaderUniform location, const mat4& value) const {
     if      (location == Model)         uniform(uniforms().model,       value);
     else if (location == View)          uniform(uniforms().view,        value);
     else if (location == Projection)    uniform(uniforms().projection,  value);
+    gl_check();
 }
 
 void Shader::uniform(ShaderUniform location, int value) const {
-    if      (location == Diffuse)       uniform(uniforms().diffuse,     value);
+    if (location == Diffuse) uniform(uniforms().diffuse,     value);
+    gl_check();
 }
 
 void Shader::uniform_array(int array_location, const mat4* values, int count, int count_location) const {

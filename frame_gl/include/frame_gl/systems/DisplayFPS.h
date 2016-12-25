@@ -10,7 +10,7 @@ namespace frame
 {
     FRAME_SYSTEM(DisplayFPS) {
     public:
-        DisplayFPS(float interval=1.0f) : total(0.0f), steps(0.0f), interval(0.1f), min(std::numeric_limits<float>::max()), max(0.0f) {}
+        DisplayFPS(float interval=5.0f) : total(0.0f), steps(0.0f), interval(interval), min(std::numeric_limits<float>::max()), max(0.0f) {}
 
     public:
 
@@ -25,8 +25,8 @@ namespace frame
             if (dt < min) min = dt;
             if (dt > max) max = dt;
 
-            if (debug_draw)
-                debug_draw->screen_text(DebugDraw::Alignment::TopRight, glm::vec2(5.0f, 0.0f), status());
+            //if (debug_draw)
+            //    debug_draw->screen_text(DebugDraw::Alignment::TopRight, glm::vec2(5.0f, 0.0f), status());
 
             if (total > interval) {
                 average = total / steps;
@@ -36,7 +36,7 @@ namespace frame
                 min = std::numeric_limits<float>::max();
                 max = 0.0f;
 
-                if (!debug_draw)
+                //if (!debug_draw)
                     Log::write(status());
             }
         }

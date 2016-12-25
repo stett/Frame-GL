@@ -292,7 +292,7 @@ namespace frame
         void update_index_buffer(size_t i0, size_t i1);             ///< Update a range of triangles
 
     private:
-        void unfinalize() { _finalized = false; }
+        void unfinalize();
         void resize_block(size_t vertex_count, size_t triangle_count);
         void create_buffers();  ///< Create vertex and array buffers
         void destroy_buffers(); ///< Destroy vertex and array buffers
