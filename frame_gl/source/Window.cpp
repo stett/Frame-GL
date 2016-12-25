@@ -91,7 +91,7 @@ void Window::setup() {
     glfwMakeContextCurrent(window);
 
     // Build the buffer mesh
-    mesh = new Mesh(4, 2);
+    mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 4, 2);
     mesh->set_vertices(
         { vec3(-1.0f, -1.0f, 0.0f), vec3(-1.0f,  1.0f, 0.0f), vec3(1.0f,  1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f) },
         { vec3(0.0f, 1.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f) },

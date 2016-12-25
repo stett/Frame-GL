@@ -27,7 +27,11 @@ namespace frame
 
     class VertexAttributeSet {
     public:
+
         VertexAttributeSet(std::initializer_list<VertexAttribute> attributes)
+            : VertexAttributeSet(std::vector<VertexAttribute>(attributes.begin(), attributes.end())) {}
+
+        VertexAttributeSet(std::vector<VertexAttribute> attributes)
             : _size(0), _count(attributes.size()), _attributes(new VertexAttribute[_count]) {
 
             // Copy the attributes & measure total vertex size
@@ -63,6 +67,8 @@ namespace frame
             return true;
         }
 
+        VertexAttributeSet operator+(const VertexAttributeSet& other) const;
+
     private:
         size_t _size;
         size_t _count;
@@ -75,12 +81,24 @@ namespace frame
         size_t size;
     };
 
-    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES =
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_SIMPLE =
     {
         {"position", sizeof(vec3), false},
         {"normal", sizeof(vec3), false},
         {"uv", sizeof(vec2), false},
         {"color", sizeof(vec4), false},
+    };
+
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_SIMPLE_DYNAMIC =
+    {
+        {"position", sizeof(vec3), true},
+        {"normal", sizeof(vec3), true},
+        {"uv", sizeof(vec2), true},
+        {"color", sizeof(vec4), true},
+    };
+
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_SKINNED =
+    {
         {"weight-indexes", sizeof(vec4), false},
         {"weight-offset-0", sizeof(vec4), false},
         {"weight-offset-1", sizeof(vec4), false},
@@ -88,18 +106,20 @@ namespace frame
         {"weight-offset-3", sizeof(vec4), false},
     };
 
-    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_DYNAMIC =
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_SKINNED_DYNAMIC =
     {
-        {"position", sizeof(vec3), true},
-        {"normal", sizeof(vec3), true},
-        {"uv", sizeof(vec2), true},
-        {"color", sizeof(vec4), true},
         {"weight-indexes", sizeof(vec4), false},
         {"weight-offset-0", sizeof(vec4), false},
         {"weight-offset-1", sizeof(vec4), false},
         {"weight-offset-2", sizeof(vec4), false},
         {"weight-offset-3", sizeof(vec4), false},
     };
+
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES =
+        DEFAULT_VERTEX_ATTRIBUTES_SIMPLE + DEFAULT_VERTEX_ATTRIBUTES_SKINNED;
+
+    const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_DYNAMIC =
+        DEFAULT_VERTEX_ATTRIBUTES_SIMPLE_DYNAMIC + DEFAULT_VERTEX_ATTRIBUTES_SKINNED_DYNAMIC;
 
     /// \class Mesh
     /// \brief Representation and handle for creation and managing of a vertex buffer

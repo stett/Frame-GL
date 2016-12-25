@@ -10,7 +10,7 @@ namespace frame
 {
     FRAME_SYSTEM(DisplayFPS) {
     public:
-        DisplayFPS(float interval=5.0f) : total(0.0f), steps(0.0f), interval(interval), min(std::numeric_limits<float>::max()), max(0.0f) {}
+        DisplayFPS(float interval=2.0f) : total(0.0f), steps(0.0f), interval(interval), min(std::numeric_limits<float>::max()), max(0.0f) {}
 
     public:
 

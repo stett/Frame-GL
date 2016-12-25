@@ -17,6 +17,15 @@
 #include "frame_gl/error.h"
 using namespace frame;
 
+VertexAttributeSet VertexAttributeSet::operator+(const VertexAttributeSet& other) const {
+    std::vector<VertexAttribute> attributes;
+    for (size_t i = 0; i < _count; ++i)
+        attributes.push_back(_attributes[i]);
+    for (size_t i = 0; i < other._count; ++i)
+        attributes.push_back(other[i]);
+    return VertexAttributeSet(attributes);
+}
+
 Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_count, bool dynamic_triangles) :
     _attributes(attributes), _dynamic_triangles(dynamic_triangles), vao(0), block(0), _finalized(false) {
 
@@ -25,11 +34,9 @@ Mesh::Mesh(VertexAttributeSet attributes, size_t vertex_count, size_t triangle_c
 
     // Set up empty buffers, & get space for them in gfx
     resize_block(vertex_count, triangle_count);
-    //create_buffers();
 }
 
 Mesh::~Mesh() {
-    //delete[] block;     // Delete our local buffers 
     free(block);
     destroy_buffers();  // Delete gfx buffers
 }
@@ -149,7 +156,7 @@ void Mesh::append(const Mesh& other) {
     memcpy(_triangles + offsets[1], other._triangles, other._triangle_count * sizeof(ivec3));
 
     // Fix indexes
-    for (int i = 0; i < other._triangle_count; ++i)
+    for (size_t i = 0; i < other._triangle_count; ++i)
         _triangles[offsets[1] + i] += ivec3(offsets[0]);
 
     unfinalize();

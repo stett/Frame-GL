@@ -226,7 +226,7 @@ Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
 
     if (smooth) {
 
-        Resource<Mesh> mesh(8, 12);
+        Resource<Mesh> mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 8, 12);
 
         float normag = sqrt(3 * half * half);
 
@@ -263,7 +263,7 @@ Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
 
     } else {
 
-        Resource<Mesh> mesh(24, 12);
+        Resource<Mesh> mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 24, 12);
 
         mesh->set_vertices({
             vec3(-half, -half, -half), vec3(-half, -half, -half), vec3(-half, -half, -half),
