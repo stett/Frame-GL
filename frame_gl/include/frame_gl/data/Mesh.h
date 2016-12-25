@@ -126,7 +126,8 @@ namespace frame
     class Mesh {
 
     public:
-        Mesh(size_t vertex_count = 0, size_t triangle_count = 0, bool dynamic_triangles = false) : Mesh(DEFAULT_VERTEX_ATTRIBUTES, vertex_count, triangle_count, dynamic_triangles) {}
+        Mesh(size_t vertex_count = 0, size_t triangle_count = 0, bool dynamic_triangles = false)
+        : Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, vertex_count, triangle_count, dynamic_triangles) {}
         Mesh(VertexAttributeSet attriubtes, size_t vertex_count = 0, size_t triangle_count = 0, bool dynamic_triangles = false);
         ~Mesh();
 

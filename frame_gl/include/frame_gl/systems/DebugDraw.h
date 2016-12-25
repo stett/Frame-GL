@@ -143,7 +143,6 @@ namespace frame_gl
 
             render = system<Render>();
 
-
             cube_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 24, 12, false);
             {
                 float half(0.5f);
@@ -877,8 +876,6 @@ namespace frame_gl
 
         void render_shapes(Camera* camera) {
 
-            return;
-
             if (shapes.empty())
                 return;
 
@@ -894,7 +891,7 @@ namespace frame_gl
             std::vector< std::tuple< vec4, vec4, Resource< Mesh > > > meshes;
             while (!shapes.empty()) {
                 Shape& shape = shapes.front();
-                Resource< Mesh > mesh(shape.vertices.size(), shape.vertices.size() - 1);
+                Resource< Mesh > mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, shape.vertices.size(), shape.vertices.size() - 1);
                 for (size_t i = 0; i < shape.vertices.size(); ++i) {
                     mesh->set_vertex(i, shape.vertices[i]);
                     if (i > 1)
