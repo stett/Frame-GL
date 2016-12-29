@@ -16,8 +16,8 @@ using namespace frame;
 
 namespace frame_gl
 {
-    namespace
-    {
+    FRAME_SYSTEM(DebugDraw) {
+    private:
         struct Range { float min, max; };
 
         struct Line {
@@ -57,9 +57,7 @@ namespace frame_gl
             glm::vec4 line_color;
             glm::vec4 fill_color;
         };
-    }
 
-    FRAME_SYSTEM(DebugDraw) {
     public:
         enum Alignment { TopLeft, TopRight, BottomLeft, BottomRight };
 
