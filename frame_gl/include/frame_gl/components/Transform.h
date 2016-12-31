@@ -61,6 +61,13 @@ namespace frame
             return this;
         }
 
+        Transform* add_rotation(const quat& rotation_delta) {
+            _rotation += rotation_delta;
+            _rotation.normalize();
+            invalidate(ALL);
+            return this;
+        }
+
         Transform* look(const vec3& target, const vec3& up=vec3(0.0f, 1.0f, 0.0f)) {
             if (_translation == target) return this;
             //
