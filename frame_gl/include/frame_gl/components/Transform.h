@@ -68,6 +68,10 @@ namespace frame
             return this;
         }
 
+        Transform* add_rotation(const vec3& rotation_delta) {
+            return add_rotation(quat::axis_angle(rotation_delta) * _rotation);
+        }
+
         Transform* look(const vec3& target, const vec3& up=vec3(0.0f, 1.0f, 0.0f)) {
             if (_translation == target) return this;
             //

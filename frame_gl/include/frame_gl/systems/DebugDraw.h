@@ -910,16 +910,15 @@ namespace frame_gl
             for (auto& mesh : meshes) {
                 if (std::get<0>(mesh).a == 0.0f) continue;
                 shape_shader->uniform(color, std::get<0>(mesh));
-                //std::get<2>(mesh)->finalize();
                 std::get<2>(mesh)->render();
             }
 
             // Draw shape lines
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glLineWidth(2.0f);
             for (auto& mesh : meshes) {
                 if (std::get<1>(mesh).a == 0.0f) continue;
                 shape_shader->uniform(color, std::get<1>(mesh));
-                //std::get<2>(mesh)->finalize();
                 std::get<2>(mesh)->render();
             }
 

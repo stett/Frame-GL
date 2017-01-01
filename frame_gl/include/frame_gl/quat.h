@@ -1,4 +1,5 @@
 #pragma once
+#include <limits>
 #include "frame_gl/math.h"
 
 namespace frame
@@ -90,7 +91,7 @@ namespace frame
         // TODO: Make this an rvalue reference
         static quat_t&& axis_angle(glm::tvec3<T> axis_angle) {
             float angle = length(axis_angle);
-            return std::move(quat_t<T>::axis_angle(axis_angle / angle, angle));
+            return std::move(quat_t<T>::axis_angle(abs(angle) > std::numeric_limits<float>::epsilon() ? axis_angle / angle : vec3(0.0f), angle));
         }
 
         // Adapted from: http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
