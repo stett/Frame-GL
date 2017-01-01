@@ -7,7 +7,7 @@ using frame_gl::DebugDraw;
 
 namespace frame
 {
-    FRAME_COMPONENT(TransformDraggable, Transform) {};
+    FRAME_COMPONENT(TransformDraggable) {};
 
     FRAME_SYSTEM(TransformDrag, Node<Transform, TransformDraggable>) {
     public:
