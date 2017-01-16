@@ -36,7 +36,7 @@ namespace frame
 
     protected:
         virtual void setup();
-        virtual void step(float dt);
+        virtual void step();
         virtual void teardown();
 
     private:

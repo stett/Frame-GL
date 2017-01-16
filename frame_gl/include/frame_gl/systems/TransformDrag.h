@@ -14,7 +14,7 @@ namespace frame
         TransformDrag() : selected(nullptr) {}
 
     protected:
-        void step(float dt) {
+        void step() {
 
             auto input = system<Input>();
             auto window = system<Window>();

@@ -149,7 +149,7 @@ Window* Window::get_window(Frame* frame) {
     return nullptr;
 }
 
-void Window::step(float dt) {
+void Window::step() {
 
     // Select the window context
     glfwMakeContextCurrent(window);

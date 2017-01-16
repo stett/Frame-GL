@@ -787,7 +787,7 @@ namespace frame_gl
             delete circle_mesh;
         }
 
-        void step(float dt) {
+        void step() {
 
             // Get cameras
             main_camera = render->display_camera(main_layer);

@@ -16,7 +16,7 @@ void Input::setup() {
     window->mouse_scroll.listen(this, &Input::mouse_scroll_callback);
 }
 
-void Input::step_post(float dt) {
+void Input::step_post() {
     mouse[Previous] = mouse[Current];
     mouse[Current] = mouse[Next];
     keyboard[Previous] = keyboard[Current];

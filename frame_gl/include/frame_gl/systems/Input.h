@@ -162,7 +162,7 @@ namespace frame
 
     protected:
         void setup();
-        void step_post(float dt);
+        void step_post();
 
     public:
         bool mouse_down(MouseButton button, States state=Current) const;

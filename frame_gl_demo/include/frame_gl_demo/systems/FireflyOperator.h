@@ -117,7 +117,7 @@ namespace frame_demo
         bool concurrent;
 
     public:
-        void step(float dt) {
+        void step() {
 
             // Toggle concurrency mode
             auto input = frame()->systems().get<Input>();
@@ -127,14 +127,14 @@ namespace frame_demo
             }
         }
 
-        void step_fixed(float dt) {
+        void step_fixed() {
 
             if (concurrent) {
 
                 for (auto f : node<Firefly, Transform>()) {
-                    enqueue<UpdateFlock>(dt, f.entity(), f.get<Firefly>(), f.get<Transform>(), &node<Firefly, Transform>());
-                    enqueue<UpdateVelocity>(dt, f.get<Firefly>());
-                    enqueue<UpdatePosition>(dt, f.get<Firefly>(), f.get<Transform>());
+                    enqueue<UpdateFlock>(dt_fixed(), f.entity(), f.get<Firefly>(), f.get<Transform>(), &node<Firefly, Transform>());
+                    enqueue<UpdateVelocity>(dt_fixed(), f.get<Firefly>());
+                    enqueue<UpdatePosition>(dt_fixed(), f.get<Firefly>(), f.get<Transform>());
                 }
 
             } else {
@@ -191,13 +191,13 @@ namespace frame_demo
 
                 // Update velocities
                 for (auto f : node<Firefly, Transform>()) {
-                    f.get<Firefly>()->velocity += f.get<Firefly>()->acceleration * dt;
+                    f.get<Firefly>()->velocity += f.get<Firefly>()->acceleration * dt_fixed();
                     f.get<Firefly>()->update_heading();
                 }
 
                 // Update positions & angles
                 for (auto f : node<Firefly, Transform>()) {
-                    f.get<Transform>()->add_translation( f.get<Firefly>()->velocity * dt );
+                    f.get<Transform>()->add_translation( f.get<Firefly>()->velocity * dt_fixed());
                     f.get<Transform>()->set_rotation(rotation_between(vec3(1.0f, 0.0f, 0.0f), normalize(f.get<Firefly>()->velocity)));
                 }
             }

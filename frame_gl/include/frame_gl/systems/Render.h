@@ -79,7 +79,7 @@ namespace frame
         */
 
     protected:
-        virtual void step(float dt);
+        virtual void step();
 
     private:
         std::vector<RenderTarget*> display_targets;

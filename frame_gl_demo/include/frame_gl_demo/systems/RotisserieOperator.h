@@ -13,8 +13,8 @@ namespace frame_demo
         RotisserieOperator() : angle(0.0f), axis(vec3(0.0f, 1.0f, 0.0f)) {}
 
     public:
-        void step(float dt) {
-            angle += 1.0f * dt;
+        void step() {
+            angle += 1.0f * dt();
 
             for (auto rotisserie : node<Rotisserie, Transform>()) {
                 auto t = rotisserie.get<Transform>();

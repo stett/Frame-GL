@@ -18,12 +18,12 @@ namespace frame
             debug_draw = frame()->systems().get<frame_gl::DebugDraw>();
         }
 
-        void step(float dt) {
-            total += dt;
+        void step() {
+            total += dt();
             steps += 1.0f;
 
-            if (dt < min) min = dt;
-            if (dt > max) max = dt;
+            if (dt() < min) min = dt();
+            if (dt() > max) max = dt();
 
             if (debug_draw)
                 debug_draw->screen_text(DebugDraw::Alignment::TopRight, glm::vec2(5.0f, 0.0f), status());

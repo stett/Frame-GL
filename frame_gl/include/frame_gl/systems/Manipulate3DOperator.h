@@ -19,7 +19,7 @@ namespace frame
         Manipulate3DOperator() : _ui_text_color(1.0f, 0.5f, 0.25f, 1.0f) {}
 
     public:
-        void step(float dt) {
+        void step() {
 
             auto input = frame()->systems().get<Input>();
             if (input == nullptr) return;
@@ -70,7 +70,7 @@ namespace frame
                 }
 
                 // Interpolate motion
-                manipulate->update(dt);
+                manipulate->update(dt());
 
                 // If we have a debug module, draw the focus point
                 if (debug_draw) {
@@ -89,7 +89,7 @@ namespace frame
             }
         }
 
-        void step_post(float dt) {
+        void step_post() {
             for (auto manipulator : node<Transform, Manipulate3D>()) {
                 auto transform = manipulator.get<Transform>();
                 auto manipulate = manipulator.get<Manipulate3D>();

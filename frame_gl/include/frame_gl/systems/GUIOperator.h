@@ -36,8 +36,8 @@ namespace frame_gl
             window->mouse_position.ignore(this);
         }
 
-        void step(float dt) {
-            update_gui(dt);
+        void step() {
+            update_gui();
             render_gui();
         }
 
@@ -49,7 +49,7 @@ namespace frame_gl
 
     private:
 
-        void update_gui(float dt) {
+        void update_gui() {
 
             // Get the screen size
             Camera* camera = render->display_camera(gui_layer);

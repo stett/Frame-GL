@@ -6,7 +6,7 @@
 #include "frame_gl/systems/Render.h"
 using namespace frame;
 
-void Render::step(float dt) {
+void Render::step() {
 
     // For each camera, render all meshes
     //_display_camera = nullptr;

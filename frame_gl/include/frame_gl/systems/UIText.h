@@ -16,7 +16,7 @@ namespace frame_gl
             debug_draw = frame()->systems().get<frame_gl::DebugDraw>();
         }
 
-        void step(float dt) {
+        void step() {
             position = glm::vec2(10.0f, 0.0f);
             while (!lines.empty()) {
                 debug_draw->screen_text(DebugDraw::Alignment::TopLeft, position, lines.front().second, lines.front().first, size);
