@@ -23,8 +23,8 @@ namespace frame
             if (a_dot_b > 1.0f) a_dot_b -= 2.0f;
             if (a_dot_b < -1.0f) a_dot_b += 2.0f;
             auto angle = acos(a_dot_b);
-            if (angle < std::numeric_limits<float>::min()) { result = a; return; }
-            if (frame::pi - angle < std::numeric_limits<float>::min()) { result = b; return; }
+            if (angle < std::numeric_limits<float>::epsilon()) { result = a; return; }
+            if (frame::pi - angle < std::numeric_limits<float>::epsilon()) { result = b; return; }
             float a_coeff = sin(angle * (1.0f - t));
             float b_coeff = sin(angle * t);
             float sin_inv = 1.0f / sin(angle);
