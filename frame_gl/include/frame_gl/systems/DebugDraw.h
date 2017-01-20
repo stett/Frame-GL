@@ -27,6 +27,14 @@ namespace frame_gl
             size_t thickness;
         };
 
+        struct Arrow {
+            Arrow(const glm::vec3& base, const glm::vec3& tip, float size, const glm::vec3& color, size_t thickness = 1)
+                : base(base), tip(tip), size(size), color(color), thickness(thickness) {}
+            glm::vec3 base, tip, color;
+            float size;
+            size_t thickness;
+        };
+
         struct String {
             String(const glm::vec3& position, const std::string& text, const glm::vec4& color, float size)
                 : position(position), text(text), color(color), size(size) {}
@@ -72,8 +80,8 @@ namespace frame_gl
             lines.push(Line(p0, p1, color, thickness));
         }
 
-        void arrow(const glm::vec3& base, const glm::vec3& tip, float tip_size=1.0f, const glm::vec3& color=vec3(1.0f), size_t thickness=1) {
-            line(base, tip, color, thickness);
+        void arrow(const glm::vec3& base, const glm::vec3& tip, float size=0.1f, const glm::vec3& color=vec3(1.0f), size_t thickness=1) {
+            arrows.push(Arrow(base, tip, size, color, thickness));
         }
 
         void shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
@@ -196,6 +204,25 @@ namespace frame_gl
             }
 
             circle_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE_DYNAMIC, 0, 0, true);
+
+            arrowhead_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 5, 2, false);
+            {
+                float size = 1.0f;
+                vec3 norm = vec3(1.0f, 0.0f, 0.0f);
+                vec3 perp1 = orthogonal(norm);
+                vec3 perp2 = cross(norm, perp1);
+                vec3 head1 = size * (perp1 - norm);
+                vec3 head2 = size * (-perp1 - norm);
+                vec3 head3 = size * (perp2 - norm);
+                vec3 head4 = size * (-perp2 - norm);
+                vec3 tip = -norm * dot(norm, size * (perp1 - norm));
+                arrowhead_mesh->set_vertices(
+                    { tip, head1, head2, head3, head4 },
+                    { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
+                    { vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f) },
+                    { vec4(1.0f), vec4(1.0f), vec4(1.0f), vec4(1.0f), vec4(1.0f) });
+                arrowhead_mesh->set_triangles({ ivec3(0, 1, 2), ivec3(0, 3, 4) });
+            }
 
             cube_shader = Resource<Shader>(
                 "Debug Cube Shader",
@@ -789,6 +816,7 @@ namespace frame_gl
         void teardown() {
             delete cube_mesh;
             delete circle_mesh;
+            delete arrowhead_mesh;
         }
 
         void step() {
@@ -805,6 +833,7 @@ namespace frame_gl
 
                 // Draw worldspace stuff
                 render_lines(main_camera);
+                render_arrows(main_camera);
                 render_shapes(main_camera);
                 render_cubes(main_camera);
                 render_circles(main_camera);
@@ -872,6 +901,39 @@ namespace frame_gl
                 glLineWidth(float(mesh.first));
                 mesh.second->render();
             }
+
+            line_shader->unbind();
+        }
+
+        void render_arrows(Camera* camera) {
+
+            if (arrows.empty())
+                return;
+
+            // Bind the shape shader
+            line_shader->bind();
+            line_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            line_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+
+            // Set up gl state
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDisable(GL_CULL_FACE);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            // Draw all the arrowheads
+            arrowhead_mesh->bind();
+            while (!arrows.empty()) {
+                auto& arrow = arrows.front();
+                glLineWidth(float(arrow.thickness));
+                mat4 rotate = quat(vec3(1.0f, 0.0f, 0.0f), arrow.tip - arrow.base).matrix();
+                mat4 translate = glm::translate(mat4(1.0f), arrow.tip);
+                mat4 scale = glm::scale(mat4(1.0f), vec3(arrow.size));
+                line_shader->uniform(ShaderUniform::Model, translate * rotate * scale);
+                arrowhead_mesh->draw();
+                arrows.pop();
+            }
+            arrowhead_mesh->unbind();
 
             line_shader->unbind();
         }
@@ -1040,9 +1102,11 @@ namespace frame_gl
 
         Mesh* cube_mesh;
         Mesh* circle_mesh;
+        Mesh* arrowhead_mesh;
 
         int text_shader_characters;
         std::queue< Line > lines;
+        std::queue< Arrow > arrows;
         std::queue< Shape > shapes;
         std::queue< glm::mat4 > cubes;
         std::queue< String > world_strings;

@@ -42,7 +42,6 @@ Mesh::~Mesh() {
 }
 
 void Mesh::render() {
-    finalize();
     bind();
     draw();
     unbind();
@@ -53,6 +52,7 @@ void Mesh::draw() {
 }
 
 void Mesh::bind() {
+    finalize();
     glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
 }
