@@ -82,6 +82,7 @@ namespace frame_gl
 
         void arrow(const glm::vec3& base, const glm::vec3& tip, float size=0.1f, const glm::vec3& color=vec3(1.0f), size_t thickness=1) {
             arrows.push(Arrow(base, tip, size, color, thickness));
+            line(base, tip, color, thickness);
         }
 
         void shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
@@ -211,11 +212,11 @@ namespace frame_gl
                 vec3 norm = vec3(1.0f, 0.0f, 0.0f);
                 vec3 perp1 = orthogonal(norm);
                 vec3 perp2 = cross(norm, perp1);
-                vec3 head1 = size * (perp1 - norm);
-                vec3 head2 = size * (-perp1 - norm);
-                vec3 head3 = size * (perp2 - norm);
-                vec3 head4 = size * (-perp2 - norm);
                 vec3 tip = -norm * dot(norm, size * (perp1 - norm));
+                vec3 head1 = tip + size * (perp1 - norm);
+                vec3 head2 = tip + size * (-perp1 - norm);
+                vec3 head3 = tip + size * (perp2 - norm);
+                vec3 head4 = tip + size * (-perp2 - norm);
                 arrowhead_mesh->set_vertices(
                     { tip, head1, head2, head3, head4 },
                     { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
@@ -911,9 +912,12 @@ namespace frame_gl
                 return;
 
             // Bind the shape shader
-            line_shader->bind();
-            line_shader->uniform(ShaderUniform::View, camera->view_matrix());
-            line_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            shape_shader->bind();
+            shape_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            shape_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+
+            // Find the color uniform location
+            int color = shape_shader->locate("color");
 
             // Set up gl state
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -929,13 +933,14 @@ namespace frame_gl
                 mat4 rotate = quat(vec3(1.0f, 0.0f, 0.0f), arrow.tip - arrow.base).matrix();
                 mat4 translate = glm::translate(mat4(1.0f), arrow.tip);
                 mat4 scale = glm::scale(mat4(1.0f), vec3(arrow.size));
-                line_shader->uniform(ShaderUniform::Model, translate * rotate * scale);
+                shape_shader->uniform(ShaderUniform::Model, translate * rotate * scale);
+                shape_shader->uniform(color, vec4(arrow.color, 1.0f));
                 arrowhead_mesh->draw();
                 arrows.pop();
             }
             arrowhead_mesh->unbind();
 
-            line_shader->unbind();
+            shape_shader->unbind();
         }
 
         void render_shapes(Camera* camera) {
