@@ -960,11 +960,11 @@ namespace frame_gl
             std::vector< std::tuple< vec4, vec4, Resource< Mesh > > > meshes;
             while (!shapes.empty()) {
                 Shape& shape = shapes.front();
-                Resource< Mesh > mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, shape.vertices.size(), shape.vertices.size() - 1);
+                Resource< Mesh > mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, shape.vertices.size(), shape.vertices.size() - 2);
                 for (size_t i = 0; i < shape.vertices.size(); ++i) {
-                    mesh->set_vertex(i, shape.vertices[i]);
+                    mesh->set_vertex(i, shape.vertices[i], vec3(0.0f), vec2(0.0f), vec4(1.0f));
                     if (i > 1)
-                        mesh->set_triangle(i-1, ivec3(0, i-1, i));
+                        mesh->set_triangle(i-2, ivec3(0, i-1, i));
                 }
                 meshes.push_back(std::make_tuple(shape.fill_color, shape.line_color, mesh));
                 shapes.pop();
