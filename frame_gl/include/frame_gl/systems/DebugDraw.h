@@ -72,7 +72,11 @@ namespace frame_gl
             lines.push(Line(p0, p1, color, thickness));
         }
 
-        void shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(1.0f), 0.5f)) {
+        void arrow(const glm::vec3& base, const glm::vec3& tip, float tip_size=1.0f, const glm::vec3& color=vec3(1.0f), size_t thickness=1) {
+            line(base, tip, color, thickness);
+        }
+
+        void shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
             shapes.push(Shape(vertices, line_color, fill_color));
         }
 
