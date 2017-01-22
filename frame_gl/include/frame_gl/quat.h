@@ -145,33 +145,13 @@ namespace frame
         }
 
         glm::tmat4x4<T> matrix() const {
-            glm::tmat4x4<T> m;
-
-            // Row 1
-            m[0][0] = 1.0f - 2.0f*(v.y*v.y + v.z*v.z);
-            m[0][1] = 2.0f*(v.x*v.y + s*v.z);
-            m[0][2] = 2.0f*(v.x*v.z - s*v.y),
-            m[0][3] = 0.0f;
-
-            // Row 2
-            m[1][0] = 2.0f*(v.x*v.y - s*v.z);
-            m[1][1] = 1.0f - 2.0f*(v.x*v.x + v.z*v.z);
-            m[1][2] = 2.0f*(v.y*v.z + s*v.x);
-            m[1][3] = 0.0f;
-
-            // Row 3
-            m[2][0] = 2.0f*(v.x*v.z + s*v.y);
-            m[2][1] = 2.0f*(v.y*v.z - s*v.x);
-            m[2][2] = 1.0f - 2.0f*(v.x*v.x + v.y*v.y);
-            m[2][3] = 0.0f;
-
-            // Row 4
-            m[3][0] = 0.0f;
-            m[3][1] = 0.0f;
-            m[3][2] = 0.0f;
-            m[3][3] = 1.0f;
-
-            return m;
+            vec3 v2 = v * v;
+            return glm::tmat4x4<T>({
+                1.0f - 2.0f * (v2.y + v2.z), 2.0f * (v.x*v.y + s*v.z), 2.0f * (v.x*v.z - s*v.y), 0.0f,
+                2.0f * (v.x*v.y - s*v.z), 1.0f - 2.0f * (v2.x + v2.z), 2.0f * (v.y*v.z + s*v.x), 0.0f,
+                2.0f * (v.x*v.z + s*v.y), 2.0f * (v.y*v.z - s*v.x), 1.0f - 2.0f * (v2.x + v2.y), 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f
+            });
         }
 
     public:

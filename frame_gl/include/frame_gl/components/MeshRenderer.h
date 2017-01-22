@@ -21,7 +21,7 @@ namespace frame
         };
 
     public:
-        MeshRenderer() : _mesh(MeshFactory::cube()), _texture(ivec2(1)), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(false/*true*/), _layer(0) {}
+        MeshRenderer() : _mesh(MeshFactory::cube()), _texture(Texture::white_pixel()), _shader(Shader::Preset::model_colors()), _poly_mode(Fill), _cull_back(false/*true*/), _layer(0) {}
         MeshRenderer(Resource<Mesh> mesh, Resource<Texture> texture, Resource<Shader> shader, PolyMode poly_mode=Fill, bool cull_back=true, unsigned int layer=0)
         : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode), _cull_back(cull_back), _layer(layer) {}
 
@@ -37,7 +37,6 @@ namespace frame
             glPolygonMode(GL_FRONT_AND_BACK, _poly_mode);
             if (_cull_back) glEnable(GL_CULL_FACE);
             else glDisable(GL_CULL_FACE);
-            //glLineWidth(3.0f);
 
             // Bind stuff
             _texture->bind(0);

@@ -379,6 +379,11 @@ Resource<Shader> Shader::Preset::model_normals() {
     return shader;
 }
 
+Resource<Shader> Shader::Preset::diffuse_texture() {
+    static Resource<Shader> shader("Diffuse Texture", vert_standard(), frag_diffuse());
+    return shader;
+}
+
 Resource<Shader> Shader::Preset::coords() {
     static Resource<Shader> shader("Frag Screen Coords", vert_standard(), frag_coords());
     return shader;

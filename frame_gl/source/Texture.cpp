@@ -46,6 +46,15 @@ Texture::Texture(const ivec2& size, bool multisample) : _size(size), _multisampl
 }
 
 Texture::Texture(const std::string& filename) {
+
+    /*
+    if(std::strstr(filename.c_str(), ".dds") > 0 || std::strstr(filename.c_str(), ".ktx") > 0)
+    {
+        Log::error("Textures must be either .dds or .ktx format!");
+        return;
+    }
+    */
+
     gli::texture2d texture(gli::load(filename));
     gli::texture2d_array tex(texture);
 
@@ -80,4 +89,9 @@ void Texture::bind(unsigned int texture_unit) {
 
 void Texture::unbind() {
     glBindTexture(_target, 0);
+}
+
+Resource<Texture> Texture::white_pixel() {
+    static Resource<Texture> texture(ivec2(1));
+    return texture;
 }

@@ -338,7 +338,7 @@ Resource<Mesh> MeshFactory::quad(const vec2& size, const vec3& normal, const vec
         vec3(-half.x, half.y, 0.0f), vec3(half.x, half.y, 0.0f),
         vec3(-half.x, -half.y, 0.0f), vec3(half.x, -half.y, 0.0f) },
     { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
-    { vec3(0.0f), vec3(0.0f), vec3(0.0f), vec3(0.0f) },
+    { vec2(0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f) },
     { color, color, color, color });
 
     mesh->set_triangles({ ivec3(2, 1, 0), ivec3(1, 2, 3) });

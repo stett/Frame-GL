@@ -110,6 +110,7 @@ namespace frame
             static Resource<Shader> model_uvs();
             static Resource<Shader> model_colors();
             static Resource<Shader> model_normals();
+            static Resource<Shader> diffuse_texture();
             static Resource<Shader> coords();
             static Resource<Shader> depth();
 

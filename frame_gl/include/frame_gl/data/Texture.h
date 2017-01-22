@@ -25,5 +25,8 @@ namespace frame
         unsigned int _id;
         bool _multisample;
         unsigned int _target;
+
+    public:
+        static Resource<Texture> white_pixel();
     };
 }
