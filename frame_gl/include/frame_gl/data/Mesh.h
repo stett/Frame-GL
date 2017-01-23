@@ -81,6 +81,9 @@ namespace frame
         size_t size;
     };
 
+    const VertexAttributeSet POSITION_VEC3 = { {"position", sizeof(vec3), false}, };
+    const VertexAttributeSet POSITION_VEC4 = { {"position", sizeof(vec4), false}, };
+
     const VertexAttributeSet DEFAULT_VERTEX_ATTRIBUTES_SIMPLE =
     {
         {"position", sizeof(vec3), false},
@@ -265,21 +268,18 @@ namespace frame
 
         void set_triangle(size_t triangle_index, const ivec3& triangle) {
             _triangles[triangle_index] = triangle;
-            //update_index_buffer(0, triangle_index + 1);
             unfinalize();
         }
 
         void set_triangles(std::initializer_list<ivec3> triangles) {
             set_triangle_count(triangles.size());
             memcpy(_triangles, triangles.begin(), sizeof(ivec3) * triangles.size());
-            //update_index_buffer();
             unfinalize();
         }
 
-        void set_triangles(const ivec3* triangles, size_t count) {
-            set_triangle_count(count);
-            memcpy(_triangles, triangles, count * sizeof(ivec3));
-            //update_index_buffer();
+        void set_triangles(const ivec3* triangles, size_t count=0) {
+            if (count) set_triangle_count(count);
+            memcpy(_triangles, triangles, _triangle_count * sizeof(ivec3));
             unfinalize();
         }
 

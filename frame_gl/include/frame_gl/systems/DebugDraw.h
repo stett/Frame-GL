@@ -66,6 +66,15 @@ namespace frame_gl
             glm::vec4 fill_color;
         };
 
+        struct DebugMesh {
+            DebugMesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color, const glm::vec4& fill_color)
+                : mesh(mesh), transform(transform), line_color(line_color), fill_color(fill_color) {}
+            Resource<Mesh> mesh;
+            glm::mat4 transform;
+            glm::vec4 line_color;
+            glm::vec4 fill_color;
+        };
+
     public:
         enum Alignment { TopLeft, TopRight, BottomLeft, BottomRight };
 
@@ -87,6 +96,10 @@ namespace frame_gl
 
         void shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
             shapes.push(Shape(vertices, line_color, fill_color));
+        }
+
+        void mesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
+            meshes.push(DebugMesh(mesh, transform, line_color, fill_color));
         }
 
         void circle(const glm::vec3& position, float inner_radius=5.0f, float outer_radius=10.0f, const glm::vec4& color=glm::vec4(1.0f)) {
@@ -836,6 +849,7 @@ namespace frame_gl
                 render_lines(main_camera);
                 render_arrows(main_camera);
                 render_shapes(main_camera);
+                render_meshes(main_camera);
                 render_cubes(main_camera);
                 render_circles(main_camera);
                 render_text(main_camera, world_strings);
@@ -993,7 +1007,49 @@ namespace frame_gl
                 std::get<2>(mesh)->render();
             }
 
-            line_shader->unbind();
+            shape_shader->unbind();
+        }
+
+        void render_meshes(Camera* camera) {
+
+            if (meshes.empty())
+                return;
+
+            // Bind the shape shader
+            shape_shader->bind();
+            shape_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            shape_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+
+            int color = shape_shader->locate("color");
+
+            glDisable(GL_CULL_FACE);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            // Build a mesh with a bunch of lines
+            while (!meshes.empty()) {
+                DebugMesh& mesh = meshes.front();
+
+                shape_shader->uniform(ShaderUniform::Model, mesh.transform);
+
+                // Draw shape fills
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                if (mesh.fill_color.a > std::numeric_limits<float>::epsilon()) {
+                    shape_shader->uniform(color, mesh.fill_color);
+                    mesh.mesh->render();
+                }
+
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glLineWidth(2.0f);
+                if (mesh.line_color.a > std::numeric_limits<float>::epsilon()) {
+                    shape_shader->uniform(color, mesh.line_color);
+                    mesh.mesh->render();
+                }
+
+                meshes.pop();
+            }
+
+            shape_shader->unbind();
         }
 
         void render_cubes(Camera* camera) {
@@ -1113,6 +1169,7 @@ namespace frame_gl
         std::queue< Line > lines;
         std::queue< Arrow > arrows;
         std::queue< Shape > shapes;
+        std::queue< DebugMesh > meshes;
         std::queue< glm::mat4 > cubes;
         std::queue< String > world_strings;
         std::queue< String > screen_strings;
