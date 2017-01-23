@@ -28,9 +28,10 @@ namespace frame_gl
         };
 
         struct Arrow {
-            Arrow(const glm::vec3& base, const glm::vec3& tip, float size, const glm::vec3& color, size_t thickness = 1)
+            Arrow(const glm::vec3& base, const glm::vec3& tip, float size, const glm::vec4& color, size_t thickness = 1)
                 : base(base), tip(tip), size(size), color(color), thickness(thickness) {}
-            glm::vec3 base, tip, color;
+            glm::vec3 base, tip;
+            glm::vec4 color;
             float size;
             size_t thickness;
         };
@@ -89,7 +90,7 @@ namespace frame_gl
             lines.push(Line(p0, p1, color, thickness));
         }
 
-        void arrow(const glm::vec3& base, const glm::vec3& tip, float size=0.1f, const glm::vec3& color=vec3(1.0f), size_t thickness=1) {
+        void arrow(const glm::vec3& base, const glm::vec3& tip, float size=0.1f, const glm::vec4& color=vec4(1.0f), size_t thickness=1) {
             arrows.push(Arrow(base, tip, size, color, thickness));
             line(base, tip, color, thickness);
         }
@@ -948,7 +949,7 @@ namespace frame_gl
                 mat4 translate = glm::translate(mat4(1.0f), arrow.tip);
                 mat4 scale = glm::scale(mat4(1.0f), vec3(arrow.size));
                 shape_shader->uniform(ShaderUniform::Model, translate * rotate * scale);
-                shape_shader->uniform(color, vec4(arrow.color, 1.0f));
+                shape_shader->uniform(color, arrow.color);
                 arrowhead_mesh->draw();
                 arrows.pop();
             }
