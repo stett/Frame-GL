@@ -175,7 +175,7 @@ void Window::step() {
     gl_check();
 
     // Initialize a list to contain all display buffers
-    std::set<RenderTarget*> buffers;
+    std::set< RenderTarget*, std::function<bool (const RenderTarget*, const RenderTarget*)> > buffers(RenderTarget::compare);
     //Render* render;
     //RenderTarget* buffer;
 

@@ -6,14 +6,15 @@
 #include "frame_gl/error.h"
 using namespace frame;
 
-FrameBuffer::FrameBuffer(const ivec2& size, bool depth, const vec4& clear_color, bool multisample) : _size(size), _depth(depth), _clear_color(clear_color) {
+FrameBuffer::FrameBuffer(const ivec2& size, bool depth, const vec4& clear_color, bool multisample)
+    : _size(size), _multisample(multisample), _depth(depth), _clear_color(clear_color) {
 
     // Create the frame buffer object
     glGenFramebuffers(1, &frame_buffer_id);
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_id);
 
     // Create a render buffer, and attach it to FBO's depth attachment
-    if (depth) {
+    if (_depth) {
         glGenRenderbuffers(1, &depth_buffer_id);
         glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer_id);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.x, size.y);
@@ -42,13 +43,38 @@ FrameBuffer::FrameBuffer(const ivec2& size, bool depth, const vec4& clear_color,
 
 FrameBuffer::~FrameBuffer() { delete texture; }
 
+void FrameBuffer::set_size(const ivec2& size) {
+
+    _size = size;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_id);
+
+    // Resize the depth buffer if needed
+    if (_depth) {
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer_id);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _size.x, _size.y);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buffer_id);
+    }
+
+    // Delete the old texture
+    delete texture;
+
+    // Make a new texture
+    texture = new Texture(_size, _multisample);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture->target(), texture->id(), 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    gl_check();
+}
+
 void FrameBuffer::bind_target(bool clear) {
 
     // Bind the frame buffer
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_id);
 
     // Set the viewport
-    glViewport(0, 0, size().x, size().y);
+    glViewport(0, 0, _size.x, _size.y);
 
     // Set up OpenGL state
     if (_depth) glEnable(GL_DEPTH_TEST);

@@ -12,6 +12,11 @@ namespace frame
         Texture(const Texture& other) = delete;
         Texture& operator=(const Texture& other) = delete;
 
+        /*
+    public:
+        void set_size(const ivec2& size);
+        */
+
     public:
         const ivec2& size() const { return _size; }
         unsigned int id() const { return _id; }

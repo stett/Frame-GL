@@ -10,10 +10,10 @@ namespace frame
     FRAME_COMPONENT(RenderTarget) {
     public:
         RenderTarget(const ivec2& size=ivec2(300), int display_layer=-1, bool depth=true, const vec4& clear_color=vec4(0.0f)) :
-            _display_layer(display_layer), buffer(Resource<FrameBuffer>(size, depth, clear_color)) {}
+            _display_layer(display_layer), _display_priority(display_layer), buffer(Resource<FrameBuffer>(size, depth, clear_color)) {}
 
         RenderTarget(const Resource<FrameBuffer>& buffer, int display_layer=-1) :
-            _display_layer(display_layer), buffer(buffer) {}
+            _display_layer(display_layer), _display_priority(display_layer), buffer(buffer) {}
 
         ~RenderTarget() {}
 
@@ -39,13 +39,32 @@ namespace frame
             return this;
         }
 
+        RenderTarget* set_size(const ivec2& size) {
+            buffer->set_size(size);
+            return this;
+        }
+
+        RenderTarget* set_display_priority(int display_priority) {
+            _display_priority = display_priority;
+            return this;
+        }
+
         int display_layer() const { return _display_layer; }
+        int display_priority() const { return _display_priority; }
         const ivec2& size() const { return buffer->size(); }
         const vec4& clear_color() const { return buffer->clear_color(); }
         bool depth() const { return buffer->depth(); }
 
+    public:
+
+        static bool compare(const RenderTarget* a, const RenderTarget* b) {
+            return a->_display_priority < b->_display_priority;
+        }
+
+
     private:
         int _display_layer;
+        int _display_priority;
         Resource<FrameBuffer> buffer;
     };
 }

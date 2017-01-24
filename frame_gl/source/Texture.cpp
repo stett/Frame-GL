@@ -82,6 +82,21 @@ Texture::Texture(const std::string& filename) {
 
 Texture::~Texture() { glDeleteTextures(1, &_id); }
 
+/*
+void Texture::set_size(const ivec2& size) {
+
+    _size = size;
+
+    glBindTexture(GL_TEXTURE_2D, _id);
+    glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA32F_ARB, _size.x, _size.y, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    gl_check();
+
+    Log::success("Texture (" + std::to_string(size.x) + "x" + std::to_string(size.y) + ") resized with ID " + std::to_string(_id));
+}
+*/
+
 void Texture::bind(unsigned int texture_unit) {
     glActiveTexture(GL_TEXTURE0 + texture_unit);
     glBindTexture(_target, _id);
