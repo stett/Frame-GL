@@ -4,6 +4,7 @@
 #include "frame/Component.h"
 #include "frame/util/ParentChild.h"
 #include "frame_gl/math.h"
+#include "frame_gl/tween.h"
 
 namespace frame
 {
@@ -15,6 +16,12 @@ namespace frame
 
         void matrix(mat4& m) const {
             m = glm::scale(glm::translate(mat4(1.0f), translation) * rotation.matrix(), scale);
+        }
+
+        void lerp(const TransformElements& a, const TransformElements& b, float t) {
+            tween::linear(translation, a.translation, b.translation, t);
+            tween::spherical(rotation, a.rotation, b.rotation, t);
+            tween::linear(scale, a.scale, b.scale, t);
         }
     };
 
@@ -137,7 +144,7 @@ namespace frame
             return _inverse;
         }
 
-        const TransformElements& elments() const {
+        const TransformElements& elements() const {
             return local;
         }
 
