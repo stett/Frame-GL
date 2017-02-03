@@ -68,12 +68,13 @@ namespace frame_gl
         };
 
         struct DebugMesh {
-            DebugMesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color, const glm::vec4& fill_color)
-                : mesh(mesh), transform(transform), line_color(line_color), fill_color(fill_color) {}
+            DebugMesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color, const glm::vec4& fill_color, float line_thickness)
+                : mesh(mesh), transform(transform), line_color(line_color), fill_color(fill_color), line_thickness(line_thickness) {}
             Resource<Mesh> mesh;
             glm::mat4 transform;
             glm::vec4 line_color;
             glm::vec4 fill_color;
+            float line_thickness;
         };
 
     public:
@@ -99,8 +100,8 @@ namespace frame_gl
             shapes.push(Shape(vertices, line_color, fill_color));
         }
 
-        void mesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
-            meshes.push(DebugMesh(mesh, transform, line_color, fill_color));
+        void mesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f), float line_thickness=1.0f) {
+            meshes.push(DebugMesh(mesh, transform, line_color, fill_color, line_thickness));
         }
 
         void circle(const glm::vec3& position, float inner_radius=5.0f, float outer_radius=10.0f, const glm::vec4& color=glm::vec4(1.0f)) {
@@ -1040,8 +1041,9 @@ namespace frame_gl
                     mesh.mesh->render();
                 }
 
+                // Draw shape lines
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glLineWidth(2.0f);
+                glLineWidth(mesh.line_thickness);
                 if (mesh.line_color.a > std::numeric_limits<float>::epsilon()) {
                     shape_shader->uniform(color, mesh.line_color);
                     mesh.mesh->render();
