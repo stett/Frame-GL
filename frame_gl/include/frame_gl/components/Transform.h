@@ -22,6 +22,7 @@ namespace frame
             tween::linear(translation, a.translation, b.translation, t);
             tween::spherical(rotation, a.rotation, b.rotation, t);
             tween::linear(scale, a.scale, b.scale, t);
+            rotation.normalize();
         }
     };
 
