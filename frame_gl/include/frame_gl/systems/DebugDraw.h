@@ -100,6 +100,10 @@ namespace frame_gl
             shapes.push(Shape(vertices, line_color, fill_color));
         }
 
+        void screen_shape(const std::vector<glm::vec3>& vertices, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f)) {
+            screen_shapes.push(Shape(vertices, line_color, fill_color));
+        }
+
         void mesh(Resource<Mesh> mesh, const glm::mat4& transform, const glm::vec4& line_color=vec4(1.0f), const glm::vec4& fill_color=vec4(vec3(0.5f), 1.0f), float line_thickness=1.0f) {
             meshes.push(DebugMesh(mesh, transform, line_color, fill_color, line_thickness));
         }
@@ -850,7 +854,7 @@ namespace frame_gl
                 // Draw worldspace stuff
                 render_lines(main_camera);
                 render_arrows(main_camera);
-                render_shapes(main_camera);
+                render_shapes(main_camera, shapes);
                 render_meshes(main_camera);
                 render_cubes(main_camera);
                 render_circles(main_camera);
@@ -868,6 +872,8 @@ namespace frame_gl
 
                 // Draw gui (screen) space stuff
                 render_text(gui_camera, screen_strings);
+
+                render_shapes(gui_camera, screen_shapes);
 
                 // Tear down
                 gui_camera->unbind_target();
@@ -959,9 +965,9 @@ namespace frame_gl
             shape_shader->unbind();
         }
 
-        void render_shapes(Camera* camera) {
+        void render_shapes(Camera* camera, std::queue< Shape >& shapes_queue) {
 
-            if (shapes.empty())
+            if (shapes_queue.empty())
                 return;
 
             // Bind the shape shader
@@ -974,8 +980,8 @@ namespace frame_gl
 
             // Build a mesh with a bunch of lines
             std::vector< std::tuple< vec4, vec4, Resource< Mesh > > > meshes;
-            while (!shapes.empty()) {
-                Shape& shape = shapes.front();
+            while (!shapes_queue.empty()) {
+                Shape& shape = shapes_queue.front();
                 Resource< Mesh > mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, shape.vertices.size(), shape.vertices.size() - 2);
                 for (size_t i = 0; i < shape.vertices.size(); ++i) {
                     mesh->set_vertex(i, shape.vertices[i], vec3(0.0f), vec2(0.0f), vec4(1.0f));
@@ -983,7 +989,7 @@ namespace frame_gl
                         mesh->set_triangle(i-2, ivec3(0, i-1, i));
                 }
                 meshes.push_back(std::make_tuple(shape.fill_color, shape.line_color, mesh));
-                shapes.pop();
+                shapes_queue.pop();
             }
 
             glDisable(GL_CULL_FACE);
@@ -1172,6 +1178,7 @@ namespace frame_gl
         std::queue< Line > lines;
         std::queue< Arrow > arrows;
         std::queue< Shape > shapes;
+        std::queue< Shape > screen_shapes;
         std::queue< DebugMesh > meshes;
         std::queue< glm::mat4 > cubes;
         std::queue< String > world_strings;
