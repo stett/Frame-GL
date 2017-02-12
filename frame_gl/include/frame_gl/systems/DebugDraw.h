@@ -21,19 +21,20 @@ namespace frame_gl
         struct Range { float min, max; };
 
         struct Line {
-            Line(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color, size_t thickness = 1)
+            Line(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color, float thickness = 1.0f)
                 : a(a), b(b), color(color), thickness(thickness) {}
-            glm::vec3 a, b, color;
-            size_t thickness;
+            glm::vec3 a, b;
+            glm::vec4 color;
+            float thickness;
         };
 
         struct Arrow {
-            Arrow(const glm::vec3& base, const glm::vec3& tip, float size, const glm::vec4& color, size_t thickness = 1)
+            Arrow(const glm::vec3& base, const glm::vec3& tip, float size, const glm::vec4& color, float thickness = 1.0f)
                 : base(base), tip(tip), size(size), color(color), thickness(thickness) {}
             glm::vec3 base, tip;
             glm::vec4 color;
             float size;
-            size_t thickness;
+            float thickness;
         };
 
         struct String {
@@ -87,11 +88,15 @@ namespace frame_gl
 
     public:
 
-        void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& color=glm::vec3(1.0f), size_t thickness=1) {
+        void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& color=glm::vec3(1.0f), float thickness=1.0f) {
+            line(p0, p1, vec4(color, 1.0f), thickness);
+        }
+
+        void line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f), float thickness = 1.0f) {
             lines.push(Line(p0, p1, color, thickness));
         }
 
-        void arrow(const glm::vec3& base, const glm::vec3& tip, float size=0.1f, const glm::vec4& color=vec4(1.0f), size_t thickness=1) {
+        void arrow(const glm::vec3& base, const glm::vec3& tip, float size=0.1f, const glm::vec4& color=vec4(1.0f), float thickness=1.0f) {
             arrows.push(Arrow(base, tip, size, color, thickness));
             line(base, tip, color, thickness);
         }
@@ -173,6 +178,13 @@ namespace frame_gl
 
             render = system<Render>();
 
+            line_mesh = new Mesh(POSITION_VEC3, 2, 1, false);
+            {
+                vec4 color(1.0f);
+                line_mesh->set_vertices({ vec3(0.0f), vec3(1.0f, 0.0f, 0.0f) });
+                line_mesh->set_triangles({ ivec3(0, 0, 1) });
+            }
+
             cube_mesh = new Mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 24, 12, false);
             {
                 float half(0.5f);
@@ -248,11 +260,6 @@ namespace frame_gl
                 "Debug Cube Shader",
                 Shader::Preset::vert_standard(),
                 Shader::Preset::frag_normals());
-
-            line_shader = Resource<Shader>(
-                "Debug Line Shader",
-                Shader::Preset::vert_standard(),
-                Shader::Preset::frag_colors());
 
             shape_shader = Resource<Shader>(
                 "Debug Shape Shader",
@@ -834,6 +841,7 @@ namespace frame_gl
         }
 
         void teardown() {
+            delete line_mesh;
             delete cube_mesh;
             delete circle_mesh;
             delete arrowhead_mesh;
@@ -888,44 +896,37 @@ namespace frame_gl
                 return;
 
             // Bind the shape shader
-            line_shader->bind();
-            line_shader->uniform(ShaderUniform::View, camera->view_matrix());
-            line_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            shape_shader->bind();
+            shape_shader->uniform(ShaderUniform::View, camera->view_matrix());
+            shape_shader->uniform(ShaderUniform::Projection, camera->projection_matrix());
+            int color = shape_shader->locate("color");
 
             // Just need one model matrix
-            line_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
+            //line_shader->uniform(ShaderUniform::Model, glm::mat4(1.0f));
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDisable(GL_CULL_FACE);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            // Build a mesh with a bunch of lines
-            // TODO: This could be SO much faster. Please do it.
-            std::unordered_map< int, Resource<Mesh> > meshes;
+            line_mesh->bind();
+
             while (!lines.empty()) {
                 auto& line = lines.front();
-                auto it = meshes.find(line.thickness);
-                if (it == meshes.end())
-                    it = meshes.emplace(std::make_pair(line.thickness, Resource<Mesh>(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE))).first;
-                Resource<Mesh> mesh = it->second;
-                mesh->resize(mesh->vertex_count() + 2, mesh->triangle_count() + 1);
-                size_t i0 = mesh->vertex_count() - 2;
-                size_t i1 = mesh->vertex_count() - 1;
-                mesh->set_vertex(i0, line.a, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
-                mesh->set_vertex(i1, line.b, vec3(0.0f), vec2(0.0f), vec4(line.color, 1.0f));
-                mesh->set_triangle(mesh->triangle_count() - 1, ivec3(i0, i1, i1));
+
+                glLineWidth(line.thickness);
+
+                vec3 ab = line.b - line.a;
+                mat4 transform = glm::translate(mat4(1.0f), line.a) * glm::scale(quat(vec3(1.0f, 0.0f, 0.0f), ab).matrix(), vec3(length(ab)));
+                shape_shader->uniform(ShaderUniform::Model, transform);
+                shape_shader->uniform(color, line.color);
+
+                line_mesh->render();
                 lines.pop();
-                meshes[line.thickness] = mesh;
-            }
+            };
 
-            // Draw all the meshes
-            for (auto& mesh : meshes) {
-                glLineWidth(float(mesh.first));
-                mesh.second->render();
-            }
-
-            line_shader->unbind();
+            line_mesh->unbind();
+            shape_shader->unbind();
         }
 
         void render_arrows(Camera* camera) {
@@ -1163,13 +1164,13 @@ namespace frame_gl
         Camera* main_camera;
         Camera* gui_camera;
 
-        Resource<Shader> line_shader;
         Resource<Shader> shape_shader;
         Resource<Shader> cube_shader;
         Resource<Shader> circle_shader;
         Resource<Shader> arc_shader;
         Resource<Shader> text_shader;
 
+        Mesh* line_mesh;
         Mesh* cube_mesh;
         Mesh* circle_mesh;
         Mesh* arrowhead_mesh;

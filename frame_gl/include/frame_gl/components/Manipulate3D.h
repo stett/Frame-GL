@@ -58,12 +58,13 @@ namespace frame
         }
 
         Manipulate3D* update(float dt) {
-            distance += (target_distance - distance) * _responsiveness * dt;
-            pitch += (target_pitch - pitch) * _responsiveness * dt;
-            yaw += (target_yaw - yaw) * _responsiveness * dt;
+            float percent = min(1.0f, _responsiveness * dt);
+            distance += (target_distance - distance) * percent;
+            pitch += (target_pitch - pitch) * percent;
+            yaw += (target_yaw - yaw) * percent;
             if (pitch < -pi * 0.5f) pitch = -pi * 0.5f;
             if (pitch > pi * 0.5f) pitch = pi * 0.5f;
-            _focus += (_target_focus - _focus) * _responsiveness * dt;
+            _focus += (_target_focus - _focus) * percent;
             _position = _focus + distance * vec3(-sin(yaw)*cos(pitch), sin(pitch), cos(yaw)*cos(pitch));
             _rotation = glm::angleAxis(-yaw, vec3(0.0f, 1.0f, 0.0f)) * glm::angleAxis(-pitch, vec3(1.0f, 0.0f, 0.0f));
             return this;
