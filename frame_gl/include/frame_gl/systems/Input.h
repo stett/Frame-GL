@@ -178,6 +178,9 @@ namespace frame
         bool key_pressed(int key) const;
         bool key_released(int key) const;
 
+        const MouseState& mouse_state(States state=Current) const { return mouse[(int)state]; }
+        const KeyboardState& keyboard_state(States state=Current) const { return keyboard[(int)state]; }
+
     public:
         void keyboard_callback(int key, int scancode, int action, int mods);
         void mouse_button_callback(int button, int action, int mods);
