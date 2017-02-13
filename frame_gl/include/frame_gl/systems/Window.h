@@ -45,6 +45,7 @@ namespace frame
     public:
         static void resize_callback(GLFWwindow* window, int width, int height);
         static void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void character_callback(GLFWwindow* window, unsigned int codepoint);
         static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
         static void mouse_position_callback(GLFWwindow* window, double x, double y);
         static void mouse_scroll_callback(GLFWwindow* window, double dx, double dy);
@@ -52,6 +53,7 @@ namespace frame
     public:
         Message<const ivec2& /*size*/>                                          resize;
         Message<int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/>    keyboard;
+        Message<wchar_t /* codepoint */>                                        character;
         Message<int /*button*/, int /*action*/, int /*mods*/>                   mouse_button;
         Message<const vec2& /*position*/>                                       mouse_position;
         Message<const vec2& /*delta position*/>                                 mouse_scroll;

@@ -1,6 +1,7 @@
 #pragma once
 #include <bitset>
 #include <unordered_map>
+#include <ostream>
 #include <GLFW/glfw3.h>
 #include "frame/System.h"
 #include "frame_gl/systems/Window.h"
@@ -160,6 +161,9 @@ namespace frame
 
         enum States { Previous = 0, Current, Next, Count };
 
+    public:
+        Input() : capture_buffer(0) {}
+
     protected:
         void setup();
         void step_post();
@@ -181,8 +185,12 @@ namespace frame
         const MouseState& mouse_state(States state=Current) const { return mouse[(int)state]; }
         const KeyboardState& keyboard_state(States state=Current) const { return keyboard[(int)state]; }
 
+        void keyboard_capture(std::ostream* capture_buffer) { this->capture_buffer = capture_buffer; }
+        void keyboard_release() { capture_buffer = 0; }
+
     public:
         void keyboard_callback(int key, int scancode, int action, int mods);
+        void character_callback(wchar_t codepoint);
         void mouse_button_callback(int button, int action, int mods);
         void mouse_position_callback(const vec2& position);
         void mouse_scroll_callback(const vec2& delta);
@@ -192,5 +200,6 @@ namespace frame
         KeyboardState keyboard[States::Count];
         vec2 _mouse_delta;
         vec2 _mouse_scroll;
+        std::ostream* capture_buffer;
     };
 }

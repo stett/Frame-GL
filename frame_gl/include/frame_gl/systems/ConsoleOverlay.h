@@ -3,6 +3,12 @@
 #include <ostream>
 #include <unordered_map>
 #include <queue>
+#include <locale>
+#include <iostream>
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <iomanip>
 #include "frame/System.h"
 #include "frame/Log.h"
 #include "frame_gl/systems/Input.h"
@@ -46,8 +52,13 @@ namespace frame_gl
             }
 
             // Toggle the console
-            if (input->key_pressed(GLFW_KEY_GRAVE_ACCENT))
+            if (input->key_pressed(GLFW_KEY_GRAVE_ACCENT)) {
                 open = !open;
+                if (open)
+                    input->keyboard_capture(&input_buffer);
+                else
+                    input->keyboard_release();
+            }
 
             if (open) {
 
@@ -60,27 +71,7 @@ namespace frame_gl
                     std::transform(command.begin(), command.end(), command.begin(), ::tolower);
                     frame()->commands().run(command);
                     input_buffer = std::stringstream();
-
-                } else {
-
-                    // Get new input
-                    bool changed = false;
-                    auto& keys = input->keyboard_state().keys;
-                    for (size_t i = 0; i < keys.size(); ++i) {
-
-                        if (i == KEY_ENTER)
-                            continue;
-
-                        char c = (char)i;
-                        auto it = key_timer.find(c);
-                        if (input->key_pressed(i) || (input->key_down(i) && it == key_timer.end())) {
-                            if (keys[i]) {
-                                input_buffer << c;
-                                key_timer.insert(it, std::make_pair(c, key_timeout));
-                                changed = true;
-                            }
-                        }
-                    }
+                    input_line.clear();
                 }
 
                 DebugDraw* debug_draw = system<DebugDraw>();
@@ -119,6 +110,8 @@ namespace frame_gl
                             pos.y += 16.0f;
                         }
 
+                        input_buffer.flush();
+
                         debug_draw->screen_text(pos + vec2(1.0f), input_buffer.str(), vec4(vec3(0.0f), 1.0f), 16.0f, 3.0f);
                         debug_draw->screen_text(pos, input_buffer.str(), vec4(1.0f, 0.5f, 0.5f, 1.0f), 16.0f, 1.0f);
                     }
@@ -130,6 +123,7 @@ namespace frame_gl
         std::list<std::string> screen_buffer;
         std::stringstream output_buffer;
         std::stringstream input_buffer;
+        std::string input_line;
         std::unordered_map< char, float > key_timer;
         float key_timeout;
         bool open;

@@ -1,4 +1,8 @@
 #include <bitset>
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <iomanip>
 #include <GLFW/glfw3.h>
 #include "frame/Frame.h"
 #include "frame/Log.h"
@@ -11,6 +15,7 @@ void Input::setup() {
     auto window = Window::get_window(frame());
     if (window == nullptr) return;
     window->keyboard.listen(this, &Input::keyboard_callback);
+    window->character.listen(this, &Input::character_callback);
     window->mouse_button.listen(this, &Input::mouse_button_callback);
     window->mouse_position.listen(this, &Input::mouse_position_callback);
     window->mouse_scroll.listen(this, &Input::mouse_scroll_callback);
@@ -68,12 +73,21 @@ bool Input::key_released(int key) const {
 }
 
 void Input::keyboard_callback(int key, int scancode, int action, int mods) {
+
+    if (capture_buffer && key != KEY_ENTER && key != KEY_GRAVE_ACCENT) return;
+
     if (key >= KeyboardState::NUM_KEYS) return;
     if (action == GLFW_PRESS) {
         keyboard[States::Next].keys[key] = true;
     } else if (action == GLFW_RELEASE) {
         keyboard[States::Next].keys[key] = false;
     }
+}
+
+void Input::character_callback(wchar_t codepoint) {
+    if (!capture_buffer) return;
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    *capture_buffer << converter.to_bytes(codepoint);
 }
 
 void Input::mouse_button_callback(int button, int action, int mods) {

@@ -45,6 +45,7 @@ Window::Window(ivec2 size, bool resizeable, FitMode fit_mode, bool vsync, const 
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, Window::resize_callback);
     glfwSetKeyCallback(window, Window::keyboard_callback);
+    glfwSetCharCallback(window, Window::character_callback);
     glfwSetMouseButtonCallback(window, Window::mouse_button_callback);
     glfwSetCursorPosCallback(window, Window::mouse_position_callback);
     glfwSetScrollCallback(window, Window::mouse_scroll_callback);
@@ -281,6 +282,11 @@ void Window::resize_callback(GLFWwindow* window, int width, int height) {
 void Window::keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))
         ->keyboard(key, scancode, action, mods);
+}
+
+void Window::character_callback(GLFWwindow* window, unsigned int codepoint) {
+    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))
+        ->character(codepoint);
 }
 
 void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
