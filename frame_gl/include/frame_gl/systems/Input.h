@@ -132,6 +132,16 @@
 
 namespace frame
 {
+
+    const auto CaptureExceptions = {
+        KEY_ESCAPE,
+        KEY_GRAVE_ACCENT,
+        KEY_ENTER,
+        KEY_BACKSPACE,
+        KEY_LEFT_CONTROL,
+        KEY_RIGHT_CONTROL
+    };
+
     FRAME_SYSTEM(Input) {
     public:
 

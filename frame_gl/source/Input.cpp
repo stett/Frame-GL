@@ -74,7 +74,11 @@ bool Input::key_released(int key) const {
 
 void Input::keyboard_callback(int key, int scancode, int action, int mods) {
 
-    if (capture_buffer && key != KEY_ENTER && key != KEY_GRAVE_ACCENT) return;
+    // If we're capturing text instead of taking normal input,
+    // only trigger changes for non-modifying dead keys.
+    if (capture_buffer)
+        if (std::find(CaptureExceptions.begin(), CaptureExceptions.end(), key) == CaptureExceptions.end())
+            return;
 
     if (key >= KeyboardState::NUM_KEYS) return;
     if (action == GLFW_PRESS) {

@@ -20,7 +20,7 @@ namespace frame_gl
     FRAME_SYSTEM(ConsoleOverlay)
     {
     public:
-        ConsoleOverlay(float key_timeout=0.25f) : key_timeout(key_timeout), open(false) {}
+        ConsoleOverlay() : open(false) {}
         ~ConsoleOverlay() {}
 
     protected:
@@ -35,21 +35,6 @@ namespace frame_gl
 
         void step() {
             Input* input = system<Input>();
-
-            // Update key timeouts
-            std::queue< char > remove;
-            for (auto& k : key_timer) {
-                if (k.second > 0.0f)
-                    k.second -= dt();
-                else
-                    remove.push(k.first);
-            }
-
-            // Remove keys which we can use again
-            while (!remove.empty()) {
-                key_timer.erase(key_timer.find(remove.front()));
-                remove.pop();
-            }
 
             // Toggle the console
             if (input->key_pressed(GLFW_KEY_GRAVE_ACCENT)) {
@@ -71,7 +56,16 @@ namespace frame_gl
                     std::transform(command.begin(), command.end(), command.begin(), ::tolower);
                     frame()->commands().run(command);
                     input_buffer = std::stringstream();
-                    input_line.clear();
+                }
+
+                if (input->key_pressed(KEY_BACKSPACE)) {
+
+                    std::string str = input_buffer.str();
+                    if (str.size() == 0) return;
+                    str.erase(str.end() - 1);
+                    input_buffer = std::stringstream(str);
+                    input_buffer.seekg(0, std::ios_base::end);
+                    input_buffer.seekp(0, std::ios_base::end);
                 }
 
                 DebugDraw* debug_draw = system<DebugDraw>();
@@ -111,7 +105,6 @@ namespace frame_gl
                         }
 
                         input_buffer.flush();
-
                         debug_draw->screen_text(pos + vec2(1.0f), input_buffer.str(), vec4(vec3(0.0f), 1.0f), 16.0f, 3.0f);
                         debug_draw->screen_text(pos, input_buffer.str(), vec4(1.0f, 0.5f, 0.5f, 1.0f), 16.0f, 1.0f);
                     }
@@ -123,9 +116,6 @@ namespace frame_gl
         std::list<std::string> screen_buffer;
         std::stringstream output_buffer;
         std::stringstream input_buffer;
-        std::string input_line;
-        std::unordered_map< char, float > key_timer;
-        float key_timeout;
         bool open;
     };
 }
