@@ -38,12 +38,13 @@ namespace frame_gl
         };
 
         struct String {
-            String(const glm::vec3& position, const std::string& text, const glm::vec4& color, float size)
-                : position(position), text(text), color(color), size(size) {}
+            String(const glm::vec3& position, const std::string& text, const glm::vec4& color, float size, float thickness)
+                : position(position), text(text), color(color), size(size), thickness(thickness) {}
             glm::vec3 position;
             std::string text;
             glm::vec4 color;
             float size;
+            float thickness;
         };
 
         struct Circle {
@@ -135,23 +136,23 @@ namespace frame_gl
             cubes.push(transform);
         }
 
-        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size = 12.0f) {
-            world_text(position, text, vec4(color, 1.0f), size);
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec3& color, float size = 12.0f, float thickness=1.0f) {
+            world_text(position, text, vec4(color, 1.0f), size, thickness);
         }
 
-        void world_text(const glm::vec3& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
-            world_strings.push(String(position, text, color, size));
+        void world_text(const glm::vec3& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f, float thickness=1.0f) {
+            world_strings.push(String(position, text, color, size, thickness));
         }
 
-        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
-            screen_text(TopLeft, position, text, color, size);
+        void screen_text(const glm::vec2& position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f, float thickness=1.0f) {
+            screen_text(TopLeft, position, text, color, size, thickness);
         }
 
-        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color, float size=12.0f) {
-            screen_text(alignment, position, text, color, size);
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec3& color, float size=12.0f, float thickness=1.0f) {
+            screen_text(alignment, position, text, color, size, thickness);
         }
 
-        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f) {
+        void screen_text(Alignment alignment, glm::vec2 position, const std::string& text, const glm::vec4& color=glm::vec4(1.0f), float size=12.0f, float thickness=1.0f) {
 
             // If we haven't got a gui camera, then this won't get rendered anyway
             if (gui_camera == nullptr) return;
@@ -170,7 +171,7 @@ namespace frame_gl
             else
                 position.y += size;
 
-            screen_strings.push(String(glm::vec3(position.x, position.y, 0.0f), text, color, size));
+            screen_strings.push(String(glm::vec3(position.x, position.y, 0.0f), text, color, size, thickness));
         }
 
     protected:
@@ -1136,7 +1137,6 @@ namespace frame_gl
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
-            glLineWidth(1.0f);
 
             // Draw each string
             text_shader->uniform(ShaderUniform::View, camera->view_matrix());
@@ -1147,6 +1147,8 @@ namespace frame_gl
                 text_shader->uniform(ShaderUniform::Model, glm::translate(glm::mat4(1.0f), line.position));
                 text_shader->uniform(character_size, line.size);
                 text_shader->uniform(character_color, line.color);
+
+                glLineWidth(line.thickness);
                 int i = 0;
                 for (char c : line.text) {
                     text_shader->uniform(character_number, i++);
