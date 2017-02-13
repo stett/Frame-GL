@@ -105,8 +105,9 @@ namespace frame_gl
                         }
 
                         input_buffer.flush();
-                        debug_draw->screen_text(pos + vec2(1.0f), input_buffer.str(), vec4(vec3(0.0f), 1.0f), 16.0f, 3.0f);
-                        debug_draw->screen_text(pos, input_buffer.str(), vec4(1.0f, 0.5f, 0.5f, 1.0f), 16.0f, 1.0f);
+                        std::string input_string = frame::type_prefixes[frame::LogType::User] + input_buffer.str();
+                        debug_draw->screen_text(pos + vec2(1.0f), input_string, vec4(vec3(0.0f), 1.0f), 16.0f, 3.0f);
+                        debug_draw->screen_text(pos, input_string, vec4(1.0f, 0.5f, 0.5f, 1.0f), 16.0f, 1.0f);
                     }
                 }
             }
