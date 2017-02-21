@@ -826,6 +826,22 @@ namespace frame_gl
                     "       gl_Position = pos + vec4(.75, 0, 0, 0) * scale;     EmitVertex();"
                     "   }"
 
+                    // [
+                    "   if (character_code == 91) {"
+                    "       gl_Position = pos + vec4(.45, .1, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .1, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.25, .9, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.45, .9, 0, 0) * scale; EmitVertex();"
+                    "   }"
+
+                    // ]
+                    "   if (character_code == 93) {"
+                    "       gl_Position = pos + vec4(.55, .1, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .1, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.75, .9, 0, 0) * scale; EmitVertex();"
+                    "       gl_Position = pos + vec4(.55, .9, 0, 0) * scale; EmitVertex();"
+                    "   }"
+
                     "   EndPrimitive();"
                     "}"
                 ),
