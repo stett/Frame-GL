@@ -61,8 +61,8 @@ namespace frame
         Shader& operator=(const Shader& other) = delete;
 
     public:
-        void bind();
-        void unbind();
+        void bind() const;
+        void unbind() const;
         static void unbind_all();
 
         const ShaderUniformLocations& uniforms() const { return _uniforms; }

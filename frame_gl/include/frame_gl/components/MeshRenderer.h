@@ -26,17 +26,24 @@ namespace frame
         : _mesh(mesh), _texture(texture), _shader(shader), _poly_mode(poly_mode), _cull_back(cull_back), _layer(layer) {}
 
     public:
-        void render(Camera* camera) {
 
-            // Get transformation matrices
-            auto model = get<Transform>()->world_matrix();
-            auto view = camera->view_matrix();
-            auto projection = camera->projection_matrix();
+        void draw(Camera* camera) const {
+            bind(camera);
+            render(camera);
+            unbind();
+        }
+
+        void bind(Camera* camera) const {
 
             // Set GL state
             glPolygonMode(GL_FRONT_AND_BACK, _poly_mode);
             if (_cull_back) glEnable(GL_CULL_FACE);
             else glDisable(GL_CULL_FACE);
+
+            // Get transformation matrices
+            auto model = get<Transform>()->world_matrix();
+            auto view = camera->view_matrix();
+            auto projection = camera->projection_matrix();
 
             // Bind stuff
             _texture->bind(0);
@@ -44,11 +51,15 @@ namespace frame
             _shader->uniform(ShaderUniform::Model, model);
             _shader->uniform(ShaderUniform::View, view);
             _shader->uniform(ShaderUniform::Projection, projection);
+        }
+
+        void render(Camera* camera) const {
 
             // Render
             _mesh->render();
+        }
 
-            // Unbind stuff
+        void unbind() const {
             _shader->unbind();
             _texture->unbind();
         }

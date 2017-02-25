@@ -32,12 +32,18 @@ namespace frame
             T value;
         };
 
+        enum Mode { Normal, Wireframe };
+
     public:
         const unsigned int MAX_LAYERS = 32;
 
     public:
         Render(bool auto_clear=true)
-        : display_targets(std::vector<RenderTarget*>(MAX_LAYERS, nullptr)), display_cameras(std::vector<Camera*>(MAX_LAYERS, nullptr)),/*_display_target(nullptr), _display_camera(nullptr), */auto_clear(auto_clear) {}
+        :   display_targets(std::vector<RenderTarget*>(MAX_LAYERS, nullptr)),
+            display_cameras(std::vector<Camera*>(MAX_LAYERS, nullptr)),
+            /*_display_target(nullptr), _display_camera(nullptr), */
+            auto_clear(auto_clear),
+            _mode(Normal) {}
 
     public:
 
@@ -49,6 +55,10 @@ namespace frame
         RenderTarget* display_target(unsigned int layer=0) {
             return (layer < MAX_LAYERS) ? display_targets[layer] : nullptr;
         }
+
+        Render* set_mode(Mode mode) { _mode = mode; return this; }
+
+        Mode mode() const { return _mode; }
 
         /*
         /// \brief Set a global uniform
@@ -81,10 +91,14 @@ namespace frame
     protected:
         virtual void step();
 
+        void load_prototypes(std::back_insert_iterator< std::vector< CommandPrototype > >& commands);
+        void handle(Command command);
+
     private:
         std::vector<RenderTarget*> display_targets;
         std::vector<Camera*> display_cameras;
         //std::unordered_map< std::string, std::shared_ptr< GlobalPropertyBase > > global_uniforms;
         bool auto_clear;
+        Mode _mode;
     };
 }

@@ -9,17 +9,29 @@ using namespace frame;
 void Render::step() {
 
     // For each camera, render all meshes
-    //_display_camera = nullptr;
-    //_display_target = nullptr;
     for (auto entity : node<Camera, RenderTarget>()) {
 
         // Render all meshes on this camera
         auto camera = entity.get<Camera>();
         auto target = entity.get<RenderTarget>();
         target->bind_target(auto_clear);
-        for (auto object : node<MeshRenderer>())
-            if (camera->has_layer(object->layer()))
+
+
+        // Draw all the meshes in their own modes
+        for (auto object : node<MeshRenderer>()) {
+            if (camera->has_layer(object->layer())) {
+                object->bind(camera);
+
+                // Should find a better way to do this...
+                if (_mode == Wireframe)
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
                 object->render(camera);
+                object->unbind();
+            }
+        } 
+
+        // Unbind the render target
         target->unbind_target();
 
         // Update the display camera for this layer
@@ -60,4 +72,33 @@ void Render::step() {
         }
     }
     */
+}
+
+void Render::load_prototypes(std::back_insert_iterator< std::vector< CommandPrototype > >& commands) {
+    *(commands++) = {
+        Command("render", "[stats|wires]"),
+        "List statistics and toggle wireframe",
+        ""
+    };
+}
+
+void Render::handle(Command command) {
+    if (command.arg_count() == 0) {
+        command.add_result_line("Please specify an option");
+        return;
+    }
+
+    if (command.arg(0) == "stats") {
+        command.add_result_line("Render targets: " + std::to_string(node<RenderTarget>().size()));
+        command.add_result_line("Mesh Renderers: " + std::to_string(node<MeshRenderer>().size()));
+
+    } else if (command.arg(0) == "wires") {
+        if (_mode == Normal) {
+            _mode = Wireframe;
+            command.add_result_line("Wireframes On");
+        } else {
+            _mode = Normal;
+            command.add_result_line("Wireframes Off");
+        }
+    }
 }

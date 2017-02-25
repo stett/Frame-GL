@@ -89,11 +89,11 @@ Shader::~Shader() {
     glDeleteProgram(_id);
 }
 
-void Shader::bind() {
+void Shader::bind() const {
     glUseProgram(_id);
 }
 
-void Shader::unbind() {
+void Shader::unbind() const {
     unbind_all();
 }
 

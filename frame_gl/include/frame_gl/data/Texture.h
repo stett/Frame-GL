@@ -22,8 +22,8 @@ namespace frame
         unsigned int id() const { return _id; }
         unsigned int target() const { return _target; }
         bool multisample() const { return _multisample; }
-        void bind(unsigned int texture_unit);
-        void unbind();
+        void bind(unsigned int texture_unit) const;
+        void unbind() const;
 
     private:
         ivec2 _size;

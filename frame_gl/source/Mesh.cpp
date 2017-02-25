@@ -42,23 +42,23 @@ Mesh::~Mesh() {
     destroy_buffers();  // Delete gfx buffers
 }
 
-void Mesh::render() {
+void Mesh::render() const {
     bind();
     draw();
     unbind();
 }
 
-void Mesh::draw() {
+void Mesh::draw() const {
     glDrawElements(GL_TRIANGLES, 3 * _triangle_count, GL_UNSIGNED_INT, 0);
 }
 
-void Mesh::bind() {
+void Mesh::bind() const {
     finalize();
     glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_triangles);
 }
 
-void Mesh::unbind() {
+void Mesh::unbind() const {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
@@ -70,7 +70,7 @@ void Mesh::resize(size_t vertex_count, size_t triangle_count) {
     resize_block(vertex_count, triangle_count);
 }
 
-void Mesh::finalize() {
+void Mesh::finalize() const {
     if (_finalized) return;
     _finalized = true;
     create_buffers();
@@ -163,7 +163,7 @@ void Mesh::append(const Mesh& other) {
     unfinalize();
 }
 
-void Mesh::create_buffers() {
+void Mesh::create_buffers() const {
 
     // Create & bind a vertex array object
     glGenVertexArrays(1, &vao);

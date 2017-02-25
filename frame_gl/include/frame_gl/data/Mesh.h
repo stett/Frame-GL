@@ -77,7 +77,7 @@ namespace frame
 
     struct VertexBuffer {
         char* data;
-        unsigned int vbo;
+        mutable unsigned int vbo;
         size_t size;
     };
 
@@ -139,10 +139,10 @@ namespace frame
         Mesh& operator=(const Mesh& other) = delete;
 
     public:
-        void render();
-        void draw();
-        void bind();
-        void unbind();
+        void render() const;
+        void draw() const;
+        void bind() const;
+        void unbind() const;
 
     public:
 
@@ -298,7 +298,7 @@ namespace frame
 
     public:
         void resize(size_t vertex_count, size_t triangle_count);
-        void finalize();
+        void finalize() const;
         void set_vertex_count(size_t vertex_count);
         void set_triangle_count(size_t triangle_count);
 
@@ -315,7 +315,7 @@ namespace frame
     private:
         void unfinalize();
         void resize_block(size_t vertex_count, size_t triangle_count);
-        void create_buffers();  ///< Create vertex and array buffers
+        void create_buffers() const;  ///< Create vertex and array buffers
         void destroy_buffers(); ///< Destroy vertex and array buffers
 
     private:
@@ -325,10 +325,10 @@ namespace frame
         bool _dynamic_triangles;
         size_t block_size;
         char* block;
-        unsigned int vao;
-        unsigned int vbo_triangles;
         VertexBuffer* buffers;
         ivec3* _triangles;
-        bool _finalized;
+        mutable unsigned int vao;
+        mutable unsigned int vbo_triangles;
+        mutable bool _finalized;
     };
 }

@@ -97,12 +97,12 @@ void Texture::set_size(const ivec2& size) {
 }
 */
 
-void Texture::bind(unsigned int texture_unit) {
+void Texture::bind(unsigned int texture_unit) const {
     glActiveTexture(GL_TEXTURE0 + texture_unit);
     glBindTexture(_target, _id);
 }
 
-void Texture::unbind() {
+void Texture::unbind() const {
     glBindTexture(_target, 0);
 }
 
