@@ -290,7 +290,9 @@ namespace frame
         inline int index_buffer_vbo() const { return vbo_triangles; }
 
     public:
+        inline const ivec3* triangles() const { return _triangles; }
         inline size_t triangle_count() const { return _triangle_count; }
+        inline const VertexBuffer& vertexes(size_t attribute_index) const { return buffers[attribute_index]; }
         inline size_t vertex_count() const { return _vertex_count; }
         inline size_t vertex_size() const { return  _attributes.size(); }
         inline const VertexAttributeSet& attributes() const { return _attributes; }
