@@ -20,7 +20,13 @@ namespace frame_gl
     FRAME_SYSTEM(ConsoleOverlay)
     {
     public:
-        ConsoleOverlay() : open(false) {}
+        ConsoleOverlay()
+        :   open(false),
+            size(16.0f),
+            thickness(1.0f),
+            color_background(vec4(0.30f, 0.15f, 0.40f, 0.9f)),
+            color_foreground(vec4(1.0f)),
+            color_input(vec4(1.0f, 0.75f, 0.5f, 1.0f)) {}
         ~ConsoleOverlay() {}
 
     protected:
@@ -99,15 +105,15 @@ namespace frame_gl
                     {
                         glm::vec2 pos(10.0f);
                         for (auto& line : screen_buffer) {
-                            debug_draw->screen_text(pos + vec2(1.0f), line, vec4(vec3(0.0f), 1.0f), 16.0f, 3.0f);
-                            debug_draw->screen_text(pos, line, vec4(vec3(0.9f), 1.0f), 16.0f, 1.0f);
+                            debug_draw->screen_text(pos + vec2(1.0f), line, color_background, size, thickness + 1.0f);
+                            debug_draw->screen_text(pos, line, color_foreground, size, thickness);
                             pos.y += 16.0f;
                         }
 
                         input_buffer.flush();
                         std::string input_string = frame::type_prefixes[frame::LogType::User] + input_buffer.str();
-                        debug_draw->screen_text(pos + vec2(1.0f), input_string, vec4(vec3(0.0f), 1.0f), 16.0f, 3.0f);
-                        debug_draw->screen_text(pos, input_string, vec4(1.0f, 0.5f, 0.5f, 1.0f), 16.0f, 1.0f);
+                        debug_draw->screen_text(pos + vec2(1.0f), input_string, color_background, size, thickness + 1.0f);
+                        debug_draw->screen_text(pos, input_string, color_input, size, thickness);
                     }
                 }
             }
@@ -118,5 +124,10 @@ namespace frame_gl
         std::stringstream output_buffer;
         std::stringstream input_buffer;
         bool open;
+        float size;
+        float thickness;
+        vec4 color_foreground;
+        vec4 color_background;
+        vec4 color_input;
     };
 }
