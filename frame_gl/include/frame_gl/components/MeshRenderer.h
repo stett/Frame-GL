@@ -74,6 +74,34 @@ namespace frame
         Resource<Shader> shader() { return _shader; }
         unsigned int layer() { return _layer; }
 
+    protected:
+        void write(Archive& archive) {
+            archive.write<int>(_poly_mode);
+            archive.write(_cull_back);
+            archive.write(_layer);
+            archive.write(_mesh.index());
+            archive.write(_texture.index());
+            archive.write(_shader.index());
+        }
+
+        void read(Archive& archive) {
+            int poly_mode_int;
+            archive.read<int>(poly_mode_int);
+            _poly_mode = (PolyMode)poly_mode_int;
+
+            archive.read(_cull_back);
+            archive.read(_layer);
+
+            // Load the body and shape resources.
+            size_t mesh_index, texture_index, shader_index;
+            archive.read(mesh_index);
+            archive.read(texture_index);
+            archive.read(shader_index);
+            _mesh.lookup(mesh_index);
+            _texture.lookup(texture_index);
+            _shader.lookup(shader_index);
+        }
+
     private:
         Resource<Mesh> _mesh;
         Resource<Texture> _texture;
