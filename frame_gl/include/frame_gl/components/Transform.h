@@ -217,7 +217,7 @@ namespace frame
         inline bool invalid(int flags) const { return !valid(flags); }
 
     private:
-        inline void validate(int flags) const {_valid |= flags; }
+        inline void validate(int flags) const { _valid |= flags; }
 
         inline void invalidate(int flags) {
             _valid &= ~flags;
