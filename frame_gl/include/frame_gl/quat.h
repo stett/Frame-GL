@@ -208,5 +208,6 @@ namespace frame
     }
 
     // Specialized quaternion types
-    typedef quat_t<float> quat;
+    //typedef quat_t<float> quat;
+    using quat = quat_t<float>;
 }
