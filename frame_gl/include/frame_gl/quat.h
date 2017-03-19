@@ -59,17 +59,30 @@ namespace frame
             return *this;
         }
 
+        operator glm::tmat3x3<T>() const {
+            vec3 v2 = v * v;
+            return glm::tmat3x3<T>({
+                1.0f - 2.0f * (v2.y + v2.z), 2.0f * (v.x*v.y + s*v.z), 2.0f * (v.x*v.z - s*v.y),
+                2.0f * (v.x*v.y - s*v.z), 1.0f - 2.0f * (v2.x + v2.z), 2.0f * (v.y*v.z + s*v.x),
+                2.0f * (v.x*v.z + s*v.y), 2.0f * (v.y*v.z - s*v.x), 1.0f - 2.0f * (v2.x + v2.y)
+            });
+        }
+
+        operator glm::tmat4x4<T>() const {
+            return glm::tmat4x4<T>( (glm::tmat3x3<T>)(*this) );
+        }
+
         bool operator==(const quat_t& other) const { return (s == other.s) && (v == other.v); }
 
         bool operator!=(const quat_t& other) const { return !operator==(other); }
 
         void from_euler(const glm::tvec3<T> angles) {
-            float c1 = cos(angles.x/2);
-            float s1 = sin(angles.x/2);
-            float c2 = cos(angles.y/2);
-            float s2 = sin(angles.y/2);
-            float c3 = cos(angles.z/2);
-            float s3 = sin(angles.z/2);
+            float c1 = cos(angles.x*0.5f);
+            float s1 = sin(angles.x*0.5f);
+            float c2 = cos(angles.y*0.5f);
+            float s2 = sin(angles.y*0.5f);
+            float c3 = cos(angles.z*0.5f);
+            float s3 = sin(angles.z*0.5f);
             s   = c1*c2*c3 + s1*s2*s3;
             v.x = s1*c2*c3 - c1*s2*s3;
             v.y = c1*s2*c3 + s1*c2*s3;
@@ -153,14 +166,19 @@ namespace frame
         }
 
         glm::tmat4x4<T> matrix() const {
-            vec3 v2 = v * v;
-            return glm::tmat4x4<T>({
-                1.0f - 2.0f * (v2.y + v2.z), 2.0f * (v.x*v.y + s*v.z), 2.0f * (v.x*v.z - s*v.y), 0.0f,
-                2.0f * (v.x*v.y - s*v.z), 1.0f - 2.0f * (v2.x + v2.z), 2.0f * (v.y*v.z + s*v.x), 0.0f,
-                2.0f * (v.x*v.z + s*v.y), 2.0f * (v.y*v.z - s*v.x), 1.0f - 2.0f * (v2.x + v2.y), 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-            });
+            return (glm::tmat4x4<T>)(*this);
         }
+
+        /*
+        void transform(glm::tvec3<T>& vec) {
+            vec = ((q * quat_t<T>(0.0f, v)) * q.conjugated()).v;
+            vec = operator*(operator*(quat_t<T>(0.0f, v)), conjugated()).v;
+        }
+
+        void transform(glm::tmat3<T>& mat) {
+
+        }
+        */
 
     public:
         T s;
@@ -205,6 +223,13 @@ namespace frame
     template <typename T>
     glm::tvec3<T> operator*(const quat_t<T>& q, const glm::tvec3<T>& v) {
         return ((q * quat_t<T>(0.0f, v)) * q.conjugated()).v;
+    }
+
+    template <typename T>
+    glm::tmat3x3<T> operator*(const quat_t<T>& q, const glm::tmat3x3<T>& m) {
+        glm::tmat3x3<T> qm(q);
+        //glm::tmat3x3 qm_conj(q.conjugated());
+        return (qm * m) * transpose(qm);
     }
 
     // Specialized quaternion types
