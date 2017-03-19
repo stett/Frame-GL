@@ -222,10 +222,14 @@ Resource<Mesh> MeshFactory::arrow(const vec3& base, const vec3& tip, const vec4&
 }
 
 Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
-    float half = edge * 0.5f;
+    return cuboid(vec3(edge), color, smooth);
+}
+
+Resource<Mesh> MeshFactory::cuboid(vec3 edges, const vec4& color, bool smooth) {
+    vec3 half = edges * 0.5f;
 
     if (smooth) {
-
+        /*
         Resource<Mesh> mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 8, 12);
 
         float normag = sqrt(3 * half * half);
@@ -260,29 +264,29 @@ Resource<Mesh> MeshFactory::cube(float edge, const vec4& color, bool smooth) {
         });
 
         return mesh;
-
+        */
     } else {
 
         Resource<Mesh> mesh(DEFAULT_VERTEX_ATTRIBUTES_SIMPLE, 24, 12);
 
         mesh->set_vertices({
-            vec3(-half, -half, -half), vec3(-half, -half, -half), vec3(-half, -half, -half),
-            vec3(half, -half, -half), vec3(half, -half, -half), vec3(half, -half, -half),
-            vec3(-half, half, -half), vec3(-half, half, -half), vec3(-half, half, -half),
-            vec3(half, half, -half), vec3(half, half, -half), vec3(half, half, -half),
-            vec3(-half, -half, half), vec3(-half, -half, half), vec3(-half, -half, half),
-            vec3(half, -half, half), vec3(half, -half, half), vec3(half, -half, half),
-            vec3(-half, half, half), vec3(-half, half, half), vec3(-half, half, half),
-            vec3(half, half, half), vec3(half, half, half), vec3(half, half, half)
+            vec3(-half.x, -half.y, -half.z), vec3(-half.x, -half.y, -half.z), vec3(-half.x, -half.y, -half.z),
+            vec3( half.x, -half.y, -half.z), vec3( half.x, -half.y, -half.z), vec3( half.x, -half.y, -half.z),
+            vec3(-half.x,  half.y, -half.z), vec3(-half.x,  half.y, -half.z), vec3(-half.x,  half.y, -half.z),
+            vec3( half.x,  half.y, -half.z), vec3( half.x,  half.y, -half.z), vec3( half.x,  half.y, -half.z),
+            vec3(-half.x, -half.y,  half.z), vec3(-half.x, -half.y,  half.z), vec3(-half.x, -half.y,  half.z),
+            vec3( half.x, -half.y,  half.z), vec3( half.x, -half.y,  half.z), vec3( half.x, -half.y,  half.z),
+            vec3(-half.x,  half.y,  half.z), vec3(-half.x,  half.y,  half.z), vec3(-half.x,  half.y,  half.z),
+            vec3( half.x,  half.y,  half.z), vec3( half.x,  half.y,  half.z), vec3( half.x,  half.y,  half.z)
         }, {
             vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
-            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
-            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
-            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
-            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
-            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
-            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
-            vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)
+            vec3( 1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3( 1.0f, 0.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f,  1.0f),
+            vec3( 1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f,  1.0f),
+            vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 0.0f,  1.0f),
+            vec3( 1.0f, 0.0f, 0.0f), vec3(0.0f,  1.0f, 0.0f), vec3(0.0f, 0.0f,  1.0f)
         }, {
             vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),
             vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f), vec2(0.0f),

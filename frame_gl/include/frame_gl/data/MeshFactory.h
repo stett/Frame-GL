@@ -13,6 +13,7 @@ namespace frame
         Resource<Mesh> arrow(const vec3& base, const vec3& tip, const vec4& color=vec4(1.0f), float size=1.0f);
         Resource<Mesh> quad(const vec2& size=vec2(1.0f), const vec3& normal=vec3(0.0f, 0.0f, 1.0f), const vec4& color=vec4(1.0f));
         Resource<Mesh> cube(float edge=1.0f, const vec4& color=vec4(1.0f), bool smooth=false);
+        Resource<Mesh> cuboid(vec3 edges=vec3(1.0f), const vec4& color=vec4(1.0f), bool smooth=false);
         Resource<Mesh> sphere(float radius=0.5f, int recursion=0, const vec4& color=vec4(1.0f));
     }
 }
