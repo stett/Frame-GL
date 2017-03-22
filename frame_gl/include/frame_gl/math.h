@@ -12,15 +12,15 @@ namespace frame
     const float pi = 3.14159265359f;
 
     // GLM
-    typedef glm::vec2 vec2;
-    typedef glm::vec3 vec3;
-    typedef glm::vec4 vec4;
-    typedef glm::ivec2 ivec2;
-    typedef glm::ivec3 ivec3;
-    typedef glm::ivec4 ivec4;
-    typedef glm::mat2 mat2;
-    typedef glm::mat3 mat3;
-    typedef glm::mat4 mat4;
+    using glm::vec2;
+    using glm::vec3;
+    using glm::vec4;
+    using glm::ivec2;
+    using glm::ivec3;
+    using glm::ivec4;
+    using glm::mat2;
+    using glm::mat3;
+    using glm::mat4;
     using glm::max;
     using glm::min;
     using glm::cross;
