@@ -96,6 +96,7 @@ namespace frame
             float half_angle = angle * 0.5f;
             q.s = cos(half_angle);
             q.v = axis * sin(half_angle);
+            q.normalize();
         }
 
         static void axis_angle(quat_t& q, glm::tvec3<T> axis) {
