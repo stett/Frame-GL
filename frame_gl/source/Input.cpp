@@ -91,6 +91,11 @@ void Input::keyboard_callback(int key, int scancode, int action, int mods) {
 void Input::character_callback(wchar_t codepoint) {
     if (!capture_buffer) return;
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+
+    // TODO: Make sure this is safe...
+    if (std::find(CaptureExceptions.begin(), CaptureExceptions.end(), codepoint) != CaptureExceptions.end())
+        return;
+
     *capture_buffer << converter.to_bytes(codepoint);
 }
 

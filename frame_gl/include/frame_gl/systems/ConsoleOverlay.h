@@ -60,7 +60,8 @@ namespace frame_gl
                     input_buffer.flush();
                     std::string command(input_buffer.str());
                     std::transform(command.begin(), command.end(), command.begin(), ::tolower);
-                    frame()->commands().run(command);
+                    if (command.length() > 0)
+                        frame()->commands().run(command);
                     input_buffer = std::stringstream();
                 }
 
