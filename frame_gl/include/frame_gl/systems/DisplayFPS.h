@@ -46,7 +46,8 @@ namespace frame
         float fps_min() { return 1.0f / max_average; }
         float fps_max() { return 1.0f / min_average; }
         float variance() { return (1.0f / min_average) - (1.0f / max_average); }
-        std::string status() { return "FPS: " + std::to_string(int(fps())) + " (" + std::to_string(int(fps_min())) + "-" + std::to_string(int(fps_max())) + ")"; }
+        //std::string status() { return "FPS: " + std::to_string(int(fps())) + " (" + std::to_string(int(fps_min())) + "-" + std::to_string(int(fps_max())) + ")"; }
+        std::string status() { return "FPS: " + std::to_string(int(fps())); }// + " (" + std::to_string(int(fps_min())) + "-" + std::to_string(int(fps_max())) + ")"; }
 
     private:
         float total;

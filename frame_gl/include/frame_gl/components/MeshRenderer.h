@@ -79,9 +79,20 @@ namespace frame
             archive.write<int>(_poly_mode);
             archive.write(_cull_back);
             archive.write(_layer);
+
+            /*
             archive.write(_mesh.index());
             archive.write(_texture.index());
             archive.write(_shader.index());
+            */
+
+            archive.write(_mesh.ptr());
+            archive.write(_texture.ptr());
+            archive.write(_shader.ptr());
+
+            meshes[_mesh.ptr()] = _mesh;
+            textures[_texture.ptr()] = _texture;
+            shaders[_shader.ptr()] = _shader;
         }
 
         void read(Archive& archive) {
@@ -93,13 +104,22 @@ namespace frame
             archive.read(_layer);
 
             // Load the body and shape resources.
-            size_t mesh_index, texture_index, shader_index;
-            archive.read(mesh_index);
-            archive.read(texture_index);
-            archive.read(shader_index);
-            _mesh.lookup(mesh_index);
-            _texture.lookup(texture_index);
-            _shader.lookup(shader_index);
+            //size_t mesh_index, texture_index, shader_index;
+            Mesh* mesh_ptr;
+            Texture* texture_ptr;
+            Shader* shader_ptr;
+
+            archive.read(mesh_ptr);
+            archive.read(texture_ptr);
+            archive.read(shader_ptr);
+
+            //_mesh.lookup(mesh_index);
+            //_texture.lookup(texture_index);
+            //_shader.lookup(shader_index);
+
+            _mesh = meshes[mesh_ptr];
+            _texture = textures[texture_ptr];
+            _shader = shaders[shader_ptr];
         }
 
     private:
@@ -109,5 +129,12 @@ namespace frame
         PolyMode _poly_mode;
         bool _cull_back;
         unsigned int _layer;
+
+        // TEMP
+    private:
+        static std::unordered_map< Mesh*, Resource<Mesh> > meshes;
+        static std::unordered_map< Texture*, Resource<Texture> > textures;
+        static std::unordered_map< Shader*, Resource<Shader> > shaders;
+        // END TEMP
     };
 }
