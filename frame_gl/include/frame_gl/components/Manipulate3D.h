@@ -11,6 +11,7 @@ namespace frame
     public:
         Manipulate3D(Input::MouseButton button=Input::MouseButton::Left, float distance=0.0f, const vec3& focus=vec3(0.0f), bool invert=false, float responsiveness=20.0f) :
             _button(button),
+            _key(KEY_LEFT_ALT),
             invert(invert),
             distance(distance),
             pitch(0.0f),
@@ -77,6 +78,8 @@ namespace frame
 
         Input::MouseButton button() const { return _button; }
 
+        int key() const { return _key; }
+
         const vec3& position() const { return _position; }
 
         const quat& rotation() const { return _rotation; }
@@ -89,6 +92,7 @@ namespace frame
 
     private:
         Input::MouseButton _button;
+        int _key;
         bool invert;
         float distance;
         float pitch;
