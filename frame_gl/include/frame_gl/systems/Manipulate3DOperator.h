@@ -33,7 +33,7 @@ namespace frame
                 auto manipulate = manipulator.get<Manipulate3D>();
 
                 // Only control this object if the manipulation button is being held
-                if (input->mouse_down(manipulate->button())) {
+                if (input->mouse_down(manipulate->button()) || input->key_down(manipulate->key())) {
 
                     // Add control prompts
                     if (ui_text) {
