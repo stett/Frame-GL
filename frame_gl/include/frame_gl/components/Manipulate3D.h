@@ -39,6 +39,8 @@ namespace frame
         Manipulate3D* shift_angle(const vec2& delta, float delta_zoom=0.0f) {
             float sign = invert ? -1.0f : 1.0f;
             target_distance += delta_zoom * sign * scroll_sensitivity * (max(100.0f, min(100000.0f, target_distance * target_distance)));
+            if (target_distance > 410.0f)
+                target_distance = 410.0f;
             target_yaw += delta.x * pan_sensitivity * sign;
             target_pitch += delta.y * pan_sensitivity * sign;
             if (target_distance < 0.0f) target_distance = 0.0f;
